@@ -29,7 +29,7 @@ function (Settings) {
      *  +elasticsearch: {server: "http://localhost:9200", withCredentials: true}+
      *
      */
-    elasticsearch: "http://"+window.location.hostname+":9200",
+    elasticsearch: "http://localhost:9200",
 
     /** @scratch /configuration/config.js/5
      *
@@ -74,7 +74,10 @@ function (Settings) {
       'query',
       'terms',
       'stats',
-      'sparklines'
+      'sparklines',
+	  'chord',
+      'network',
+      'testpanel_20140917'
     ]
   });
 });
