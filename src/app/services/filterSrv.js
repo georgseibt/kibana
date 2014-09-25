@@ -45,7 +45,7 @@ define([
 
     // This is used both for adding filters and modifying them.
     // If an id is passed, the filter at that id is updated
-    this.set = function(filter,id,noRefresh) {
+    this.set = function (filter, id, noRefresh) {
       var _r;
 
       _.defaults(filter,{

@@ -31,6 +31,14 @@ function (angular, _, config, kbn) {
       "#E0F9D7","#FCEACA","#CFFAFF","#F9E2D2","#FCE2DE","#BADFF4","#F9D9F9","#DEDAF7"  //7
     ];
 
+    this.colors2 = [
+        "#8E388E", "#7171C6", "#7D9EC0", "#388E8E", "#71C671", "#8E8E38", "#C5C1AA", "#C67171",
+        "#B0171F", "#9400D3", "#0000FF", "#CAE1FF", "#36648B", "#00F5FF", "#00C78C", "#FF8247",
+        "#BDFCC9", "#32CD32", "#7CFC00", "#C0FF3E", "#FFFF00", "#FFF68F", "#CDAD00", "#FFB90F",
+        "#FFE7BA", "#FFC1C1"
+    ]; //this is a second set of colors
+
+
     // For convenience
     var ejs = ejsResource(config.elasticsearch);
 
