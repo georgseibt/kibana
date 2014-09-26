@@ -201,7 +201,7 @@ define([
                 });
             };
 
-            $scope.get_details = function (nodeName) {
+            $scope.get_details2 = function (nodeName) {
                 var links = [];
                 $scope.data.forEach(function (d) {
                     if (d.label.indexOf(nodeName) > -1) {
@@ -217,6 +217,74 @@ define([
                 })
                 return links;
             }
+
+            $scope.get_details = function (nodeName) {
+                var links = [];
+                console.log($scope.uniqueNodes);
+                if ($scope.panel.direction === "directed") {
+                    return $scope.get_details2(nodeName);
+                    //$scope.data.forEach(function (d) {
+                    //    if (d.label.indexOf(nodeName) > -1) {
+                    //        links.push(d);
+                    //    }
+                    //})
+                    //links.sort(function (a, b) {
+                    //    if (a.label < b.label)
+                    //        return -1;
+                    //    if (a.label > b.label)
+                    //        return 1;
+                    //    return 0;
+                    //})
+                    //console.log(links);
+                    //return links;
+                }
+
+                else {
+                    var node = $scope.uniqueNodes.filter(function (obj) {
+                        return obj.name === nodeName;
+                    });
+                    //console.log(node);
+                    //console.log($scope.uniqueNodes.indexOf(node[0]));
+                    ////var nodeNumber = $scope.uniqueNodes.filter(function (obj) {
+                    ////    return obj.name === nodeName;
+                    ////});
+                    ////console.log(nodeNumber);
+                    var nodeNumber = $scope.uniqueNodes.indexOf(node[0]);
+                    for (var count = 0; count < $scope.chordMatrix.length; count++) {
+                        var label = $scope.uniqueNodes[nodeNumber].name + $scope.panel.seperator + $scope.uniqueNodes[count].name;
+                        var obj = $scope.data.filter(function (obj) {
+                            return obj.label === label;
+                        });
+                        
+                        if ($scope.chordMatrix[nodeNumber][count] === 0) {
+                            //There is no data for this connection
+                        }
+                        if (($scope.chordMatrix[nodeNumber][count] > 0) && (obj.length)) {
+                            var object = {
+                                "label": obj[0].label,
+                                "color": obj[0].color,
+                                "data": $scope.chordMatrix[nodeNumber][count]
+                            }
+                            links.push(object);
+                        }
+                        if (($scope.chordMatrix[nodeNumber][count] > 0) && (!obj.length)) {
+                            var obj = $scope.data.filter(function (obj) {
+                                return obj.label === $scope.uniqueNodes[count].name + $scope.panel.seperator + $scope.uniqueNodes[nodeNumber].name;
+                            });
+                            var object = {
+                                "label": obj[0].label,
+                                "color": obj[0].color,
+                                "data": $scope.chordMatrix[nodeNumber][count]
+                            }
+                            links.push(object);   
+                        }  
+                    }
+                    console.log(links);
+                    return (links);
+                }
+            }
+
+
 
             $scope.set_refresh = function (state) {
                 //This function is executed if some changes are done in the editor
@@ -309,6 +377,7 @@ define([
                 var dataset = prepareDataset(dataset);
                 var uniqueNodes = dataset.nodes;
                 var chordMatrix = dataset.matrix;
+                scope.chordMatrix = chordMatrix;
 
                 //Define the layout of the chords
                 var chord = d3.layout.chord()
@@ -378,20 +447,34 @@ define([
                     .attr("class", "chord")
                     .style("opacity", 1)
                     .on("mouseover", function (d) {
-                        //show tooltip
+                        //show tooltip when hovering over chords
                         var detailstext = "";
                         var details = [];
-                        if (typeof scope.get_details(uniqueNodes[d.source.index].name + "" + scope.panel.seperator + "" + uniqueNodes[d.target.index].name)[0] === 'undefined') { }
+                        if (typeof scope.get_details2(uniqueNodes[d.source.index].name + "" + scope.panel.seperator + "" + uniqueNodes[d.target.index].name)[0] === 'undefined') { }
                         else {
-                            details.push(scope.get_details(uniqueNodes[d.source.index].name + "" + scope.panel.seperator + "" + uniqueNodes[d.target.index].name)[0]);
+                            details.push(scope.get_details2(uniqueNodes[d.source.index].name + "" + scope.panel.seperator + "" + uniqueNodes[d.target.index].name)[0]);
                         }
-                        if (typeof scope.get_details(uniqueNodes[d.target.index].name + "" + scope.panel.seperator + "" + uniqueNodes[d.source.index].name)[0] === 'undefined') { }
+                        if (typeof scope.get_details2(uniqueNodes[d.target.index].name + "" + scope.panel.seperator + "" + uniqueNodes[d.source.index].name)[0] === 'undefined') { }
                         else {
-                            details.push(scope.get_details(uniqueNodes[d.target.index].name + "" + scope.panel.seperator + "" + uniqueNodes[d.source.index].name)[0]);
+                            details.push(scope.get_details2(uniqueNodes[d.target.index].name + "" + scope.panel.seperator + "" + uniqueNodes[d.source.index].name)[0]);
                         }
-                        details.forEach(function (d) {
-                            detailstext = detailstext + (kbn.query_color_dot(d.color, 15) + ' ' + d.label + " (" + d.data + ")<br/>");
-                        })
+                        console.log(details);
+                        if (scope.panel.direction === "directed") {
+                            //creation of detailstext for the directed graph
+                            details.forEach(function (d) {
+                                detailstext = detailstext + (kbn.query_color_dot(d.color, 15) + ' ' + d.label + " (" + d.data + ")<br/>");
+                            })
+                        }
+                        else {
+                            //creation of detailstext for the undirected graph
+                            var data = 0;
+                            details.forEach(function (d) {
+                                data = data + d.data;
+                            })
+                            detailstext = "BETWEEN : " + kbn.query_color_dot(uniqueNodes[d.source.index].color, 15) + " " + uniqueNodes[d.source.index].name +
+                                    "<br/>AND: " + kbn.query_color_dot(uniqueNodes[d.target.index].color, 15) + " " + uniqueNodes[d.target.index].name +
+                                    "<br/>COUNT: " + data;
+                        }
                         if (scope.panel.tooltipsetting) {
                             scope.show_tooltip(100, 0.9, detailstext, d3.event.pageX + 30, d3.event.pageY);
                         }
@@ -422,7 +505,7 @@ define([
                 function fade(opacity) {
                     if (opacity<1){
                         return function (g, i) {
-                            //show tooltip
+                            //show tooltip when hovering over node
                             var details = scope.get_details(uniqueNodes[i].name);
                             var detailstext= ""
                             details.forEach(function (d) {
@@ -470,10 +553,10 @@ define([
                         scope.panel.seperator = " ";
                     }
 
-                    var uniqueNodes = findUniqueNodes(dataset); //is a one dimensional array with all nodes
-                    var chordMatrix = createChordMatrix(dataset, uniqueNodes);    //is a two dimensional array with all values of the links between the nodes
-                    uniqueNodes = addColorToNodes(uniqueNodes); //This function adds a colorcode to each node
-                    return { nodes: uniqueNodes, matrix: chordMatrix };
+                    scope.uniqueNodes = findUniqueNodes(dataset); //is a one dimensional array with all nodes
+                    scope.chordMatrix = createChordMatrix(dataset, scope.uniqueNodes);    //is a two dimensional array with all values of the links between the nodes
+                    scope.uniqueNodes = addColorToNodes(scope.uniqueNodes); //This function adds a colorcode to each node
+                    return { nodes: scope.uniqueNodes, matrix: scope.chordMatrix };
 
                     function createChordMatrix(dataset, nodes) {
                         var chordMatrix = [];

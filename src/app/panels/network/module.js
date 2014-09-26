@@ -301,6 +301,7 @@ define([
                 $('#networkGraphic').empty();  //removes all elements from the div with the id 'graphic'
 
                 var dataset, svg, force,
+                    margin = { top: -5, right: -5, bottom: -5, left: -5 },
 				max_value = 0,
 				max_radius_out = 0,
 				max_radius_in = 0,
@@ -314,13 +315,16 @@ define([
 
                 //Define the required layout
                 svg = d3.select("#networkGraphic")
-                                .append("svg")
-                                .attr("width", frame_width)
-                                .attr("height", frame_height);
+                    .append("svg")
+                    .attr("width", frame_width)
+                    .attr("height", frame_height);
+
+
 
                 force = d3.layout.force()
                                 .charge(-300)
-                                .linkDistance(250)
+                                .linkDistance(200)
+//                    .linkDistance(function(d) { return radius(d.source.size) + radius(d.target.size) + 20; }) //linkdistance can be individual
                                 .size([frame_width, frame_height]);
 
                 //define tooltip
@@ -331,7 +335,7 @@ define([
                 //Build the network                        
                 dataset = prepareDataset(dataset); //before invoking this function the dataset is the the data how it came from the datastore
                 drawNetwork(dataset);
-                
+                                
                 function defineArrows() {
                     // build the arrow.
                     svg.append("defs")
@@ -421,11 +425,11 @@ define([
                     node.append("circle")
                         .attr("r", function (d) {
                             if (scope.panel.direction === "directed") {
-                                if (node_highlighter == 'outgoing') { console.log(d.name + " " + (d.radius_out / max_radius_out * 10 + 5)); return d.radius_out / max_radius_out * 10 + 5; }
-                                else { console.log(d.name + " " + (d.radius_in / max_radius_in * 10 + 5)); return d.radius_in / max_radius_in * 10 + 5; }
+                                if (node_highlighter == 'outgoing') { return d.radius_out / max_radius_out * 10 + 5; }
+                                else { return d.radius_in / max_radius_in * 10 + 5; }
                             }
                             else {
-                                console.log(d.name + " " + ((d.radius_in + d.radius_out) / max_radius_undirected * 10 + 5)); return (d.radius_in + d.radius_out) / max_radius_undirected * 10 + 5;
+                                return (d.radius_in + d.radius_out) / max_radius_undirected * 10 + 5;
                             }
 
                         })
@@ -455,8 +459,6 @@ define([
                         are connected the node and the connection between the nodes stay visible.
                         */
                         return function (selected_node) {
-                            console.log(selected_node.radius_out);
-                            console.log(dataset.nodes);
                             var details = scope.get_details(selected_node.name);
                             var detailstext = ""
                             details.forEach(function (d) {
