@@ -196,10 +196,10 @@ define([
                 $scope.data.forEach(function (d) {
                     if (d.label.indexOf(nodeName) > -1) {
                         if (queryterm === "") {
-                            queryterm = queryterm + "" + $scope.field + ":" + d.label
+                            queryterm = queryterm + "" + $scope.field + ":\"" + d.label +"\""
                         }
                         else {
-                            queryterm = queryterm + " OR " + $scope.field + ":" + d.label
+                            queryterm = queryterm + " OR " + $scope.field + ":\"" + d.label+"\""
                         }
                     }
                 })
@@ -553,6 +553,12 @@ define([
                 }
 
                 function prepareDataset(dataset) {
+                    if (scope.panel.seperator === "") {
+                        //if user enters space as seperator, the user interface ignores this value and leaves the variable blank.
+                        //For that reason we catch this exception here and define the seperator as a space
+                        scope.panel.seperator = " ";
+                    }
+
                     var uniqueNodes = findUniqueNodes(dataset); //is a one dimensional array with all nodes
                     var nodesJSON = createNodeJSON(uniqueNodes);
                     var linksJSON = createLinkJSON(dataset, nodesJSON);
@@ -679,7 +685,14 @@ define([
                     }
 
                     function seperateRelation(text) {
-                        var splittedRelation = text.split(scope.panel.seperator);
+                            var splittedRelation = text.split(scope.panel.seperator);
+                        //if (scope.panel.seperator === "") {
+                        //    //if user enters space as seperator, the user interface ignores this value and leaves the variable blank.
+                        //    //For that reason we catch this exception here and define the seperator as a space
+                        //    var splittedRelation = text.split(" ");
+                        //}
+                        //else {
+                        //}
                         return splittedRelation;
                     }
 
