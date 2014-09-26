@@ -304,6 +304,7 @@ define([
 				max_value = 0,
 				max_radius_out = 0,
 				max_radius_in = 0,
+				max_radius_undirected = 0,
 				frame_width = 560,
 				frame_height = 500,
 				node_radius = 5,
@@ -361,6 +362,7 @@ define([
                     dataset.nodes.forEach(function (node) {
                         max_radius_out = Math.max(max_radius_out, node.radius_out); //find maximum of value in all edges
                         max_radius_in = Math.max(max_radius_in, node.radius_in); //find maximum of value in all edges
+                        max_radius_undirected = Math.max(max_radius_undirected, (node.radius_in + node.radius_out)); //find maximum of value in all edges
                     });
 
                     force.nodes(dataset.nodes)
@@ -418,8 +420,14 @@ define([
                     // add the nodes
                     node.append("circle")
                         .attr("r", function (d) {
-                            if (node_highlighter == 'outgoing') { return d.radius_out / max_radius_out * 10 + 5; }
-                            else { return d.radius_in / max_radius_in * 10 + 5; }
+                            if (scope.panel.direction === "directed") {
+                                if (node_highlighter == 'outgoing') { console.log(d.name + " " + (d.radius_out / max_radius_out * 10 + 5)); return d.radius_out / max_radius_out * 10 + 5; }
+                                else { console.log(d.name + " " + (d.radius_in / max_radius_in * 10 + 5)); return d.radius_in / max_radius_in * 10 + 5; }
+                            }
+                            else {
+                                console.log(d.name + " " + ((d.radius_in + d.radius_out) / max_radius_undirected * 10 + 5)); return (d.radius_in + d.radius_out) / max_radius_undirected * 10 + 5;
+                            }
+
                         })
                         .style("stroke", function (d) { if(scope.panel.colorcode==="black-white"){return "black";} else{ return d.color;} })
                         .style("stroke-width", "2px");
@@ -447,6 +455,8 @@ define([
                         are connected the node and the connection between the nodes stay visible.
                         */
                         return function (selected_node) {
+                            console.log(selected_node.radius_out);
+                            console.log(dataset.nodes);
                             var details = scope.get_details(selected_node.name);
                             var detailstext = ""
                             details.forEach(function (d) {

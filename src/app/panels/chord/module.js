@@ -470,11 +470,9 @@ define([
                         scope.panel.seperator = " ";
                     }
 
-                    console.log(dataset);
                     var uniqueNodes = findUniqueNodes(dataset); //is a one dimensional array with all nodes
                     var chordMatrix = createChordMatrix(dataset, uniqueNodes);    //is a two dimensional array with all values of the links between the nodes
                     uniqueNodes = addColorToNodes(uniqueNodes); //This function adds a colorcode to each node
-                    console.log(uniqueNodes);
                     return { nodes: uniqueNodes, matrix: chordMatrix };
 
                     function createChordMatrix(dataset, nodes) {
