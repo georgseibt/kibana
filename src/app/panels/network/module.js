@@ -101,6 +101,10 @@ define([
                 */
                 direction: 'directed',
                 /** @scratch /panels/network/5
+                * charge:: defines the charge for the forced layout network
+                */
+                charge: -300,
+                /** @scratch /panels/network/5
                 * spyable:: Set spyable to false to disable the inspect button
                 */
                 spyable     : true,
@@ -209,6 +213,11 @@ define([
                 });
             };
 
+            $scope.seperateRelation = function (text) {
+                var splittedRelation = text.split($scope.panel.seperator);
+                return splittedRelation;
+            }
+
             $scope.get_details = function (nodeName) {
                 var links = [];
                 $scope.links.forEach(function (d) {
@@ -226,6 +235,63 @@ define([
                 return links;
             }
 
+            $scope.get_detailsOnNode = function (nodeID) {
+                var nodeName = $scope.uniqueNodes[nodeID].name;
+                var links = [];
+
+                $scope.data.forEach(function (d) {
+                    if (d.label.indexOf(nodeName) > -1) {
+                        var object = {
+                            "source_color": $scope.uniqueNodes.filter(function (obj) {
+                                return obj.name === $scope.seperateRelation(d.label)[0]; //=sourceName
+                            })[0].color,
+                            "target_color": $scope.uniqueNodes.filter(function (obj) {
+                                return obj.name === $scope.seperateRelation(d.label)[1]; //=targetName
+                            })[0].color,
+                            "label": d.label,
+                            "data": d.data,
+                            "sum": 0
+                        }
+                        links.push(object);
+                    }
+                })
+                links.sort(function (a, b) {
+                    if (a.label < b.label)
+                        return -1;
+                    if (a.label > b.label)
+                        return 1;
+                    return 0;
+                })
+                return links;
+            }
+
+            $scope.get_detailsOnChord = function (sourceID, targetID) {
+                var obj = $scope.data.filter(function (obj) {
+                    return obj.label === $scope.uniqueNodes[sourceID].name + $scope.panel.seperator + $scope.uniqueNodes[targetID].name;
+                });
+                if (typeof obj[0] === 'undefined') {
+                    return null;
+                }
+                else {
+                    var source_color = $scope.uniqueNodes[sourceID].color;
+                    var target_color = $scope.uniqueNodes[targetID].color;
+                    var label = $scope.uniqueNodes[sourceID].name + "" + $scope.panel.seperator + "" + $scope.uniqueNodes[targetID].name;
+
+                    var data = obj[0].data;
+                    var object = {
+                        "source_color": source_color,
+                        "target_color": target_color,
+                        "label": label,
+                        "data": data
+                    }
+                    return object;
+                }
+            }
+
+
+
+
+
             $scope.set_refresh = function (state) {
                 //This function is executed if some changes are done in the editor
                 $scope.refresh = state;
@@ -241,13 +307,14 @@ define([
                 $scope.$emit('render');
             };
             
-            $scope.show_tooltip = function (duration, opacity, text, pos_left, pos_top){
+            $scope.show_tooltip = function (duration, opacity, text, pos_left, pos_top) {
+                //$scope.tooltip = d3.select("#details");
                 $scope.tooltip.transition()
-                                .duration(duration)
-                                .style("opacity", opacity);
+                    .duration(duration)
+                    .style("opacity", opacity);
                 $scope.tooltip.html(text);
-                $scope.tooltip.style("left", pos_left + "px")
-                    .style("top", pos_top + "px");
+                //$scope.tooltip.style("left", pos_left + "px")
+                //    .style("top", pos_top + "px");
             }
 
             $scope.hide_tooltip = function (duration, opacity) {
@@ -322,15 +389,18 @@ define([
 
 
                 force = d3.layout.force()
-                                .charge(-300)
-                                .linkDistance(200)
-//                    .linkDistance(function(d) { return radius(d.source.size) + radius(d.target.size) + 20; }) //linkdistance can be individual
-                                .size([frame_width, frame_height]);
+                    .gravity(0)
+                    .charge(scope.panel.charge)
+                    .linkDistance(200)
+//                  .linkDistance(function(d) { return radius(d.source.size) + radius(d.target.size) + 20; }) //linkdistance can be individual
+                    .size([frame_width, frame_height]);
 
                 //define tooltip
-                scope.tooltip = d3.select("body").append("div")
-                    .attr("class", "tooltip")
+                scope.tooltip = d3.select("#details")
                     .style("opacity", 0);
+                //scope.tooltip = d3.select("body").append("div")
+                //    .attr("class", "tooltip")
+                //    .style("opacity", 0);
 
                 //Build the network                        
                 dataset = prepareDataset(dataset); //before invoking this function the dataset is the the data how it came from the datastore
@@ -383,15 +453,39 @@ define([
                         .attr("id", function (d, i) { return "linkId_" + i; })
                         .style("stroke-width", function (d) { return (d.value / max_value) * 5; }) //the width of the path is scaled on a scale from 0 to 5
                         .on("mouseover", function (d) {
+                            //show tooltip when hovering over chords
+                            var detailstext = "";
+                            var details = [];
+                            details.push(scope.get_detailsOnChord(d.source.index, d.target.index));
+                            if (scope.panel.direction != "directed")
+                                details.push(scope.get_detailsOnChord(d.target.index, d.source.index));
+
+                            //creation of detailstext for the directed graph
+                            var sum = 0;
+                            details.forEach(function (d) {
+                                if (d != null) {
+                                    detailstext = detailstext + (kbn.query_color_dot(d.source_color, 15) + kbn.query_color_dot(d.target_color, 15) + ' ' + d.label + " (" + d.data + ")<br/>");
+                                    sum = sum + d.data;
+                                }
+                            })
+
+                            if (scope.panel.direction != "directed") {
+                                detailstext = detailstext + 'Sum: ' + sum;
+                            }
+
+
+
+
+
                             //show tooltip
-                            if (scope.panel.direction === "directed") {
-                                var detailstext = kbn.query_color_dot(d.color, 15) + " " + d.relation + " (" + d.value+")";
-                            }
-                            else {
-                                var detailstext = "BETWEEN : " + kbn.query_color_dot(d.source.color, 15) + " " + d.source.name +
-                                    "<br/>AND: " + kbn.query_color_dot(d.target.color, 15) + " " + d.target.name +
-                                    "<br/>COUNT: " + d.value;
-                            }
+                            //if (scope.panel.direction === "directed") {
+                            //    var detailstext = kbn.query_color_dot(d.color, 15) + " " + d.relation + " (" + d.value+")";
+                            //}
+                            //else {
+                            //    var detailstext = "BETWEEN : " + kbn.query_color_dot(d.source.color, 15) + " " + d.source.name +
+                            //        "<br/>AND: " + kbn.query_color_dot(d.target.color, 15) + " " + d.target.name +
+                            //        "<br/>COUNT: " + d.value;
+                            //}
                             if (scope.panel.tooltipsetting) {
                                 scope.show_tooltip(100, 0.9, detailstext, d3.event.pageX + 30, d3.event.pageY);
                             }
@@ -445,6 +539,8 @@ define([
                     // add the curvy lines
                     function tick() {
                         path.attr("d", linkArc);
+                        node.attr("cx", function (d) { return d.x = Math.max(50, Math.min(560 - 50, d.x)); })
+                            .attr("cy", function (d) { return d.y = Math.max(50, Math.min(500 - 50, d.y)); });
                         node.attr("transform", transform);
                     }
 
@@ -459,11 +555,18 @@ define([
                         are connected the node and the connection between the nodes stay visible.
                         */
                         return function (selected_node) {
-                            var details = scope.get_details(selected_node.name);
-                            var detailstext = ""
+                            var details = scope.get_detailsOnNode(selected_node.index);
+                            //show tooltip when hovering over node
+                            var detailstext = selected_node.name + "<br/><br/>"
                             details.forEach(function (d) {
-                                detailstext = detailstext + (kbn.query_color_dot(d.color, 15) + ' ' + d.relation + " (" + d.value + ")<br/>");
+                                detailstext = detailstext + (kbn.query_color_dot(d.source_color, 15) + kbn.query_color_dot(d.target_color, 15) + ' ' + d.label + " (" + d.data + ")<br/>");
                             })
+
+                            //var details = scope.get_details(selected_node.index);
+                            //var detailstext = ""
+                            //details.forEach(function (d) {
+                            //    detailstext = detailstext + (kbn.query_color_dot(d.color, 15) + ' ' + d.relation + " (" + d.value + ")<br/>");
+                            //})
                             if (scope.panel.tooltipsetting && opacity<1) {
                                 scope.show_tooltip(100, 0.9, detailstext, d3.event.pageX + 30, d3.event.pageY - 60);
                             }
@@ -582,8 +685,12 @@ define([
                         d.radius_out = aggregateLinks("out", nodeIndex, linksJSON);
                     });
 
-                    scope.links = linksJSON;
-                    scope.nodes = nodesJSON;
+                    scope.uniqueNodes = nodesJSON; //format: name, radius_out, radius_in, color
+
+                    //console.log(scope.uniqueNodes);
+                    //console.log(scope.links);
+                    //console.log(scope.aggregatedLinks);
+
                     return { nodes: nodesJSON, links: linksJSON };
                                        
                     function aggregateLinks(aggregateType, nodeIndex, linksJSON) {
@@ -628,7 +735,7 @@ define([
                             k = k + 1;
                             nodes.push(object);
                         });
-                        return nodes;   //returns an array of all nodes with the attributes: name, radius_out, radius_in. Till now the values of radius_in, and radius_out are still empty
+                        return nodes;   //returns an array of all nodes as objects with the attributes: name, radius_out, radius_in. Till now the values of radius_in, and radius_out are still empty
                     }
 
                     function createLinkJSON(dataset, nodes) {   //creates a JSON file for all links, with the attributes: source, target, and value
@@ -637,13 +744,14 @@ define([
                             var object = {  //create an object for each link with the index of the node (NOT the name)
                                 "relation": d.label,
                                 "color": d.color,
-                                "source": nodes.map(function (e) { return e.name; }).indexOf(seperateRelation(d.label)[0]),
-                                "target": nodes.map(function (e) { return e.name; }).indexOf(seperateRelation(d.label)[1]),
+                                "source": nodes.map(function (e) { return e.name; }).indexOf(scope.seperateRelation(d.label)[0]),
+                                "target": nodes.map(function (e) { return e.name; }).indexOf(scope.seperateRelation(d.label)[1]),
                                 "value": d.data
                             }
                             links.push(object);
-                        });
+                        }); //format: relation, source, target, color, value
                         if (scope.panel.direction === "directed") {
+                            //the links are not aggregated. Values for A->B and B->A stay seperate records
                             return links;
                         }
                         else {
@@ -678,34 +786,23 @@ define([
                                 })
                                 .value();
 
-                            return links;
+                            //scope.aggregatedLinks = links; //scope variable where values from records with interchanges sources and targets are aggregated
+                            return links; //format: relation, source, target, color, value
                         }
                     }
 
                     function findUniqueNodes(dataset) {
-                        var nodes = [];  //create array for the nodes
+                        var nodes = [];  //create array for the nodes. Its just an array of strings. No objects or anything similar.
 
                         dataset.forEach(function (d) {
                             //seperates all nodes and stores them in the array 'nodes'
-                            seperateRelation(d.label).forEach(function (d) {
+                            scope.seperateRelation(d.label).forEach(function (d) {
                                 nodes.push(d);
                             });
                         });
                         var uniqueNodes = nodes.filter(onlyUnique); //all nodes in the array 'nodes' are filtered and only unique values remain
 
                         return uniqueNodes;
-                    }
-
-                    function seperateRelation(text) {
-                            var splittedRelation = text.split(scope.panel.seperator);
-                        //if (scope.panel.seperator === "") {
-                        //    //if user enters space as seperator, the user interface ignores this value and leaves the variable blank.
-                        //    //For that reason we catch this exception here and define the seperator as a space
-                        //    var splittedRelation = text.split(" ");
-                        //}
-                        //else {
-                        //}
-                        return splittedRelation;
                     }
 
                     function onlyUnique(value, index, self) {

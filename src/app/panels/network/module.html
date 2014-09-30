@@ -41,8 +41,6 @@
             div.tooltip {
                 position: absolute;
                 text-align: left;
-                /*width: 60px;*/
-                /*height: 28px;*/
                 padding: 2px;
                 color: white;
                 font: 12px sans-serif;
@@ -51,6 +49,17 @@
                 border-radius: 8px;
                 pointer-events: none;
             }
+        div.details {
+            position: absolute;
+            text-align: left;
+            padding: 2px;
+            color: black;
+            font: 12px sans-serif;
+            background: white;
+            border: 0px;
+            border-radius: 8px;
+            pointer-events: none;
+        }
     </style>
 
     <div class="network-wrapper">
@@ -83,6 +92,8 @@
 
         </div>
 
+        
+
         <!-- LEGEND -->
         <div class="network-legend" ng-show="panel.counter_pos == 'below'" id='{{$id}}-legend'>
             <!-- vertical legend below -->
@@ -103,5 +114,9 @@
             </span>
             <div style="clear:both"></div>
         </div>
+        
+    </div>
+    <div id="details" ng-show="true" class="details">
+        
     </div>
 </div>

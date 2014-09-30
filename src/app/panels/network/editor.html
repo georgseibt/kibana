@@ -20,6 +20,10 @@
         <label class="small">Seperator</label>
         <input type="text" class="input-small" bs-typeahead="fields.list" ng-model="panel.seperator" ng-change="set_refresh(true)">
     </div>
+    <div class="editor-option" ng-show="true">
+        <label class="small">Charge (should be a negative value for best performance)</label>
+        <input type="text" class="input-small" bs-typeahead="fields.list" ng-model="panel.charge" ng-change="set_refresh(true)">
+    </div>
 </div>
 <div class="editor-row">
     <div class="section">

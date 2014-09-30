@@ -201,11 +201,47 @@ define([
                 });
             };
 
-            $scope.get_details2 = function (nodeName) {
+            $scope.seperateRelation = function (text) {
+                var splittedRelation = text.split($scope.panel.seperator);
+                return splittedRelation;
+            }
+
+            //$scope.get_details2 = function (nodeName) {
+
+            //    var links = [];
+            //    $scope.data.forEach(function (d) {
+            //        if (d.label.indexOf(nodeName) > -1) {                        
+            //            links.push(d);
+            //        }
+            //    })
+            //    links.sort(function (a, b) {
+            //        if (a.label < b.label)
+            //            return -1;
+            //        if (a.label > b.label)
+            //            return 1;
+            //        return 0;
+            //    })
+            //    return links;
+            //}
+
+            $scope.get_detailsOnNode = function (nodeID) {
+                var nodeName=$scope.uniqueNodes[nodeID].name;
                 var links = [];
+                
                 $scope.data.forEach(function (d) {
                     if (d.label.indexOf(nodeName) > -1) {
-                        links.push(d);
+                        var object = {
+                            "source_color": $scope.uniqueNodes.filter(function (obj) {
+                                return obj.name === $scope.seperateRelation(d.label)[0]; //=sourceName
+                            })[0].color,
+                            "target_color": $scope.uniqueNodes.filter(function (obj) {
+                                return obj.name === $scope.seperateRelation(d.label)[1]; //=targetName
+                            })[0].color,
+                            "label": d.label,
+                            "data": d.data,
+                            "sum": 0
+                        }
+                        links.push(object);
                     }
                 })
                 links.sort(function (a, b) {
@@ -218,74 +254,84 @@ define([
                 return links;
             }
 
-            $scope.get_details = function (nodeName) {
-                var links = [];
-                console.log($scope.uniqueNodes);
-                if ($scope.panel.direction === "directed") {
-                    return $scope.get_details2(nodeName);
-                    //$scope.data.forEach(function (d) {
-                    //    if (d.label.indexOf(nodeName) > -1) {
-                    //        links.push(d);
-                    //    }
-                    //})
-                    //links.sort(function (a, b) {
-                    //    if (a.label < b.label)
-                    //        return -1;
-                    //    if (a.label > b.label)
-                    //        return 1;
-                    //    return 0;
-                    //})
-                    //console.log(links);
-                    //return links;
+            $scope.get_detailsOnChord = function (sourceID, targetID) {
+                var obj = $scope.data.filter(function (obj) {
+                    return obj.label === $scope.uniqueNodes[sourceID].name + $scope.panel.seperator + $scope.uniqueNodes[targetID].name;
+                });
+                if (typeof obj[0] === 'undefined') {
+                    return null;
                 }
-
                 else {
-                    var node = $scope.uniqueNodes.filter(function (obj) {
-                        return obj.name === nodeName;
-                    });
-                    //console.log(node);
-                    //console.log($scope.uniqueNodes.indexOf(node[0]));
-                    ////var nodeNumber = $scope.uniqueNodes.filter(function (obj) {
-                    ////    return obj.name === nodeName;
-                    ////});
-                    ////console.log(nodeNumber);
-                    var nodeNumber = $scope.uniqueNodes.indexOf(node[0]);
-                    for (var count = 0; count < $scope.chordMatrix.length; count++) {
-                        var label = $scope.uniqueNodes[nodeNumber].name + $scope.panel.seperator + $scope.uniqueNodes[count].name;
-                        var obj = $scope.data.filter(function (obj) {
-                            return obj.label === label;
-                        });
-                        
-                        if ($scope.chordMatrix[nodeNumber][count] === 0) {
-                            //There is no data for this connection
-                        }
-                        if (($scope.chordMatrix[nodeNumber][count] > 0) && (obj.length)) {
-                            var object = {
-                                "label": obj[0].label,
-                                "color": obj[0].color,
-                                "data": $scope.chordMatrix[nodeNumber][count]
-                            }
-                            links.push(object);
-                        }
-                        if (($scope.chordMatrix[nodeNumber][count] > 0) && (!obj.length)) {
-                            var obj = $scope.data.filter(function (obj) {
-                                return obj.label === $scope.uniqueNodes[count].name + $scope.panel.seperator + $scope.uniqueNodes[nodeNumber].name;
-                            });
-                            var object = {
-                                "label": obj[0].label,
-                                "color": obj[0].color,
-                                "data": $scope.chordMatrix[nodeNumber][count]
-                            }
-                            links.push(object);   
-                        }  
+                    var source_color = $scope.uniqueNodes[sourceID].color;
+                    var target_color = $scope.uniqueNodes[targetID].color;
+                    var label = $scope.uniqueNodes[sourceID].name + ""+$scope.panel.seperator+"" + $scope.uniqueNodes[targetID].name;
+                
+                    var data= obj[0].data;
+                    var sum = 0;
+                    if ($scope.panel.direction != "directed") {
+                        sum = $scope.chordMatrix[sourceID][targetID];
                     }
-                    console.log(links);
-                    return (links);
+                    var object = {
+                        "source_color": source_color,
+                        "target_color": target_color,
+                        "label": label,
+                        "data": data,
+                        "sum": sum
+                    }
+                    return object;
                 }
             }
 
-
-
+            //$scope.get_details = function (nodeName) {
+            //    var links = [];
+            //    if ($scope.panel.direction === "directed") {
+            //        return $scope.get_details2(nodeName);
+            //    }
+            //    else {
+            //        var node = $scope.uniqueNodes.filter(function (obj) {
+            //            return obj.name === nodeName;
+            //        });
+            //        var nodeNumber = $scope.uniqueNodes.indexOf(node[0]);
+            //        for (var count = 0; count < $scope.chordMatrix.length; count++) {
+            //            var label = $scope.uniqueNodes[nodeNumber].name + $scope.panel.seperator + $scope.uniqueNodes[count].name;
+            //            var obj = $scope.data.filter(function (obj) {
+            //                return obj.label === label;
+            //            });                        
+            //            if ($scope.chordMatrix[nodeNumber][count] === 0) {
+            //                //There is no data for this connection
+            //            }
+            //            if (($scope.chordMatrix[nodeNumber][count] > 0) && (obj.length)) {
+            //                var object = {
+            //                    "label": obj[0].label,
+            //                    "color": obj[0].color,
+            //                    "data": $scope.chordMatrix[nodeNumber][count]
+            //                }
+            //                links.push(object);
+            //            }
+            //            if (($scope.chordMatrix[nodeNumber][count] > 0) && (!obj.length)) {
+            //                var obj = $scope.data.filter(function (obj) {
+            //                    return obj.label === $scope.uniqueNodes[count].name + $scope.panel.seperator + $scope.uniqueNodes[nodeNumber].name;
+            //                });
+            //                var object = {
+            //                    "label": obj[0].label,
+            //                    "color": obj[0].color,
+            //                    "data": $scope.chordMatrix[nodeNumber][count]
+            //                }
+            //                links.push(object);   
+            //            }  
+            //        }
+            //        links.sort(function (a, b) {
+            //            if (a.label < b.label)
+            //                return -1;
+            //            if (a.label > b.label)
+            //                return 1;
+            //            return 0;
+            //        })
+            //        return links;
+            //        return (links);
+            //    }
+            //}
+            
             $scope.set_refresh = function (state) {
                 //This function is executed if some changes are done in the editor
                 $scope.refresh = state;
@@ -447,47 +493,47 @@ define([
                     .attr("class", "chord")
                     .style("opacity", 1)
                     .on("mouseover", function (d) {
-                        //show tooltip when hovering over chords
-                        var detailstext = "";
-                        var details = [];
-                        if (typeof scope.get_details2(uniqueNodes[d.source.index].name + "" + scope.panel.seperator + "" + uniqueNodes[d.target.index].name)[0] === 'undefined') { }
-                        else {
-                            details.push(scope.get_details2(uniqueNodes[d.source.index].name + "" + scope.panel.seperator + "" + uniqueNodes[d.target.index].name)[0]);
-                        }
-                        if (typeof scope.get_details2(uniqueNodes[d.target.index].name + "" + scope.panel.seperator + "" + uniqueNodes[d.source.index].name)[0] === 'undefined') { }
-                        else {
-                            details.push(scope.get_details2(uniqueNodes[d.target.index].name + "" + scope.panel.seperator + "" + uniqueNodes[d.source.index].name)[0]);
-                        }
-                        console.log(details);
-                        if (scope.panel.direction === "directed") {
-                            //creation of detailstext for the directed graph
-                            details.forEach(function (d) {
-                                detailstext = detailstext + (kbn.query_color_dot(d.color, 15) + ' ' + d.label + " (" + d.data + ")<br/>");
-                            })
-                        }
-                        else {
-                            //creation of detailstext for the undirected graph
-                            var data = 0;
-                            details.forEach(function (d) {
-                                data = data + d.data;
-                            })
-                            detailstext = "BETWEEN : " + kbn.query_color_dot(uniqueNodes[d.source.index].color, 15) + " " + uniqueNodes[d.source.index].name +
-                                    "<br/>AND: " + kbn.query_color_dot(uniqueNodes[d.target.index].color, 15) + " " + uniqueNodes[d.target.index].name +
-                                    "<br/>COUNT: " + data;
-                        }
-                        if (scope.panel.tooltipsetting) {
-                            scope.show_tooltip(100, 0.9, detailstext, d3.event.pageX + 30, d3.event.pageY);
-                        }
+                        highlight_Chord(d);
                     })
                     .on("mouseout", function (d) {
                         scope.hide_tooltip(100, 0);
+                        fadeChord(1, d);
+                    })
+                    .on("mousemove", function (d) {
+                        highlight_Chord(d);
                     });
+                
 
                 //define tooltip
                 scope.tooltip = d3.select("body").append("div")
                     .attr("class", "tooltip")
                     .style("opacity", 0);
                 
+                function highlight_Chord(d) {
+                    var detailstext = "";
+                    var details = [];
+                    details.push(scope.get_detailsOnChord(d.source.index, d.target.index));
+                    details.push(scope.get_detailsOnChord(d.target.index, d.source.index));
+
+                    //creation of detailstext for the directed graph
+                    details.forEach(function (d) {
+                        if (d != null)
+                            detailstext = detailstext + (kbn.query_color_dot(d.source_color, 15) + kbn.query_color_dot(d.target_color, 15) + ' ' + d.label + " (" + d.data + ")<br/>");
+                    })
+
+                    if (scope.panel.direction != "directed") {
+                        if (details[0] != null)
+                            detailstext = detailstext + 'Sum: ' + details[0].sum;
+                        else
+                            detailstext = detailstext + 'Sum: ' + details[1].sum;
+                    }
+                    fadeChord(0, d);
+
+                    if (scope.panel.tooltipsetting) {
+                        scope.show_tooltip(100, 0.9, detailstext, d3.event.pageX+15, d3.event.pageY);
+                    }
+                }
+
                 function chordColor(d) {
                     return (d.source.value > d.target.value ? uniqueNodes[d.source.index].color : uniqueNodes[d.target.index].color);
                 }
@@ -502,16 +548,35 @@ define([
                     });
                 }
 
+                function fadeChord(opacity, chord) {
+                    if (opacity < 1) {
+                        svg.selectAll(".chord path")
+                                .filter(function (d) {
+                                    return !(d.source.index === chord.source.index && d.target.index === chord.target.index);
+                                })
+                                .transition()
+                                .style("opacity", opacity);
+                    }
+                    else {
+                        svg.selectAll(".chord path")
+                                .filter(function (d) {
+                                    return !(d.source.index === chord.source.index && d.target.index === chord.target.index);
+                                })
+                                .transition()
+                                .style("opacity", opacity);
+                    }
+                }
+
                 function fade(opacity) {
                     if (opacity<1){
                         return function (g, i) {
+                            var details = scope.get_detailsOnNode(i);
                             //show tooltip when hovering over node
-                            var details = scope.get_details(uniqueNodes[i].name);
-                            var detailstext= ""
+                            var detailstext = uniqueNodes[i].name + "<br/><br/>"
                             details.forEach(function (d) {
-                                detailstext=detailstext+(kbn.query_color_dot(d.color, 15)+' '+d.label +" ("+d.data+")<br/>");
+                                detailstext = detailstext + (kbn.query_color_dot(d.source_color, 15) + kbn.query_color_dot(d.target_color, 15) + ' ' + d.label + " (" + d.data + ")<br/>");
                             })
-                            scope.show_tooltip(100, 0.9, detailstext, d3.event.pageX + 30, d3.event.pageY - 60);
+                            scope.show_tooltip(100, 0.9, detailstext, d3.event.pageX+15, d3.event.pageY);
 
                             //Hide unrelated chords
                             svg.selectAll(".chord path")
@@ -544,6 +609,7 @@ define([
 
                 g.on("mouseover", fade(0.0))
                     .on("mouseout", fade(1.0))
+                    .on("mousemove", fade(0.0))
                     .on("click", clickedNode());
 
                 function prepareDataset(dataset) {
@@ -571,8 +637,8 @@ define([
 
                         dataset.forEach(function (d) {
                             //fill the 'chordMatrix' with the values from the JSON. If there are no values. The value will remain 0.
-                            var rowname = nodes.indexOf(seperateRelation(d.label)[0]);
-                            var columnname = nodes.indexOf(seperateRelation(d.label)[1]);
+                            var rowname = nodes.indexOf(scope.seperateRelation(d.label)[0]);
+                            var columnname = nodes.indexOf(scope.seperateRelation(d.label)[1]);
 
                             chordMatrix[rowname][columnname] = chordMatrix[rowname][columnname] + d.data;
                         });
@@ -604,7 +670,7 @@ define([
 
                         dataset.forEach(function (d) {
                             //seperates all nodes and stores them in the array 'nodes'
-                            seperateRelation(d.label).forEach(function (d) {
+                            scope.seperateRelation(d.label).forEach(function (d) {
                                 nodes.push(d);
                             });
                         });
@@ -623,18 +689,6 @@ define([
                             k = k + 1;
                         });
                         return uniqueNodes;
-                    }
-
-                    function seperateRelation(text) {
-                            var splittedRelation = text.split(scope.panel.seperator);
-                        //if (scope.panel.seperator === "") {
-                        //    //if user enters space as seperator, the user interface ignores this value and leaves the variable blank.
-                        //    //For that reason we catch this exception here and define the seperator as a space
-                        //    var splittedRelation = text.split(" ");
-                        //}
-                        //else {
-                        //}
-                        return splittedRelation;
                     }
 
                     function onlyUnique(value, index, self) {
