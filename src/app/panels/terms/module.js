@@ -277,12 +277,16 @@ function (angular, app, _, $, kbn) {
             k = k + 1;
           });
 
-          scope.data.push({label:'Missing field',
-            data:[[k,scope.results.facets.terms.missing]],meta:"missing",color:'#aaa',opacity:0});
+          scope.data.push({
+              label: 'Missing field',
+              data: [[k, scope.results.facets.terms.missing]], meta: "missing", color: '#aaa', opacity: 0
+          });
 
-          if(scope.panel.tmode === 'terms') {
-            scope.data.push({label:'Other values',
-              data:[[k+1,scope.results.facets.terms.other]],meta:"other",color:'#444'});
+          if (scope.panel.tmode === 'terms') {
+              scope.data.push({
+                  label: 'Other values',
+                  data: [[k + 1, scope.results.facets.terms.other]], meta: "other", color: '#444'
+              });
           }
         }
 
@@ -301,7 +305,6 @@ function (angular, app, _, $, kbn) {
             _.without(chartData,_.findWhere(chartData,{meta:'missing'}));
           chartData = scope.panel.other ? chartData :
           _.without(chartData,_.findWhere(chartData,{meta:'other'}));
-
           // Populate element.
           require(['jquery.flot.pie'], function(){
             // Populate element

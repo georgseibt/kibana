@@ -44,8 +44,7 @@ define([
                     }
                 ],
                 status: "Stable",
-                description: "Displays the results of an elasticsearch facet as a pie chart, bar chart, or a " +
-                    "table"
+                description: "Displays the results of an elasticsearch facet as a network diagram"
             };
 
             // Set and populate defaults
@@ -124,8 +123,13 @@ define([
             _.defaults($scope.panel, _d);
 
             $scope.init = function () {
+                console.log("First Start");
+                console.log($scope.panel);
+
                 $scope.hits = 0;    //This is just done when the page is first started
                 $scope.$on('refresh', function () {
+                    console.log("There were some chnages");
+                    console.log($scope.panel);
                     //this part of the code is done if the refresh symbol in the header is clicked
                     $scope.get_data();
                 });
@@ -218,22 +222,22 @@ define([
                 return splittedRelation;
             }
 
-            $scope.get_details = function (nodeName) {
-                var links = [];
-                $scope.links.forEach(function (d) {
-                    if (d.relation.indexOf(nodeName) > -1) {
-                        links.push(d);
-                    }
-                })
-                links.sort(function (a, b) {
-                    if (a.relation < b.relation)
-                        return -1;
-                    if (a.relation > b.relation)
-                        return 1;
-                    return 0;
-                })
-                return links;
-            }
+            //$scope.get_details = function (nodeName) {
+            //    var links = [];
+            //    $scope.links.forEach(function (d) {
+            //        if (d.relation.indexOf(nodeName) > -1) {
+            //            links.push(d);
+            //        }
+            //    })
+            //    links.sort(function (a, b) {
+            //        if (a.relation < b.relation)
+            //            return -1;
+            //        if (a.relation > b.relation)
+            //            return 1;
+            //        return 0;
+            //    })
+            //    return links;
+            //}
 
             $scope.get_detailsOnNode = function (nodeID) {
                 var nodeName = $scope.uniqueNodes[nodeID].name;
@@ -288,10 +292,6 @@ define([
                 }
             }
 
-
-
-
-
             $scope.set_refresh = function (state) {
                 //This function is executed if some changes are done in the editor
                 $scope.refresh = state;
@@ -332,7 +332,7 @@ define([
 
                     // Receive render events
                     scope.$on('render', function () {
-                        render_panel();
+                        render_panel(elem);
                     });
 
                     function build_results() {
@@ -349,7 +349,7 @@ define([
                     }
 
                     // Function for rendering panel
-                    function render_panel() {
+                    function render_panel(elem) {
                         var chartData;
 
                         build_results();
@@ -359,29 +359,30 @@ define([
 
                         // Make a clone we can operate on.
                         chartData = _.clone(scope.data);
-                        createNetworkDiagram(scope, chartData);
+
+                        createNetworkDiagram(scope, chartData, elem);
                     }
                 }
             };
 
-            function createNetworkDiagram(scope, dataset) {
-                $('#networkGraphic').empty();  //removes all elements from the div with the id 'graphic'
-
+            function createNetworkDiagram(scope, dataset, elem) {
+                $(elem[0]).empty();  //removes all elements from the div with the id 'graphic'
+                //console.log(scope.panel.direction);
                 var dataset, svg, force,
                     margin = { top: -5, right: -5, bottom: -5, left: -5 },
 				max_value = 0,
 				max_radius_out = 0,
 				max_radius_in = 0,
-				max_radius_undirected = 0,
-				frame_width = 560,
-				frame_height = 500,
+				max_radius_total = 0,
+				frame_width = Math.min(parseInt(scope.row.height.replace("px", "")), window.screen.availWidth / 12 * scope.panel.span - 50),
+				frame_height = frame_width,
 				node_radius = 5,
 				arrowhead_length = 10,
 				node_highlighter = scope.panel.nodesize,
 				linkedByIndex = {};
 
                 //Define the required layout
-                svg = d3.select("#networkGraphic")
+                svg = d3.select(elem[0])
                     .append("svg")
                     .attr("width", frame_width)
                     .attr("height", frame_height);
@@ -436,7 +437,7 @@ define([
                     dataset.nodes.forEach(function (node) {
                         max_radius_out = Math.max(max_radius_out, node.radius_out); //find maximum of value in all edges
                         max_radius_in = Math.max(max_radius_in, node.radius_in); //find maximum of value in all edges
-                        max_radius_undirected = Math.max(max_radius_undirected, (node.radius_in + node.radius_out)); //find maximum of value in all edges
+                        max_radius_total = Math.max(max_radius_total, (node.radius_total)); //find maximum of value in all edges
                     });
 
                     force.nodes(dataset.nodes)
@@ -468,24 +469,9 @@ define([
                                     sum = sum + d.data;
                                 }
                             })
-
                             if (scope.panel.direction != "directed") {
                                 detailstext = detailstext + 'Sum: ' + sum;
                             }
-
-
-
-
-
-                            //show tooltip
-                            //if (scope.panel.direction === "directed") {
-                            //    var detailstext = kbn.query_color_dot(d.color, 15) + " " + d.relation + " (" + d.value+")";
-                            //}
-                            //else {
-                            //    var detailstext = "BETWEEN : " + kbn.query_color_dot(d.source.color, 15) + " " + d.source.name +
-                            //        "<br/>AND: " + kbn.query_color_dot(d.target.color, 15) + " " + d.target.name +
-                            //        "<br/>COUNT: " + d.value;
-                            //}
                             if (scope.panel.tooltipsetting) {
                                 scope.show_tooltip(100, 0.9, detailstext, d3.event.pageX + 30, d3.event.pageY);
                             }
@@ -523,7 +509,7 @@ define([
                                 else { return d.radius_in / max_radius_in * 10 + 5; }
                             }
                             else {
-                                return (d.radius_in + d.radius_out) / max_radius_undirected * 10 + 5;
+                                return (d.radius_total) / max_radius_total * 10 + 5;
                             }
 
                         })
@@ -539,8 +525,8 @@ define([
                     // add the curvy lines
                     function tick() {
                         path.attr("d", linkArc);
-                        node.attr("cx", function (d) { return d.x = Math.max(50, Math.min(560 - 50, d.x)); })
-                            .attr("cy", function (d) { return d.y = Math.max(50, Math.min(500 - 50, d.y)); });
+                        node.attr("cx", function (d) { return d.x = Math.max(50, Math.min(frame_width - 50, d.x)); })   //guarantees that the nodes are always 50px away from the border
+                            .attr("cy", function (d) { return d.y = Math.max(50, Math.min(frame_height - 50, d.y)); }); //guarantees that the nodes are always 50px away from the border
                         node.attr("transform", transform);
                     }
 
@@ -557,17 +543,12 @@ define([
                         return function (selected_node) {
                             var details = scope.get_detailsOnNode(selected_node.index);
                             //show tooltip when hovering over node
-                            var detailstext = selected_node.name + "<br/><br/>"
+                            var detailstext = "<h4>"+selected_node.name + "</h4><span>"
                             details.forEach(function (d) {
-                                detailstext = detailstext + (kbn.query_color_dot(d.source_color, 15) + kbn.query_color_dot(d.target_color, 15) + ' ' + d.label + " (" + d.data + ")<br/>");
+                                detailstext = detailstext + "<span>" + (kbn.query_color_dot(d.source_color, 15) + kbn.query_color_dot(d.target_color, 15) + ' ' + d.label + " (" + d.data + ") </span>");
                             })
-
-                            //var details = scope.get_details(selected_node.index);
-                            //var detailstext = ""
-                            //details.forEach(function (d) {
-                            //    detailstext = detailstext + (kbn.query_color_dot(d.color, 15) + ' ' + d.relation + " (" + d.value + ")<br/>");
-                            //})
-                            if (scope.panel.tooltipsetting && opacity<1) {
+                            detailstext = detailstext + "</span>";
+                            if (scope.panel.tooltipsetting && opacity < 1) {
                                 scope.show_tooltip(100, 0.9, detailstext, d3.event.pageX + 30, d3.event.pageY - 60);
                             }
                             else {
@@ -584,37 +565,10 @@ define([
                             });
                             scope.selectedNode = selected_node.name;
                         };                        
-                    }                   
-
-                    //function linkArc2(d) {
-                    //    if (scope.panel.direction === "directed") {
-                    //        //if the the grapgh is directed, the links are drawn as curved lines
-                    //        var sx = d.source.x;
-                    //        var sy = d.source.y;
-                    //        var tx = d.target.x;
-                    //        var ty = d.target.y;
-                    //        var nodeRadius;
-                    //        if (node_highlighter == 'outgoing') { nodeRadius = d.target.radius_out / max_radius_out * 10 + 5; }
-                    //        else { nodeRadius = d.target.radius_in / max_radius_in * 10 + 5; }
-                    //        //					var nodeRadius=6;
-                    //        var arrowheadLength = 0;
-                    //        var dx = tx - sx,
-                    //        dy = ty - sy,
-                    //        dr = Math.sqrt(dx * dx + dy * dy);
-                    //        var beta_angle = (nodeRadius + arrowheadLength) / dr; //(2*Math.PI)*nodeRadius/(2*dr*Math.PI);
-                    //        var alpha1_angle = ((Math.PI - beta_angle) / 2) - Math.PI / 3;
-                    //        var alpha2_angle = Math.atan(dx, dy);
-                    //        var target_X = tx - Math.sin(alpha1_angle + alpha2_angle) * (nodeRadius + arrowheadLength);
-                    //        var target_Y = ty;//-Math.cos(alpha1_angle+alpha2_angle)*(nodeRadius + arrowheadLength);
-                    //        return "M" + sx + "," + sy + "A" + dr + "," + dr + " 0 0,1 " + target_X + "," + target_Y;
-                    //    }
-                    //    else {
-                    //        //if graph is undirected, the links are drawn as straight lines
-                    //        return "M" + d.source.x + "," + d.source.y + "A" + 0 + "," + 0 + " 0 0,1 " + d.target.x + "," + d.target.y;
-                    //    }
-                    //}
+                    }                    
 
                     function linkArc(d) {
+                        //console.log("foo " + scope.panel.direction);
                         if (scope.panel.direction === "directed") {
                             //if the the grapgh is directed, the links are drawn as curved lines
                             var sx = d.source.x;
@@ -677,21 +631,23 @@ define([
                     var uniqueNodes = findUniqueNodes(dataset); //is a one dimensional array with all nodes
                     var nodesJSON = createNodeJSON(uniqueNodes);
                     var linksJSON = createLinkJSON(dataset, nodesJSON);
+                    scope.directed_links = linksJSON.directed_links;
+                    scope.undirected_links = linksJSON.undirected_links;
                     
                     nodesJSON.forEach(function (d) {
                         //define the radius_in and radius_out for each node
                         var nodeIndex = nodesJSON.map(function (e) { return e.name; }).indexOf(d.name);
-                        d.radius_in = aggregateLinks("in", nodeIndex, linksJSON);
-                        d.radius_out = aggregateLinks("out", nodeIndex, linksJSON);
+                        d.radius_in = aggregateLinks("in", nodeIndex, scope.directed_links);
+                        d.radius_out = aggregateLinks("out", nodeIndex, scope.directed_links);
+                        d.radius_total = d.radius_in + d.radius_out;
                     });
 
                     scope.uniqueNodes = nodesJSON; //format: name, radius_out, radius_in, color
-
-                    //console.log(scope.uniqueNodes);
-                    //console.log(scope.links);
-                    //console.log(scope.aggregatedLinks);
-
-                    return { nodes: nodesJSON, links: linksJSON };
+                    
+                    if(scope.panel.direction==="directed")
+                        return { nodes: nodesJSON, links: scope.directed_links };
+                    else
+                        return { nodes: nodesJSON, links: scope.undirected_links };
                                        
                     function aggregateLinks(aggregateType, nodeIndex, linksJSON) {
                         //aggregateType can be 'in' or 'out'. If 'in' all incoming values are aggregated, if 'out' all outgoing values are aggregated
@@ -730,6 +686,7 @@ define([
                                 "name": d,
                                 "radius_out": null,
                                 "radius_in": null,
+                                "radius_total": null,
                                 "color": colorcode
                             }
                             k = k + 1;
@@ -739,7 +696,7 @@ define([
                     }
 
                     function createLinkJSON(dataset, nodes) {   //creates a JSON file for all links, with the attributes: source, target, and value
-                        var links = []; //creates array with several objects of the links
+                        var directed_links = []; //creates array with several objects of the links
                         dataset.forEach(function (d) {
                             var object = {  //create an object for each link with the index of the node (NOT the name)
                                 "relation": d.label,
@@ -748,15 +705,23 @@ define([
                                 "target": nodes.map(function (e) { return e.name; }).indexOf(scope.seperateRelation(d.label)[1]),
                                 "value": d.data
                             }
-                            links.push(object);
-                        }); //format: relation, source, target, color, value
+                            directed_links.push(object);
+                        }); //format: relation, source, target, color, 
+
+                        //Create a copy of the directed links as a new array with the objects
+                        var undirected_links=[];
+                        directed_links.forEach(function (d) {
+                            var obj = _.clone(d);
+                            undirected_links.push(obj);
+                        })
+
                         if (scope.panel.direction === "directed") {
                             //the links are not aggregated. Values for A->B and B->A stay seperate records
-                            return links;
+                            return { directed_links: directed_links, undirected_links: undirected_links };
                         }
                         else {
                             //we summarize the links, so that two relations like A->B and B->A are summarized to A->B
-                            links.forEach(function (d) {
+                            undirected_links.forEach(function (d) {
                                 if (nodesJSON[d.source].name < nodesJSON[d.target].name) { }
                                 else {
                                     var help = d.source;
@@ -765,7 +730,7 @@ define([
                                     d.relation = nodesJSON[d.source].name + "" + scope.panel.seperator + "" + nodesJSON[d.target].name
                                 }
                             })
-                            links.sort(function (a, b) {
+                            undirected_links.sort(function (a, b) {
                                 if (a.relation < b.relation)
                                     return -1;
                                 if (a.relation > b.relation)
@@ -773,7 +738,7 @@ define([
                                 return 0;
                             })
 
-                            var links = _.chain(links)
+                            var undirected_links = _.chain(undirected_links)
                                 .groupBy("relation")
                                 .map(function (value, key) {
                                     return {
@@ -786,8 +751,7 @@ define([
                                 })
                                 .value();
 
-                            //scope.aggregatedLinks = links; //scope variable where values from records with interchanges sources and targets are aggregated
-                            return links; //format: relation, source, target, color, value
+                            return { directed_links: directed_links, undirected_links: undirected_links };//format: relation, source, target, color, value
                         }
                     }
 

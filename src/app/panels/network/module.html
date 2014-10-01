@@ -38,28 +38,16 @@
                 display: table-row;
             }
 
-            div.tooltip {
-                position: absolute;
+            div.details {
                 text-align: left;
                 padding: 2px;
                 color: white;
                 font: 12px sans-serif;
-                background: black;
+                background: none;
                 border: 0px;
                 border-radius: 8px;
                 pointer-events: none;
             }
-        div.details {
-            position: absolute;
-            text-align: left;
-            padding: 2px;
-            color: black;
-            font: 12px sans-serif;
-            background: white;
-            border: 0px;
-            border-radius: 8px;
-            pointer-events: none;
-        }
     </style>
 
     <div class="network-wrapper">
@@ -77,6 +65,7 @@
             <!-- horizontal legend above -->
             <span class="small" ng-show="panel.arrangement == 'horizontal'" ng-repeat="term in data" style="float:left;padding-left: 10px;">
                 <span>
+                    <!--<div class="icon-circle" style="display:inline-block;color:#8E388E;font-size:15px"></div>-->
                     <i class="icon-circle" ng-style="{color:term.color}"></i>
                     <span class="network-legend-term">{{term.label}}</span> ({{term.data}})
                 </span>
@@ -88,7 +77,7 @@
         </div>
 
         <!-- CHART -->
-        <div id="networkGraphic" ng-show="true" network-chart params="{{panel}}" style="position:relative" class="pointer network-chart">
+        <div ng-show="true" network-chart params="{{panel}}" style="position: relative; text-align: center" class="pointer network-chart">
 
         </div>
 
@@ -115,6 +104,14 @@
             <div style="clear:both"></div>
         </div>
         
+        <!-- LEGEND -->
+        <!--<div class="details" ng-show="true" id='details'>
+             vertical legend below 
+            HABAHA
+            
+            <div style="clear:both"></div>
+        </div>-->
+
     </div>
     <div id="details" ng-show="true" class="details">
         

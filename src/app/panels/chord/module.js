@@ -371,7 +371,7 @@ define([
 
                     // Receive render events
                     scope.$on('render', function () {
-                        render_panel();
+                        render_panel(elem);
                     });
 
                     function build_results() {
@@ -388,7 +388,7 @@ define([
                     }
 
                     // Function for rendering panel
-                    function render_panel() {
+                    function render_panel(elem) {
                         var chartData;
 
                         build_results();
@@ -399,27 +399,32 @@ define([
                         // Make a clone we can operate on.
                         chartData = _.clone(scope.data);
 
-                        createChordDiagram(scope, chartData);
+                        createChordDiagram(scope, chartData,elem);
                     }
                 }
             };
 
-            function createChordDiagram(scope, dataset) {
-                $('#chordGraphic').empty();  //removes all elements from the div with the id 'chordGraphic'
-
+            function createChordDiagram(scope, dataset, elem) {
+                $(elem[0]).empty();  //removes all elements from the div with the id 'chordGraphic'
                 //Define Website Layout
-                var width = 560,
-                    height = 500,
+                var width = Math.min(parseInt(scope.row.height.replace("px", ""))-10, window.screen.availWidth / 12 * scope.panel.span - 50),
+                    height = width,
                     innerRadius = Math.min(width, height) * .41,
                     outerRadius = innerRadius * 1.12;
 
                 //Define where the svg will be and how it will look like
-                var svg = d3.select("#chordGraphic").append("svg")
+                var svg = d3.select(elem[0]).append("svg")
                         .attr("width", width)
                         .attr("height", height)
                         //.attr("style", "outline: thin solid black")
                         .append("g")
                         .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+                //var svg = d3.select("#chordGraphic").append("svg")
+                //        .attr("width", width)
+                //        .attr("height", height)
+                //        //.attr("style", "outline: thin solid black")
+                //        .append("g")
+                //        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
                 var dataset = prepareDataset(dataset);
                 var uniqueNodes = dataset.nodes;
                 var chordMatrix = dataset.matrix;
