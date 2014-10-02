@@ -56,11 +56,11 @@ define([
                 */
                 field   : '_type',
                 /** @scratch /panels/network/5
-                * exclude:: network to exclude from the results
+                * exclude:: terms to exclude from the results for creating the network
                 */
                 exclude : [],
                 /** @scratch /panels/network/5
-                * size:: Show this many network
+                * size:: Show this many terms
                 */
                 size: 10,
                 /** @scratch /panels/chord/5
@@ -123,13 +123,15 @@ define([
             _.defaults($scope.panel, _d);
 
             $scope.init = function () {
-                console.log("First Start");
-                console.log($scope.panel);
-
+                //console.log("First Start");
+                //console.log($scope.panel);
+                //console.log("Initializing: "+$scope.panel.field+" "+$scope.panel.size+" "+$scope.panel.seperator+" "+$scope.panel.order+" "+$scope.panel.arrangement+" "+$scope.panel.counter_pos
+                //    +" "+$scope.panel.nodesize+" "+$scope.panel.tooltipsetting+" "+$scope.panel.colorcode+" "+$scope.panel.direction+" "+$scope.panel.charge);
+                
                 $scope.hits = 0;    //This is just done when the page is first started
                 $scope.$on('refresh', function () {
-                    console.log("There were some chnages");
-                    console.log($scope.panel);
+                    //console.log("There were some chnages");
+                    //console.log($scope.panel);
                     //this part of the code is done if the refresh symbol in the header is clicked
                     $scope.get_data();
                 });
@@ -199,7 +201,7 @@ define([
             };
 
             $scope.build_search = function (nodeName) {
-                //This function filters the result. If you click on a node (border segment of the circle), just the Connections to and from this node are shown
+                //This function filters the result. If you click on a node just the Connections to and from this node are shown
                 var queryterm = "";
                 $scope.data.forEach(function (d) {
                     if (d.label.indexOf(nodeName) > -1) {
@@ -221,24 +223,7 @@ define([
                 var splittedRelation = text.split($scope.panel.seperator);
                 return splittedRelation;
             }
-
-            //$scope.get_details = function (nodeName) {
-            //    var links = [];
-            //    $scope.links.forEach(function (d) {
-            //        if (d.relation.indexOf(nodeName) > -1) {
-            //            links.push(d);
-            //        }
-            //    })
-            //    links.sort(function (a, b) {
-            //        if (a.relation < b.relation)
-            //            return -1;
-            //        if (a.relation > b.relation)
-            //            return 1;
-            //        return 0;
-            //    })
-            //    return links;
-            //}
-
+            
             $scope.get_detailsOnNode = function (nodeID) {
                 var nodeName = $scope.uniqueNodes[nodeID].name;
                 var links = [];
@@ -308,13 +293,12 @@ define([
             };
             
             $scope.show_tooltip = function (duration, opacity, text, pos_left, pos_top) {
-                //$scope.tooltip = d3.select("#details");
                 $scope.tooltip.transition()
                     .duration(duration)
                     .style("opacity", opacity);
                 $scope.tooltip.html(text);
-                //$scope.tooltip.style("left", pos_left + "px")
-                //    .style("top", pos_top + "px");
+                $scope.tooltip.style("left", pos_left + "px")
+                    .style("top", pos_top + "px");
             }
 
             $scope.hide_tooltip = function (duration, opacity) {
@@ -366,8 +350,7 @@ define([
             };
 
             function createNetworkDiagram(scope, dataset, elem) {
-                $(elem[0]).empty();  //removes all elements from the div with the id 'graphic'
-                //console.log(scope.panel.direction);
+                $(elem[0]).empty();  //removes all elements from the current element
                 var dataset, svg, force,
                     margin = { top: -5, right: -5, bottom: -5, left: -5 },
 				max_value = 0,
@@ -384,24 +367,20 @@ define([
                 //Define the required layout
                 svg = d3.select(elem[0])
                     .append("svg")
+                    //.attr("style", "outline: thin solid green;")
                     .attr("width", frame_width)
                     .attr("height", frame_height);
-
-
 
                 force = d3.layout.force()
                     .gravity(0)
                     .charge(scope.panel.charge)
                     .linkDistance(200)
-//                  .linkDistance(function(d) { return radius(d.source.size) + radius(d.target.size) + 20; }) //linkdistance can be individual
                     .size([frame_width, frame_height]);
 
                 //define tooltip
-                scope.tooltip = d3.select("#details")
+                scope.tooltip = d3.select("body").append("div")
+                    .attr("class", "tooltip")
                     .style("opacity", 0);
-                //scope.tooltip = d3.select("body").append("div")
-                //    .attr("class", "tooltip")
-                //    .style("opacity", 0);
 
                 //Build the network                        
                 dataset = prepareDataset(dataset); //before invoking this function the dataset is the the data how it came from the datastore
@@ -543,11 +522,10 @@ define([
                         return function (selected_node) {
                             var details = scope.get_detailsOnNode(selected_node.index);
                             //show tooltip when hovering over node
-                            var detailstext = "<h4>"+selected_node.name + "</h4><span>"
+                            var detailstext = "<h4>"+selected_node.name + "</h4>"
                             details.forEach(function (d) {
-                                detailstext = detailstext + "<span>" + (kbn.query_color_dot(d.source_color, 15) + kbn.query_color_dot(d.target_color, 15) + ' ' + d.label + " (" + d.data + ") </span>");
+                                detailstext = detailstext + "" + (kbn.query_color_dot(d.source_color, 15) + kbn.query_color_dot(d.target_color, 15) + ' ' + d.label + " (" + d.data + ") <br/>");
                             })
-                            detailstext = detailstext + "</span>";
                             if (scope.panel.tooltipsetting && opacity < 1) {
                                 scope.show_tooltip(100, 0.9, detailstext, d3.event.pageX + 30, d3.event.pageY - 60);
                             }
@@ -569,6 +547,8 @@ define([
 
                     function linkArc(d) {
                         //console.log("foo " + scope.panel.direction);
+                    //    console.log("In the func: " + scope.panel.field + " " + scope.panel.size + " " + scope.panel.seperator + " " + scope.panel.order + " " + scope.panel.arrangement + " " + scope.panel.counter_pos
+                    //+ " " + scope.panel.nodesize + " " + scope.panel.tooltipsetting + " " + scope.panel.colorcode + " " + scope.panel.direction + " " + scope.panel.charge);
                         if (scope.panel.direction === "directed") {
                             //if the the grapgh is directed, the links are drawn as curved lines
                             var sx = d.source.x;
@@ -576,32 +556,39 @@ define([
                             var tx = d.target.x;
                             var ty = d.target.y;
 
-                            var nodeRadius;
-                            if (node_highlighter == 'outgoing') { nodeRadius = d.target.radius_out / max_radius_out * 10 + 5; }
-                            else { nodeRadius = d.target.radius_in / max_radius_in * 10 + 5; }
+                            var source_nodeRadius;
+                            var target_nodeRadius;
+                            if (node_highlighter == 'outgoing') {
+                                source_nodeRadius = d.source.radius_out / max_radius_out * 10 + 5;
+                                target_nodeRadius = d.target.radius_out / max_radius_out * 10 + 5;
+                            }
+                            else {
+                                source_nodeRadius = d.source.radius_in / max_radius_in * 10 + 5;
+                                target_nodeRadius = d.target.radius_in / max_radius_in * 10 + 5;
+                            }
 
                             if (sx > tx && sy > ty) { //target top left of source
-                                sx = sx - nodeRadius+10;
+                                sx = sx - source_nodeRadius;
                                 sy = sy;
                                 tx = tx;
-                                ty = ty + nodeRadius;
+                                ty = ty + target_nodeRadius;
                             }
                             if (sx < tx && sy > ty) { //target top right of source
                                 sx = sx;
-                                sy = sy - nodeRadius+10;
-                                tx = tx - nodeRadius;
+                                sy = sy - source_nodeRadius;
+                                tx = tx - target_nodeRadius;
                                 ty = ty;
                             }
                             if (sx < tx && sy < ty) { //target bottom right of source
-                                sx = sx + nodeRadius-10;
+                                sx = sx + source_nodeRadius;
                                 sy = sy;
                                 tx = tx;
-                                ty = ty - nodeRadius;
+                                ty = ty - target_nodeRadius;
                             }
                             if (sx > tx && sy < ty) { //target bottom left of source
                                 sx = sx;
-                                sy = sy + nodeRadius-10;
-                                tx = tx + nodeRadius;
+                                sy = sy + source_nodeRadius;
+                                tx = tx + target_nodeRadius;
                                 ty = ty;
                             }
 

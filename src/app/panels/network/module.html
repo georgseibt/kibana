@@ -65,7 +65,6 @@
             <!-- horizontal legend above -->
             <span class="small" ng-show="panel.arrangement == 'horizontal'" ng-repeat="term in data" style="float:left;padding-left: 10px;">
                 <span>
-                    <!--<div class="icon-circle" style="display:inline-block;color:#8E388E;font-size:15px"></div>-->
                     <i class="icon-circle" ng-style="{color:term.color}"></i>
                     <span class="network-legend-term">{{term.label}}</span> ({{term.data}})
                 </span>
@@ -77,11 +76,9 @@
         </div>
 
         <!-- CHART -->
-        <div ng-show="true" network-chart params="{{panel}}" style="position: relative; text-align: center" class="pointer network-chart">
+        <div ng-show="true" network-chart params="{{panel}}" style="position: relative; text-align: center;" class="pointer network-chart">
 
         </div>
-
-        
 
         <!-- LEGEND -->
         <div class="network-legend" ng-show="panel.counter_pos == 'below'" id='{{$id}}-legend'>
@@ -103,17 +100,6 @@
             </span>
             <div style="clear:both"></div>
         </div>
-        
-        <!-- LEGEND -->
-        <!--<div class="details" ng-show="true" id='details'>
-             vertical legend below 
-            HABAHA
-            
-            <div style="clear:both"></div>
-        </div>-->
-
     </div>
-    <div id="details" ng-show="true" class="details">
-        
-    </div>
+    
 </div>

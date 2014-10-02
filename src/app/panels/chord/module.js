@@ -206,24 +206,6 @@ define([
                 return splittedRelation;
             }
 
-            //$scope.get_details2 = function (nodeName) {
-
-            //    var links = [];
-            //    $scope.data.forEach(function (d) {
-            //        if (d.label.indexOf(nodeName) > -1) {                        
-            //            links.push(d);
-            //        }
-            //    })
-            //    links.sort(function (a, b) {
-            //        if (a.label < b.label)
-            //            return -1;
-            //        if (a.label > b.label)
-            //            return 1;
-            //        return 0;
-            //    })
-            //    return links;
-            //}
-
             $scope.get_detailsOnNode = function (nodeID) {
                 var nodeName=$scope.uniqueNodes[nodeID].name;
                 var links = [];
@@ -281,56 +263,6 @@ define([
                     return object;
                 }
             }
-
-            //$scope.get_details = function (nodeName) {
-            //    var links = [];
-            //    if ($scope.panel.direction === "directed") {
-            //        return $scope.get_details2(nodeName);
-            //    }
-            //    else {
-            //        var node = $scope.uniqueNodes.filter(function (obj) {
-            //            return obj.name === nodeName;
-            //        });
-            //        var nodeNumber = $scope.uniqueNodes.indexOf(node[0]);
-            //        for (var count = 0; count < $scope.chordMatrix.length; count++) {
-            //            var label = $scope.uniqueNodes[nodeNumber].name + $scope.panel.seperator + $scope.uniqueNodes[count].name;
-            //            var obj = $scope.data.filter(function (obj) {
-            //                return obj.label === label;
-            //            });                        
-            //            if ($scope.chordMatrix[nodeNumber][count] === 0) {
-            //                //There is no data for this connection
-            //            }
-            //            if (($scope.chordMatrix[nodeNumber][count] > 0) && (obj.length)) {
-            //                var object = {
-            //                    "label": obj[0].label,
-            //                    "color": obj[0].color,
-            //                    "data": $scope.chordMatrix[nodeNumber][count]
-            //                }
-            //                links.push(object);
-            //            }
-            //            if (($scope.chordMatrix[nodeNumber][count] > 0) && (!obj.length)) {
-            //                var obj = $scope.data.filter(function (obj) {
-            //                    return obj.label === $scope.uniqueNodes[count].name + $scope.panel.seperator + $scope.uniqueNodes[nodeNumber].name;
-            //                });
-            //                var object = {
-            //                    "label": obj[0].label,
-            //                    "color": obj[0].color,
-            //                    "data": $scope.chordMatrix[nodeNumber][count]
-            //                }
-            //                links.push(object);   
-            //            }  
-            //        }
-            //        links.sort(function (a, b) {
-            //            if (a.label < b.label)
-            //                return -1;
-            //            if (a.label > b.label)
-            //                return 1;
-            //            return 0;
-            //        })
-            //        return links;
-            //        return (links);
-            //    }
-            //}
             
             $scope.set_refresh = function (state) {
                 //This function is executed if some changes are done in the editor
@@ -419,12 +351,6 @@ define([
                         //.attr("style", "outline: thin solid black")
                         .append("g")
                         .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
-                //var svg = d3.select("#chordGraphic").append("svg")
-                //        .attr("width", width)
-                //        .attr("height", height)
-                //        //.attr("style", "outline: thin solid black")
-                //        .append("g")
-                //        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
                 var dataset = prepareDataset(dataset);
                 var uniqueNodes = dataset.nodes;
                 var chordMatrix = dataset.matrix;
@@ -450,15 +376,36 @@ define([
                     .attr("d", arc)
                     .style("fill", function (d) { return uniqueNodes[d.index].color; })
                     .style("stroke", function (d) { return uniqueNodes[d.index].color; })
-                    .attr("id", function (d, i) { return "group-" + d.index });;
+                    .attr("id", function (d, i) { return "group-" + elem[0].id + "" + d.index });;
 
                 g.append("svg:text")    //name label of node in the outer circle segment
-                        .attr("dx", 10) //larger number puts the label farer away from the border
-                        .attr("dy", 15)
+                        .attr("dx", function (d) {
+                            if (d.endAngle - d.startAngle < 0.01)
+                                return 0;
+                            else
+                                return 10
+                        }) //larger number puts the label farer away from the border
+                        .attr("dy", function (d) {
+                            if (d.endAngle - d.startAngle < 0.01)
+                                return 3;
+                            else
+                                return 15
+                        })
                         .style("fill", "white")
                         .append("svg:textPath")
-                        .attr("xlink:href", function (d) { return "#group-" + d.index; })
-                        .text(function (d) { return uniqueNodes[d.index].name; });
+                        .attr("xlink:href", function (d) { return "#group-" + elem[0].id + "" + d.index; })
+                        .text(function (d) {
+                            var segmentlength = 2 * outerRadius * Math.PI * ((d.endAngle - d.startAngle) / 2 / Math.PI);
+                            if (d.endAngle - d.startAngle < 0.01 || segmentlength < uniqueNodes[d.index].name.length * 15) {
+                                var countchar = (segmentlength - (segmentlength % 15)) / 15; //says how many characters can be shown theoretically (Assumption: a character needs 15px)
+                                if (countchar <= 0)
+                                    return (null);
+                                else
+                                    return (uniqueNodes[d.index].name.slice(0, Math.max(0,countchar-1)) + "...");
+                            }
+                            else
+                                return uniqueNodes[d.index].name;
+                        });
 
                 var ticks = g.selectAll("g")
                         .data(groupTicks)
@@ -469,16 +416,22 @@ define([
                         });
 
                 ticks.append("line")    //small lines (scale) on the outside of the outer circle segment
-                    .attr("x1", 1)
+                    //every fifth tick is shown. If more ticks should be shown, the value of d.show can be changed in the fundtion groupTicks()
+                    .attr("x1", function (d) {
+                        return d.show ? 1 : 0;
+                    })
                     .attr("y1", 0)
-                    .attr("x2", 5)
+                    .attr("x2", function (d) {
+                        return d.show ? 5 : 0;
+                    })
                     .attr("y2", 0)
-                    .attr("class","ticks");
+                    .attr("class", "ticks");
 
                 ticks.append("text")    //small text (scale) on the outside of the outer circle segment
                     .attr("x", 8)
                     .attr("dy", ".35em")
-                    .attr("class","ticks")
+                    .attr("class", "ticks")
+                    .style("font", "8px sans-serif")
                     .attr("transform", function (d) {
                         // Beschriftung drehen wenn Kreiswinkel > 180�
                         return d.angle > Math.PI ? "rotate(180)translate(-16)" : null;
@@ -548,7 +501,8 @@ define([
                     return d3.range(0, d.value, 1).map(function (v, i) {
                         return {
                             angle: v * k + d.startAngle,
-                            label: i % 5 != 0 ? null : v 
+                            show: i%5 != 0 ? false: true,
+                            label: i % 10 != 0 ? null : v 
                         };
                     });
                 }
