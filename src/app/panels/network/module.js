@@ -56,7 +56,7 @@ define([
                 */
                 field   : '_type',
                 /** @scratch /panels/network/5
-                * exclude:: terms to exclude from the results for creating the network
+                * exclude:: terms to exclude from the results
                 */
                 exclude : [],
                 /** @scratch /panels/network/5
@@ -70,29 +70,27 @@ define([
                 */
                 seperator: '-',
                 /** @scratch /panels/network/5
-                * order:: In network mode: count, term, reverse_count or reverse_term,
-                * in network_stats mode: term, reverse_term, count, reverse_count,
-                * total, reverse_total, min, reverse_min, max, reverse_max, mean or reverse_mean
+                * order:: How the terms are sorted: count, term, reverse_count or reverse_term,
                 */
                 order   : 'count',
                 /** @scratch /panels/network/5
-                * arrangement:: In bar or pie mode, arrangement of the legend. horizontal or vertical
+                * arrangement:: Arrangement of the legend: horizontal or vertical
                 */
                 arrangement : 'horizontal',
                 /** @scratch /panels/network/5
-                * counter_pos:: The location of the legend in respect to the chart, above, below, or none.
+                * counter_pos:: The location of the legend in respect to the diagram: above, below, or none.
                 */
                 counter_pos: 'above',
                 /** @scratch /panels/network/5
-                * nodesize:: In bar or pie mode, arrangement of the legend. horizontal or vertical
+                * nodesize:: Indicates if the size of the nodes (radius) should be proportional to the incoming, outgoing ot total number of edges
                 */
                 nodesize: 'outgoing',
                 /** @scratch /panels/network/5
-                * tooltips:: In bar or pie mode, arrangement of the legend. horizontal or vertical
+                * tooltipsetting:: Indicates if tooltips should be shown if the user hovers over a segment or chord
                 */
                 tooltipsetting: 'true',
                 /** @scratch /panels/network/5
-                * colorcode:: In bar or pie mode, arrangement of the legend. horizontal or vertical
+                * colorcode:: Indicates if the nodes should be coloured or black-white
                 */
                 colorcode: 'coloured',
                 /** @scratch /panels/network/5
@@ -122,20 +120,13 @@ define([
 
             _.defaults($scope.panel, _d);
 
-            $scope.init = function () {
-                //console.log("First Start");
-                //console.log($scope.panel);
-                //console.log("Initializing: "+$scope.panel.field+" "+$scope.panel.size+" "+$scope.panel.seperator+" "+$scope.panel.order+" "+$scope.panel.arrangement+" "+$scope.panel.counter_pos
-                //    +" "+$scope.panel.nodesize+" "+$scope.panel.tooltipsetting+" "+$scope.panel.colorcode+" "+$scope.panel.direction+" "+$scope.panel.charge);
-                
-                $scope.hits = 0;    //This is just done when the page is first started
+            $scope.init = function () {                
+                $scope.hits = 0;    //This is just executed when the page is first started
                 $scope.$on('refresh', function () {
-                    //console.log("There were some chnages");
-                    //console.log($scope.panel);
-                    //this part of the code is done if the refresh symbol in the header is clicked
+                    //this part of the code is executed if the refresh symbol in the header is clicked
                     $scope.get_data();
                 });
-                $scope.get_data();  //This is done when the page is started
+                $scope.get_data();  //This is executed when the page is started
             };
 
             $scope.get_data = function () {
@@ -219,64 +210,6 @@ define([
                 });
             };
 
-            $scope.seperateRelation = function (text) {
-                var splittedRelation = text.split($scope.panel.seperator);
-                return splittedRelation;
-            }
-            
-            $scope.get_detailsOnNode = function (nodeID) {
-                var nodeName = $scope.uniqueNodes[nodeID].name;
-                var links = [];
-
-                $scope.data.forEach(function (d) {
-                    if (d.label.indexOf(nodeName) > -1) {
-                        var object = {
-                            "source_color": $scope.uniqueNodes.filter(function (obj) {
-                                return obj.name === $scope.seperateRelation(d.label)[0]; //=sourceName
-                            })[0].color,
-                            "target_color": $scope.uniqueNodes.filter(function (obj) {
-                                return obj.name === $scope.seperateRelation(d.label)[1]; //=targetName
-                            })[0].color,
-                            "label": d.label,
-                            "data": d.data,
-                            "sum": 0
-                        }
-                        links.push(object);
-                    }
-                })
-                links.sort(function (a, b) {
-                    if (a.label < b.label)
-                        return -1;
-                    if (a.label > b.label)
-                        return 1;
-                    return 0;
-                })
-                return links;
-            }
-
-            $scope.get_detailsOnChord = function (sourceID, targetID) {
-                var obj = $scope.data.filter(function (obj) {
-                    return obj.label === $scope.uniqueNodes[sourceID].name + $scope.panel.seperator + $scope.uniqueNodes[targetID].name;
-                });
-                if (typeof obj[0] === 'undefined') {
-                    return null;
-                }
-                else {
-                    var source_color = $scope.uniqueNodes[sourceID].color;
-                    var target_color = $scope.uniqueNodes[targetID].color;
-                    var label = $scope.uniqueNodes[sourceID].name + "" + $scope.panel.seperator + "" + $scope.uniqueNodes[targetID].name;
-
-                    var data = obj[0].data;
-                    var object = {
-                        "source_color": source_color,
-                        "target_color": target_color,
-                        "label": label,
-                        "data": data
-                    }
-                    return object;
-                }
-            }
-
             $scope.set_refresh = function (state) {
                 //This function is executed if some changes are done in the editor
                 $scope.refresh = state;
@@ -291,21 +224,6 @@ define([
                 $scope.refresh = false;
                 $scope.$emit('render');
             };
-            
-            $scope.show_tooltip = function (duration, opacity, text, pos_left, pos_top) {
-                $scope.tooltip.transition()
-                    .duration(duration)
-                    .style("opacity", opacity);
-                $scope.tooltip.html(text);
-                $scope.tooltip.style("left", pos_left + "px")
-                    .style("top", pos_top + "px");
-            }
-
-            $scope.hide_tooltip = function (duration, opacity) {
-                $scope.tooltip.transition()
-                    .duration(duration)
-                    .style("opacity", opacity);
-            }
         });
 
         module.directive('networkChart', function (querySrv) {
@@ -318,19 +236,6 @@ define([
                     scope.$on('render', function () {
                         render_panel(elem);
                     });
-
-                    function build_results() {
-                        var k = 0;
-                        //the result data (the data how we need them to draw the network diagram are now saved in the array 'scope.data'
-                        scope.data = [];
-                        _.each(scope.results.facets.terms.terms, function (v) {
-                            var slice;
-                            slice = { label: v.term, data: v.count, color: querySrv.colors[k] };
-                            
-                            scope.data.push(slice);
-                            k = k + 1;
-                        });
-                    }
 
                     // Function for rendering panel
                     function render_panel(elem) {
@@ -346,6 +251,19 @@ define([
 
                         createNetworkDiagram(scope, chartData, elem);
                     }
+
+                    function build_results() {
+                        var k = 0;
+                        //the result data (the data how we need them to draw the network diagram are now saved in the array 'scope.data'
+                        scope.data = [];
+                        _.each(scope.results.facets.terms.terms, function (v) {
+                            var slice;
+                            slice = { label: v.term, data: v.count, color: querySrv.colors[k] };
+                            
+                            scope.data.push(slice);
+                            k = k + 1;
+                        });
+                    }
                 }
             };
 
@@ -357,8 +275,8 @@ define([
 				max_radius_out = 0,
 				max_radius_in = 0,
 				max_radius_total = 0,
-				frame_width = Math.min(parseInt(scope.row.height.replace("px", "")), window.screen.availWidth / 12 * scope.panel.span - 50),
-				frame_height = frame_width,
+				frame_width = window.screen.availWidth / 12 * scope.panel.span - 50,
+				frame_height = parseInt(scope.row.height.replace("px", "")),
 				node_radius = 5,
 				arrowhead_length = 10,
 				node_highlighter = scope.panel.nodesize,
@@ -367,7 +285,6 @@ define([
                 //Define the required layout
                 svg = d3.select(elem[0])
                     .append("svg")
-                    //.attr("style", "outline: thin solid green;")
                     .attr("width", frame_width)
                     .attr("height", frame_height);
 
@@ -436,9 +353,9 @@ define([
                             //show tooltip when hovering over chords
                             var detailstext = "";
                             var details = [];
-                            details.push(scope.get_detailsOnChord(d.source.index, d.target.index));
+                            details.push(get_detailsOnChord(d.source.index, d.target.index));
                             if (scope.panel.direction != "directed")
-                                details.push(scope.get_detailsOnChord(d.target.index, d.source.index));
+                                details.push(get_detailsOnChord(d.target.index, d.source.index));
 
                             //creation of detailstext for the directed graph
                             var sum = 0;
@@ -452,11 +369,11 @@ define([
                                 detailstext = detailstext + 'Sum: ' + sum;
                             }
                             if (scope.panel.tooltipsetting) {
-                                scope.show_tooltip(100, 0.9, detailstext, d3.event.pageX + 30, d3.event.pageY);
+                                show_tooltip(100, 0.9, detailstext, d3.event.pageX + 15, d3.event.pageY);
                             }
                         })
                         .on("mouseout", function (d) {
-                            scope.hide_tooltip(100, 0);
+                            hide_tooltip(100, 0);
                         });
                     if (scope.panel.direction === "directed") {
                         path.attr("marker-end", "url(#end)");
@@ -476,7 +393,7 @@ define([
                             if (!d3.event.ctrlKey) //node is only filtered if ctrl Key is NOT pressed
                                 scope.build_search(d.name);
 
-                            scope.hide_tooltip(100, 0);
+                            hide_tooltip(100, 0);
                         })
                         .call(force.drag);
 
@@ -502,8 +419,11 @@ define([
                         .text(function (d) { return d.name; });
 
                     // add the curvy lines
+                    scope.direction = scope.panel.direction;
                     function tick() {
-                        path.attr("d", linkArc);
+                        path.attr("d", function (d) {
+                            return linkArc(d, scope.direction);
+                        });
                         node.attr("cx", function (d) { return d.x = Math.max(50, Math.min(frame_width - 50, d.x)); })   //guarantees that the nodes are always 50px away from the border
                             .attr("cy", function (d) { return d.y = Math.max(50, Math.min(frame_height - 50, d.y)); }); //guarantees that the nodes are always 50px away from the border
                         node.attr("transform", transform);
@@ -520,17 +440,17 @@ define([
                         are connected the node and the connection between the nodes stay visible.
                         */
                         return function (selected_node) {
-                            var details = scope.get_detailsOnNode(selected_node.index);
+                            var details = get_detailsOnNode(selected_node.index);
                             //show tooltip when hovering over node
                             var detailstext = "<h4>"+selected_node.name + "</h4>"
                             details.forEach(function (d) {
                                 detailstext = detailstext + "" + (kbn.query_color_dot(d.source_color, 15) + kbn.query_color_dot(d.target_color, 15) + ' ' + d.label + " (" + d.data + ") <br/>");
                             })
                             if (scope.panel.tooltipsetting && opacity < 1) {
-                                scope.show_tooltip(100, 0.9, detailstext, d3.event.pageX + 30, d3.event.pageY - 60);
+                                show_tooltip(100, 0.9, detailstext, d3.event.pageX + 15, d3.event.pageY);
                             }
                             else {
-                                scope.hide_tooltip(100, 0);
+                                hide_tooltip(100, 0);
                             }
                             node.style("stroke-opacity", function (connected_nodes) {
                                 var thisOpacity = isConnected(selected_node, connected_nodes) ? 1 : opacity;
@@ -545,11 +465,8 @@ define([
                         };                        
                     }                    
 
-                    function linkArc(d) {
-                        //console.log("foo " + scope.panel.direction);
-                    //    console.log("In the func: " + scope.panel.field + " " + scope.panel.size + " " + scope.panel.seperator + " " + scope.panel.order + " " + scope.panel.arrangement + " " + scope.panel.counter_pos
-                    //+ " " + scope.panel.nodesize + " " + scope.panel.tooltipsetting + " " + scope.panel.colorcode + " " + scope.panel.direction + " " + scope.panel.charge);
-                        if (scope.panel.direction === "directed") {
+                    function linkArc(d, direction) {
+                        if (direction === "directed") {
                             //if the the grapgh is directed, the links are drawn as curved lines
                             var sx = d.source.x;
                             var sy = d.source.y;
@@ -688,8 +605,8 @@ define([
                             var object = {  //create an object for each link with the index of the node (NOT the name)
                                 "relation": d.label,
                                 "color": d.color,
-                                "source": nodes.map(function (e) { return e.name; }).indexOf(scope.seperateRelation(d.label)[0]),
-                                "target": nodes.map(function (e) { return e.name; }).indexOf(scope.seperateRelation(d.label)[1]),
+                                "source": nodes.map(function (e) { return e.name; }).indexOf(seperateRelation(d.label)[0]),
+                                "target": nodes.map(function (e) { return e.name; }).indexOf(seperateRelation(d.label)[1]),
                                 "value": d.data
                             }
                             directed_links.push(object);
@@ -747,7 +664,7 @@ define([
 
                         dataset.forEach(function (d) {
                             //seperates all nodes and stores them in the array 'nodes'
-                            scope.seperateRelation(d.label).forEach(function (d) {
+                            seperateRelation(d.label).forEach(function (d) {
                                 nodes.push(d);
                             });
                         });
@@ -759,6 +676,79 @@ define([
                     function onlyUnique(value, index, self) {
                         return self.indexOf(value) === index;
                     }
+                }
+
+                function seperateRelation(text) {
+                    var splittedRelation = text.split(scope.panel.seperator);
+                    return splittedRelation;
+                }
+
+                function get_detailsOnNode(nodeID) {
+                    var nodeName = scope.uniqueNodes[nodeID].name;
+                    var links = [];
+
+                    scope.data.forEach(function (d) {
+                        if (d.label.indexOf(nodeName) > -1) {
+                            var object = {
+                                "source_color": scope.uniqueNodes.filter(function (obj) {
+                                    return obj.name === seperateRelation(d.label)[0]; //=sourceName
+                                })[0].color,
+                                "target_color": scope.uniqueNodes.filter(function (obj) {
+                                    return obj.name === seperateRelation(d.label)[1]; //=targetName
+                                })[0].color,
+                                "label": d.label,
+                                "data": d.data,
+                                "sum": 0
+                            }
+                            links.push(object);
+                        }
+                    })
+                    links.sort(function (a, b) {
+                        if (a.label < b.label)
+                            return -1;
+                        if (a.label > b.label)
+                            return 1;
+                        return 0;
+                    })
+                    return links;
+                }
+
+                function get_detailsOnChord(sourceID, targetID) {
+                    var obj = scope.data.filter(function (obj) {
+                        return obj.label === scope.uniqueNodes[sourceID].name + scope.panel.seperator + scope.uniqueNodes[targetID].name;
+                    });
+                    if (typeof obj[0] === 'undefined') {
+                        return null;
+                    }
+                    else {
+                        var source_color = scope.uniqueNodes[sourceID].color;
+                        var target_color = scope.uniqueNodes[targetID].color;
+                        var label = scope.uniqueNodes[sourceID].name + "" + scope.panel.seperator + "" + scope.uniqueNodes[targetID].name;
+
+                        var data = obj[0].data;
+                        var object = {
+                            "source_color": source_color,
+                            "target_color": target_color,
+                            "label": label,
+                            "data": data
+                        }
+                        return object;
+                    }
+                }
+
+                function show_tooltip(duration, opacity, text, pos_left, pos_top) {
+                    scope.tooltip.transition()
+                        .duration(duration)
+                        .style("opacity", opacity);
+                    scope.tooltip.html(text);
+                    scope.tooltip.style("left", pos_left + "px")
+                        .style("top", pos_top + "px");
+                }
+
+                    function hide_tooltip(duration, opacity) {
+                    scope.tooltip.transition()
+                        .duration(duration)
+                        .style("opacity", opacity);
                 }
             }
         });

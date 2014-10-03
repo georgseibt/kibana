@@ -8,7 +8,7 @@
  * == chord
  * Status: *Stable*
  *
- * A table, bar chart or pie chart based on the results of an Elasticsearch chord facet.
+ * A chord diagram based on the results of an Elasticsearch terms facet.
  *
  */
 
@@ -57,11 +57,11 @@ define([
                 */
                 field   : '_type',
                 /** @scratch /panels/chord/5
-                * exclude:: chord to exclude from the results
+                * exclude:: terms to exclude from the results
                 */
                 exclude : [],
                 /** @scratch /panels/chord/5
-                * size:: Show this many chord
+                * size:: Show this many terms
                 */
                 size: 10,
                 /** @scratch /panels/chord/5
@@ -71,25 +71,23 @@ define([
                 */
                 seperator   : '-',
                 /** @scratch /panels/chord/5
-                * order:: In chord mode: count, term, reverse_count or reverse_term,
-                * in chord_stats mode: term, reverse_term, count, reverse_count,
-                * total, reverse_total, min, reverse_min, max, reverse_max, mean or reverse_mean
+                * order:: How the terms are sorted: count, term, reverse_count or reverse_term,
                 */
                 order   : 'count',
                 /** @scratch /panels/chord/5
-                * arrangement:: In bar or pie mode, arrangement of the legend. horizontal or vertical
+                * arrangement:: Arrangement of the legend: horizontal or vertical
                 */
                 arrangement : 'horizontal',
                 /** @scratch /panels/chord/5
-                * counter_pos:: The location of the legend in respect to the chart, above, below, or none.
+                * counter_pos:: The location of the legend in respect to the diagram: above, below, or none.
                 */
                 counter_pos: 'above',
                 /** @scratch /panels/network/5
-                * tooltips:: In bar or pie mode, arrangement of the legend. horizontal or vertical
+                * tooltipsetting:: Indicates if tooltips should be shown if the user hovers over a segment or chord
                 */
                 tooltipsetting: 'true',
                 /** @scratch /panels/network/5
-                * direction:: defines if the paths in the network should be directed or undirected
+                * direction:: Defines if the paths in the chorddiagram should be directed or undirected
                 */
                 direction: 'directed',
                 /** @scratch /panels/chord/5
@@ -112,12 +110,12 @@ define([
             _.defaults($scope.panel, _d);
 
             $scope.init = function () {
-                $scope.hits = 0;    //This is just done when the page is first started
+                $scope.hits = 0;    //This is just executed when the page is first started
                 $scope.$on('refresh', function () {
-                    //this part of the code is done if the refresh symbol in the header is clicked
+                    //this part of the code is executed if the refresh symbol in the header is clicked
                     $scope.get_data();
                 });
-                $scope.get_data();  //This is done when the page is started
+                $scope.get_data();  //This is executed when the page is started
             };
 
             $scope.get_data = function () {
@@ -201,69 +199,6 @@ define([
                 });
             };
 
-            $scope.seperateRelation = function (text) {
-                var splittedRelation = text.split($scope.panel.seperator);
-                return splittedRelation;
-            }
-
-            $scope.get_detailsOnNode = function (nodeID) {
-                var nodeName=$scope.uniqueNodes[nodeID].name;
-                var links = [];
-                
-                $scope.data.forEach(function (d) {
-                    if (d.label.indexOf(nodeName) > -1) {
-                        var object = {
-                            "source_color": $scope.uniqueNodes.filter(function (obj) {
-                                return obj.name === $scope.seperateRelation(d.label)[0]; //=sourceName
-                            })[0].color,
-                            "target_color": $scope.uniqueNodes.filter(function (obj) {
-                                return obj.name === $scope.seperateRelation(d.label)[1]; //=targetName
-                            })[0].color,
-                            "label": d.label,
-                            "data": d.data,
-                            "sum": 0
-                        }
-                        links.push(object);
-                    }
-                })
-                links.sort(function (a, b) {
-                    if (a.label < b.label)
-                        return -1;
-                    if (a.label > b.label)
-                        return 1;
-                    return 0;
-                })
-                return links;
-            }
-
-            $scope.get_detailsOnChord = function (sourceID, targetID) {
-                var obj = $scope.data.filter(function (obj) {
-                    return obj.label === $scope.uniqueNodes[sourceID].name + $scope.panel.seperator + $scope.uniqueNodes[targetID].name;
-                });
-                if (typeof obj[0] === 'undefined') {
-                    return null;
-                }
-                else {
-                    var source_color = $scope.uniqueNodes[sourceID].color;
-                    var target_color = $scope.uniqueNodes[targetID].color;
-                    var label = $scope.uniqueNodes[sourceID].name + ""+$scope.panel.seperator+"" + $scope.uniqueNodes[targetID].name;
-                
-                    var data= obj[0].data;
-                    var sum = 0;
-                    if ($scope.panel.direction != "directed") {
-                        sum = $scope.chordMatrix[sourceID][targetID];
-                    }
-                    var object = {
-                        "source_color": source_color,
-                        "target_color": target_color,
-                        "label": label,
-                        "data": data,
-                        "sum": sum
-                    }
-                    return object;
-                }
-            }
-            
             $scope.set_refresh = function (state) {
                 //This function is executed if some changes are done in the editor
                 $scope.refresh = state;
@@ -277,22 +212,7 @@ define([
                 }
                 $scope.refresh = false;
                 $scope.$emit('render');
-            };
-
-            $scope.show_tooltip = function (duration, opacity, text, pos_left, pos_top) {
-                $scope.tooltip.transition()
-                                .duration(duration)
-                                .style("opacity", opacity);
-                $scope.tooltip.html(text);
-                $scope.tooltip.style("left", pos_left + "px")
-                    .style("top", pos_top + "px");
-            }
-
-            $scope.hide_tooltip = function (duration, opacity) {
-                $scope.tooltip.transition()
-                    .duration(duration)
-                    .style("opacity", opacity);
-            }
+            };            
         });
 
         module.directive('chordChart', function (querySrv) {
@@ -305,19 +225,6 @@ define([
                     scope.$on('render', function () {
                         render_panel(elem);
                     });
-
-                    function build_results() {
-                        var k = 0;
-                        //the result data (the data how we need them to draw the chord diagram are now saved in the array 'scope.data'
-                        scope.data = [];
-                        _.each(scope.results.facets.terms.terms, function (v) {
-                            var slice;
-                            slice = { label: v.term, data: v.count, color: querySrv.colors[k] };
-                            
-                            scope.data.push(slice);
-                            k = k + 1;
-                        });
-                    }
 
                     // Function for rendering panel
                     function render_panel(elem) {
@@ -333,14 +240,27 @@ define([
 
                         createChordDiagram(scope, chartData,elem);
                     }
+
+                    function build_results() {
+                        var k = 0;
+                        //the result data (the data how we need them to draw the chord diagram are now saved in the array 'scope.data'
+                        scope.data = [];
+                        _.each(scope.results.facets.terms.terms, function (v) {
+                            var slice;
+                            slice = { label: v.term, data: v.count, color: querySrv.colors[k] };
+                            
+                            scope.data.push(slice);
+                            k = k + 1;
+                        });
+                    }
                 }
             };
 
             function createChordDiagram(scope, dataset, elem) {
-                $(elem[0]).empty();  //removes all elements from the div with the id 'chordGraphic'
+                $(elem[0]).empty();  //removes all elements from the current element
                 //Define Website Layout
-                var width = Math.min(parseInt(scope.row.height.replace("px", ""))-10, window.screen.availWidth / 12 * scope.panel.span - 50),
-                    height = width,
+                var width = window.screen.availWidth / 12 * scope.panel.span - 50,
+                    height = parseInt(scope.row.height.replace("px", "")) - 10,
                     innerRadius = Math.min(width, height) * .41,
                     outerRadius = innerRadius * 1.12;
 
@@ -348,7 +268,6 @@ define([
                 var svg = d3.select(elem[0]).append("svg")
                         .attr("width", width)
                         .attr("height", height)
-                        //.attr("style", "outline: thin solid black")
                         .append("g")
                         .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
                 var dataset = prepareDataset(dataset);
@@ -433,7 +352,7 @@ define([
                     .attr("class", "ticks")
                     .style("font", "8px sans-serif")
                     .attr("transform", function (d) {
-                        // Beschriftung drehen wenn Kreiswinkel > 180�
+                        // Turn label if angle is > 180°
                         return d.angle > Math.PI ? "rotate(180)translate(-16)" : null;
                     })
                     .style("text-anchor", function (d) {
@@ -454,13 +373,17 @@ define([
                         highlight_Chord(d);
                     })
                     .on("mouseout", function (d) {
-                        scope.hide_tooltip(100, 0);
+                        hide_tooltip(100, 0);
                         fadeChord(1, d);
                     })
                     .on("mousemove", function (d) {
                         highlight_Chord(d);
                     });
                 
+                g.on("mouseover", fade(0.0))
+                    .on("mouseout", fade(1.0))
+                    .on("mousemove", fade(0.0))
+                    .on("click", clickedNode());
 
                 //define tooltip
                 scope.tooltip = d3.select("body").append("div")
@@ -470,8 +393,8 @@ define([
                 function highlight_Chord(d) {
                     var detailstext = "";
                     var details = [];
-                    details.push(scope.get_detailsOnChord(d.source.index, d.target.index));
-                    details.push(scope.get_detailsOnChord(d.target.index, d.source.index));
+                    details.push(get_detailsOnChord(d.source.index, d.target.index));
+                    details.push(get_detailsOnChord(d.target.index, d.source.index));
 
                     //creation of detailstext for the directed graph
                     details.forEach(function (d) {
@@ -488,7 +411,7 @@ define([
                     fadeChord(0, d);
 
                     if (scope.panel.tooltipsetting) {
-                        scope.show_tooltip(100, 0.9, detailstext, d3.event.pageX+15, d3.event.pageY);
+                        show_tooltip(100, 0.9, detailstext, d3.event.pageX+15, d3.event.pageY);
                     }
                 }
 
@@ -508,6 +431,10 @@ define([
                 }
 
                 function fadeChord(opacity, chord) {
+                    /*
+                    *   This function hides chords in case of a mouseover event over a chord. If the mouse is over a chord, all other chords are hiden,
+                    *   If the mouse goes out of the area, the chords are shown again
+                    */
                     if (opacity < 1) {
                         svg.selectAll(".chord path")
                                 .filter(function (d) {
@@ -527,15 +454,21 @@ define([
                 }
 
                 function fade(opacity) {
+                    /*
+                    *   This function hides chords in case of a mouseover event over a circle segment (node).
+                    *   If the mouse is over the node, all chords which are not connected to the node are hidden.
+                    *   If the mouse goes out of the area, the chords are shown again
+                    *   In addition a tooltip is shown (show_tooltip)
+                    */
                     if (opacity<1){
                         return function (g, i) {
-                            var details = scope.get_detailsOnNode(i);
+                            var details = get_detailsOnNode(i);
                             //show tooltip when hovering over node
-                            var detailstext = uniqueNodes[i].name + "<br/><br/>"
+                            var detailstext = "<h4>"+ uniqueNodes[i].name + "</h4>"
                             details.forEach(function (d) {
                                 detailstext = detailstext + (kbn.query_color_dot(d.source_color, 15) + kbn.query_color_dot(d.target_color, 15) + ' ' + d.label + " (" + d.data + ")<br/>");
                             })
-                            scope.show_tooltip(100, 0.9, detailstext, d3.event.pageX+15, d3.event.pageY);
+                            show_tooltip(100, 0.9, detailstext, d3.event.pageX+15, d3.event.pageY);
 
                             //Hide unrelated chords
                             svg.selectAll(".chord path")
@@ -548,7 +481,7 @@ define([
                     }
                     else {
                         return function (g, i) {
-                            scope.hide_tooltip(100, 0);
+                            hide_tooltip(100, 0);
                             svg.selectAll(".chord path")
                                 .filter(function (d) {
                                     return d.source.index != i && d.target.index != i;
@@ -561,15 +494,10 @@ define([
 
                 function clickedNode() {
                     return function (g, i) {
-                        scope.hide_tooltip(100, 0);
+                        hide_tooltip(100, 0);
                         scope.build_search(uniqueNodes[i].name);
                     }
                 }
-
-                g.on("mouseover", fade(0.0))
-                    .on("mouseout", fade(1.0))
-                    .on("mousemove", fade(0.0))
-                    .on("click", clickedNode());
 
                 function prepareDataset(dataset) {
                     if (scope.panel.seperator === "") {
@@ -583,76 +511,155 @@ define([
                     scope.uniqueNodes = addColorToNodes(scope.uniqueNodes); //This function adds a colorcode to each node
                     return { nodes: scope.uniqueNodes, matrix: scope.chordMatrix };
 
-                    function createChordMatrix(dataset, nodes) {
-                        var chordMatrix = [];
-                        //fill Matrix with '0's and name columns and rows with the values from the array 'nodes'
+                    
+                }
+                function createChordMatrix(dataset, nodes) {
+                    var chordMatrix = [];
+                    //fill Matrix with '0's and name columns and rows with the values from the array 'nodes'
+                    for (var count = 0; count < nodes.length; count++) {
+                        var row = [];
+                        for (var count2 = 0; count2 < nodes.length; count2++) {
+                            row[count2] = 0;
+                        }
+                        chordMatrix[count] = row;
+                    }
+
+                    dataset.forEach(function (d) {
+                        //fill the 'chordMatrix' with the values from the JSON. If there are no values. The value will remain 0.
+                        var rowname = nodes.indexOf(seperateRelation(d.label)[0]);
+                        var columnname = nodes.indexOf(seperateRelation(d.label)[1]);
+
+                        chordMatrix[rowname][columnname] = chordMatrix[rowname][columnname] + d.data;
+                    });
+
+                    if (scope.panel.direction === "directed") {
+                        return chordMatrix;
+                    }
+                    else {
+                        //if the graph should be undirected, the vallues are aggregated
+                        var _chordMatrix = [];
                         for (var count = 0; count < nodes.length; count++) {
                             var row = [];
                             for (var count2 = 0; count2 < nodes.length; count2++) {
-                                row[count2] = 0;
-                            }
-                            chordMatrix[count] = row;
-                        }
-
-                        dataset.forEach(function (d) {
-                            //fill the 'chordMatrix' with the values from the JSON. If there are no values. The value will remain 0.
-                            var rowname = nodes.indexOf(scope.seperateRelation(d.label)[0]);
-                            var columnname = nodes.indexOf(scope.seperateRelation(d.label)[1]);
-
-                            chordMatrix[rowname][columnname] = chordMatrix[rowname][columnname] + d.data;
-                        });
-
-                        if (scope.panel.direction === "directed") {
-                            return chordMatrix;
-                        }
-                        else {
-                            //if the graph should be undirected, the vallues are aggregated
-                            var _chordMatrix = [];
-                            for (var count = 0; count < nodes.length; count++) {
-                                var row = [];
-                                for (var count2 = 0; count2 < nodes.length; count2++) {
-                                    if (count != count2) {
-                                        row[count2] = chordMatrix[count][count2] + chordMatrix[count2][count];
-                                    }
-                                    else {
-                                        row[count2] = chordMatrix[count][count2];
-                                    }
+                                if (count != count2) {
+                                    row[count2] = chordMatrix[count][count2] + chordMatrix[count2][count];
                                 }
-                                _chordMatrix[count] = row;
+                                else {
+                                    row[count2] = chordMatrix[count][count2];
+                                }
                             }
-                            return _chordMatrix;
+                            _chordMatrix[count] = row;
                         }
+                        return _chordMatrix;
                     }
+                }
 
-                    function findUniqueNodes(dataset) {
-                        var nodes = [];  //create array for the nodes
+                function findUniqueNodes(dataset) {
+                    var nodes = [];  //create array for the nodes
 
-                        dataset.forEach(function (d) {
-                            //seperates all nodes and stores them in the array 'nodes'
-                            scope.seperateRelation(d.label).forEach(function (d) {
-                                nodes.push(d);
-                            });
+                    dataset.forEach(function (d) {
+                        //seperates all nodes and stores them in the array 'nodes'
+                        seperateRelation(d.label).forEach(function (d) {
+                            nodes.push(d);
                         });
-                        var uniqueNodes = nodes.filter(onlyUnique); //all nodes in the array 'nodes' are filtered and only unique values remain
+                    });
+                    var uniqueNodes = nodes.filter(onlyUnique); //all nodes in the array 'nodes' are filtered and only unique values remain
 
-                        return uniqueNodes;
-                    }
+                    return uniqueNodes;
+                }
 
-                    function addColorToNodes(nodes) {
-                        var uniqueNodes = [];
-                        var k=0;
-                        nodes.forEach(function (d) {
-                            var ob;
-                            ob = { name: d, color: querySrv.colors2[k] };
-                            uniqueNodes.push(ob);
-                            k = k + 1;
-                        });
-                        return uniqueNodes;
-                    }
+                function addColorToNodes(nodes) {
+                    var uniqueNodes = [];
+                    var k = 0;
+                    nodes.forEach(function (d) {
+                        var ob;
+                        ob = { name: d, color: querySrv.colors2[k] };
+                        uniqueNodes.push(ob);
+                        k = k + 1;
+                    });
+                    return uniqueNodes;
+                }
 
-                    function onlyUnique(value, index, self) {
-                        return self.indexOf(value) === index;
+                function onlyUnique(value, index, self) {
+                    return self.indexOf(value) === index;
+                }
+
+                function seperateRelation(text) {
+                    var splittedRelation = text.split(scope.panel.seperator);
+                    return splittedRelation;
+                }
+
+                function get_detailsOnNode(nodeID) {
+                    var nodeName = scope.uniqueNodes[nodeID].name;
+                    var links = [];
+
+                    scope.data.forEach(function (d) {
+                        if (d.label.indexOf(nodeName) > -1) {
+                            var object = {
+                                "source_color": scope.uniqueNodes.filter(function (obj) {
+                                    return obj.name === seperateRelation(d.label)[0]; //=sourceName
+                                })[0].color,
+                                "target_color": scope.uniqueNodes.filter(function (obj) {
+                                    return obj.name === seperateRelation(d.label)[1]; //=targetName
+                                })[0].color,
+                                "label": d.label,
+                                "data": d.data,
+                                "sum": 0
+                            }
+                            links.push(object);
+                        }
+                    })
+                    links.sort(function (a, b) {
+                        if (a.label < b.label)
+                            return -1;
+                        if (a.label > b.label)
+                            return 1;
+                        return 0;
+                    })
+                    return links;
+                }
+
+                function get_detailsOnChord(sourceID, targetID) {
+                    var obj = scope.data.filter(function (obj) {
+                        return obj.label === scope.uniqueNodes[sourceID].name + scope.panel.seperator + scope.uniqueNodes[targetID].name;
+                    });
+                    if (typeof obj[0] === 'undefined') {
+                        return null;
                     }
+                    else {
+                        var source_color = scope.uniqueNodes[sourceID].color;
+                        var target_color = scope.uniqueNodes[targetID].color;
+                        var label = scope.uniqueNodes[sourceID].name + "" + scope.panel.seperator + "" + scope.uniqueNodes[targetID].name;
+
+                        var data = obj[0].data;
+                        var sum = 0;
+                        if (scope.panel.direction != "directed") {
+                            sum = scope.chordMatrix[sourceID][targetID];
+                        }
+                        var object = {
+                            "source_color": source_color,
+                            "target_color": target_color,
+                            "label": label,
+                            "data": data,
+                            "sum": sum
+                        }
+                        return object;
+                    }
+                }
+
+                function show_tooltip(duration, opacity, text, pos_left, pos_top) {
+                    scope.tooltip.transition()
+                                    .duration(duration)
+                                    .style("opacity", opacity);
+                    scope.tooltip.html(text);
+                    scope.tooltip.style("left", pos_left + "px")
+                        .style("top", pos_top + "px");
+                }
+
+                function hide_tooltip(duration, opacity) {
+                    scope.tooltip.transition()
+                        .duration(duration)
+                        .style("opacity", opacity);
                 }
             }
         });

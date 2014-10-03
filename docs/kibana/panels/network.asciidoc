@@ -1,0 +1,26 @@
+
+== terms
+Status: *Stable*
+
+A chord diagram based on the results of an Elasticsearch terms facet.
+
+=== Parameters
+
+field:: The field on which to computer the facet
+exclude:: terms to exclude from the results
+size:: Show this many terms
+seperator:: The character which divides the column for the connections
+order:: How the terms are sorted: count, term, reverse_count or reverse_term,
+arrangement:: Arrangement of the legend: horizontal or vertical
+counter_pos:: The location of the legend in respect to the diagram: above, below, or none.
+nodesize:: Indicates if the size of the nodes (radius) should be proportional to the incoming, outgoing ot total number of edges
+tooltipsetting:: Indicates if tooltips should be shown if the user hovers over a segment or chord
+colorcode:: Indicates if the nodes should be coloured or black-white
+direction:: defines if the paths in the network should be directed or undirected
+charge:: defines the charge for the forced layout network
+spyable:: Set spyable to false to disable the inspect button
+
+==== Queries
+queries object:: This object describes the queries to use on this panel.
+queries.mode::: Of the queries available, which to use. Options: +all, pinned, unpinned, selected+
+queries.ids::: In +selected+ mode, which query ids are selected.
