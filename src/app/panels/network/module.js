@@ -318,7 +318,7 @@ define([
                         .attr("markerHeight", arrowhead_length)
                         .attr("markerUnits", "userSpaceOnUse")	//this line makes the marker size independent of the path stroke-width
                         .attr("orient", "auto")
-                        .attr("class","marker")
+                        .attr("class", "marker")
                         .append("svg:path")
                         .attr("d", "M0,-5L10,0L0,5");
                 }
@@ -341,14 +341,14 @@ define([
                             .on("tick", tick)
                             .start();
 
-                    // add the links and the arrows
-                    var path = svg.append("g").selectAll("path")
+                    var path_invisible=svg.append("g").selectAll("path_invisible")
                         .data(force.links())
                         .enter()
                         .append("path")
                         .attr("class", "link")
-                        .attr("id", function (d, i) { return "linkId_" + i; })
-                        .style("stroke-width", function (d) { return (d.value / max_value) * 5; }) //the width of the path is scaled on a scale from 0 to 5
+                        .style("opacity", 0)
+                        .attr("id", function (d, i) { return "invisbleLinkId_" + i; })
+                        .style("stroke-width", 10) //the width of the path is scaled on a scale from 0 to 5
                         .on("mouseover", function (d) {
                             //show tooltip when hovering over chords
                             var detailstext = "";
@@ -375,6 +375,16 @@ define([
                         .on("mouseout", function (d) {
                             hide_tooltip(100, 0);
                         });
+
+                    // add the links and the arrows
+                    var path = svg.append("g").selectAll("path")
+                        .data(force.links())
+                        .enter()
+                        .append("path")
+                        .attr("class", "link")
+                        .attr("id", function (d, i) { return "linkId_" + i; })
+                        .style("stroke-width", function (d) { return (d.value / max_value) * 5; }) //the width of the path is scaled on a scale from 0 to 5
+                        
                     if (scope.panel.direction === "directed") {
                         path.attr("marker-end", "url(#end)");
                     }
@@ -416,12 +426,26 @@ define([
                         .attr("class","linklabel")
                         .attr("x", 12)
                         .attr("dy", ".35em")
+                        .style("font", function (d) {
+                            if (scope.panel.direction === "directed") {
+                                if (node_highlighter == 'outgoing') { return (12 + (d.radius_out / max_radius_out * 10) + "px Arial"); }
+                                else { return (12 + (d.radius_in / max_radius_in * 10) + "px Arial"); }
+                            }
+                            else {
+                                return (12 + (d.radius_total / max_radius_total * 10) + "px Arial");
+                            }
+
+                        }
+                        )
                         .text(function (d) { return d.name; });
 
                     // add the curvy lines
                     scope.direction = scope.panel.direction;
                     function tick() {
                         path.attr("d", function (d) {
+                            return linkArc(d, scope.direction);
+                        });
+                        path_invisible.attr("d", function (d) {
                             return linkArc(d, scope.direction);
                         });
                         node.attr("cx", function (d) { return d.x = Math.max(50, Math.min(frame_width - 50, d.x)); })   //guarantees that the nodes are always 50px away from the border
@@ -442,7 +466,7 @@ define([
                         return function (selected_node) {
                             var details = get_detailsOnNode(selected_node.index);
                             //show tooltip when hovering over node
-                            var detailstext = "<h4>"+selected_node.name + "</h4>"
+                            var detailstext = "<h5>"+selected_node.name + "</h5>"
                             details.forEach(function (d) {
                                 detailstext = detailstext + "" + (kbn.query_color_dot(d.source_color, 15) + kbn.query_color_dot(d.target_color, 15) + ' ' + d.label + " (" + d.data + ") <br/>");
                             })
