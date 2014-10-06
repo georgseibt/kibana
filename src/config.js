@@ -77,6 +77,7 @@ function (Settings) {
       'sparklines',
 	  'chord',
       'network',
+      'hiveplot',
       'testpanel_20140917'
     ]
   });
