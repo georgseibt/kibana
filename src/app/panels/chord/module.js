@@ -261,8 +261,12 @@ define([
                 //Define Website Layout
                 var width = window.screen.availWidth / 12 * scope.panel.span - 50,
                     height = parseInt(scope.row.height.replace("px", "")) - 10,
-                    innerRadius = Math.min(width, height) * .41,
-                    outerRadius = innerRadius * 1.12;
+                    innerRadius = Math.min(width, height) * .4,
+                    outerRadius = innerRadius + (Math.max(20, innerRadius* 0.12));
+
+                console.log(innerRadius);
+                console.log(outerRadius);
+                console.log(outerRadius-innerRadius);
 
                 //Define where the svg will be and how it will look like
                 var svg = d3.select(elem[0]).append("svg")
@@ -308,9 +312,10 @@ define([
                             if (d.endAngle - d.startAngle < 0.01)
                                 return 3;
                             else
-                                return 15
+                                return (outerRadius-innerRadius)-(outerRadius-innerRadius-12)/2;
                         })
                         .style("fill", "white")
+                        .style("font", "12px Arial")
                         .append("svg:textPath")
                         .attr("xlink:href", function (d) { return "#group-" + elem[0].id + "" + d.index; })
                         .text(function (d) {
@@ -350,7 +355,7 @@ define([
                     .attr("x", 8)
                     .attr("dy", ".35em")
                     .attr("class", "ticks")
-                    .style("font", "8px sans-serif")
+                    .style("font", "8px Arial")
                     .attr("transform", function (d) {
                         // Turn label if angle is > 180°
                         return d.angle > Math.PI ? "rotate(180)translate(-16)" : null;
