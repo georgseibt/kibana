@@ -186,13 +186,13 @@ define([
                 $scope.data.forEach(function (d) {
                     if (d.label.indexOf(nodeName) > -1) {
                         if (queryterm === "") {
-                            queryterm = queryterm + "" + $scope.field + ":\"" + d.label + "\""
+                            queryterm = queryterm + '' + $scope.field + ':\"' + d.label + '\"';
                         }
                         else {
-                            queryterm = queryterm + " OR " + $scope.field + ":\"" + d.label + "\""
+                            queryterm = queryterm + ' OR ' + $scope.field + ':\"' + d.label + '\"';
                         }
                     }
-                })
+                });
                 filterSrv.set({
                     type: 'querystring', query: queryterm,
                     mandate: 'must'
@@ -219,7 +219,6 @@ define([
             return {
                 restrict: 'A',
                 link: function (scope, elem) {
-                    var plot;
 
                     // Receive render events
                     scope.$on('render', function () {
@@ -261,12 +260,8 @@ define([
                 //Define Website Layout
                 var width = window.screen.availWidth / 12 * scope.panel.span - 50,
                     height = parseInt(scope.row.height.replace("px", "")) - 10,
-                    innerRadius = Math.min(width, height) * .4,
+                    innerRadius = Math.min(width, height) * 0.4,
                     outerRadius = innerRadius + (Math.max(20, innerRadius* 0.12));
-
-                console.log(innerRadius);
-                console.log(outerRadius);
-                console.log(outerRadius-innerRadius);
 
                 //Define where the svg will be and how it will look like
                 var svg = d3.select(elem[0]).append("svg")
@@ -299,36 +294,43 @@ define([
                     .attr("d", arc)
                     .style("fill", function (d) { return uniqueNodes[d.index].color; })
                     .style("stroke", function (d) { return uniqueNodes[d.index].color; })
-                    .attr("id", function (d, i) { return "group-" + elem[0].id + "" + d.index });;
+                    .attr("id", function (d, i) { return 'group-' + elem[0].id + '' + d.index });
 
                 g.append("svg:text")    //name label of node in the outer circle segment
                         .attr("dx", function (d) {
-                            if (d.endAngle - d.startAngle < 0.01)
+                            if (d.endAngle - d.startAngle < 0.01) {
                                 return 0;
-                            else
-                                return 10
+                            }
+                            else {
+                                return 10;
+                            }
                         }) //larger number puts the label farer away from the border
                         .attr("dy", function (d) {
-                            if (d.endAngle - d.startAngle < 0.01)
+                            if (d.endAngle - d.startAngle < 0.01) {
                                 return 3;
-                            else
-                                return (outerRadius-innerRadius)-(outerRadius-innerRadius-12)/2;
+                            }
+                            else {
+                                return (outerRadius - innerRadius) - (outerRadius - innerRadius - 12) / 2;
+                            }
                         })
                         .style("fill", "white")
                         .style("font", "12px Arial")
                         .append("svg:textPath")
-                        .attr("xlink:href", function (d) { return "#group-" + elem[0].id + "" + d.index; })
+                        .attr("xlink:href", function (d) { return '#group-' + elem[0].id + '' + d.index; })
                         .text(function (d) {
                             var segmentlength = 2 * outerRadius * Math.PI * ((d.endAngle - d.startAngle) / 2 / Math.PI);
                             if (d.endAngle - d.startAngle < 0.01 || segmentlength < uniqueNodes[d.index].name.length * 15) {
                                 var countchar = (segmentlength - (segmentlength % 15)) / 15; //says how many characters can be shown theoretically (Assumption: a character needs 15px)
-                                if (countchar <= 0)
+                                if (countchar <= 0) {
                                     return (null);
-                                else
-                                    return (uniqueNodes[d.index].name.slice(0, Math.max(0,countchar-1)) + "...");
+                                }
+                                else {
+                                    return (uniqueNodes[d.index].name.slice(0, Math.max(0, countchar - 1)) + '...');
+                                }
                             }
-                            else
+                            else {
                                 return uniqueNodes[d.index].name;
+                            }
                         });
 
                 var ticks = g.selectAll("g")
@@ -396,22 +398,25 @@ define([
                     .style("opacity", 0);
                 
                 function highlight_Chord(d) {
-                    var detailstext = "";
-                    var details = [];
+                    var detailstext = "",
+                        details = [];
                     details.push(get_detailsOnChord(d.source.index, d.target.index));
                     details.push(get_detailsOnChord(d.target.index, d.source.index));
 
                     //creation of detailstext for the directed graph
                     details.forEach(function (d) {
-                        if (d != null)
-                            detailstext = detailstext + (kbn.query_color_dot(d.source_color, 15) + kbn.query_color_dot(d.target_color, 15) + ' ' + d.label + " (" + d.data + ")<br/>");
-                    })
+                        if (d !== null) {
+                            detailstext = detailstext + (kbn.query_color_dot(d.source_color, 15) + kbn.query_color_dot(d.target_color, 15) + ' ' + d.label + ' (' + d.data + ')<br/>');
+                        }
+                    });
 
-                    if (scope.panel.direction != "directed") {
-                        if (details[0] != null)
+                    if (scope.panel.direction !== "directed") {
+                        if (details[0] !== null) {
                             detailstext = detailstext + 'Sum: ' + details[0].sum;
-                        else
+                        }
+                        else {
                             detailstext = detailstext + 'Sum: ' + details[1].sum;
+                        }
                     }
                     fadeChord(0, d);
 
@@ -429,8 +434,8 @@ define([
                     return d3.range(0, d.value, 1).map(function (v, i) {
                         return {
                             angle: v * k + d.startAngle,
-                            show: i%5 != 0 ? false: true,
-                            label: i % 10 != 0 ? null : v 
+                            show: i%5 !== 0 ? false: true,
+                            label: i % 10 !== 0 ? null : v 
                         };
                     });
                 }
@@ -467,18 +472,18 @@ define([
                     */
                     if (opacity<1){
                         return function (g, i) {
-                            var details = get_detailsOnNode(i);
+                            var details = get_detailsOnNode(i),
                             //show tooltip when hovering over node
-                            var detailstext = "<h4>"+ uniqueNodes[i].name + "</h4>"
+                                detailstext = '<h4>' + uniqueNodes[i].name + '</h4>';
                             details.forEach(function (d) {
-                                detailstext = detailstext + (kbn.query_color_dot(d.source_color, 15) + kbn.query_color_dot(d.target_color, 15) + ' ' + d.label + " (" + d.data + ")<br/>");
-                            })
+                                detailstext = detailstext + (kbn.query_color_dot(d.source_color, 15) + kbn.query_color_dot(d.target_color, 15) + ' ' + d.label + ' (' + d.data + ')<br/>');
+                            });
                             show_tooltip(100, 0.9, detailstext, d3.event.pageX+15, d3.event.pageY);
 
                             //Hide unrelated chords
                             svg.selectAll(".chord path")
                                 .filter(function (d) {
-                                    return d.source.index != i && d.target.index != i;
+                                    return d.source.index !== i && d.target.index !== i;
                                 })
                                 .transition()
                                 .style("opacity", opacity);
@@ -489,7 +494,7 @@ define([
                             hide_tooltip(100, 0);
                             svg.selectAll(".chord path")
                                 .filter(function (d) {
-                                    return d.source.index != i && d.target.index != i;
+                                    return d.source.index !== i && d.target.index !== i;
                                 })
                                 .transition()
                                 .style("opacity", opacity);
@@ -501,7 +506,7 @@ define([
                     return function (g, i) {
                         hide_tooltip(100, 0);
                         scope.build_search(uniqueNodes[i].name);
-                    }
+                    };
                 }
 
                 function prepareDataset(dataset) {
@@ -546,7 +551,7 @@ define([
                         for (var count = 0; count < nodes.length; count++) {
                             var row = [];
                             for (var count2 = 0; count2 < nodes.length; count2++) {
-                                if (count != count2) {
+                                if (count !== count2) {
                                     row[count2] = chordMatrix[count][count2] + chordMatrix[count2][count];
                                 }
                                 else {
@@ -574,8 +579,8 @@ define([
                 }
 
                 function addColorToNodes(nodes) {
-                    var uniqueNodes = [];
-                    var k = 0;
+                    var uniqueNodes = [],
+                        k = 0;
                     nodes.forEach(function (d) {
                         var ob;
                         ob = { name: d, color: querySrv.colors2[k] };
@@ -595,8 +600,8 @@ define([
                 }
 
                 function get_detailsOnNode(nodeID) {
-                    var nodeName = scope.uniqueNodes[nodeID].name;
-                    var links = [];
+                    var nodeName = scope.uniqueNodes[nodeID].name,
+                        links = [];
 
                     scope.data.forEach(function (d) {
                         if (d.label.indexOf(nodeName) > -1) {
@@ -610,17 +615,19 @@ define([
                                 "label": d.label,
                                 "data": d.data,
                                 "sum": 0
-                            }
+                            };
                             links.push(object);
                         }
-                    })
+                    });
                     links.sort(function (a, b) {
-                        if (a.label < b.label)
+                        if (a.label < b.label) {
                             return -1;
-                        if (a.label > b.label)
+                        }
+                        if (a.label > b.label) {
                             return 1;
+                        }
                         return 0;
-                    })
+                    });
                     return links;
                 }
 
@@ -632,13 +639,12 @@ define([
                         return null;
                     }
                     else {
-                        var source_color = scope.uniqueNodes[sourceID].color;
-                        var target_color = scope.uniqueNodes[targetID].color;
-                        var label = scope.uniqueNodes[sourceID].name + "" + scope.panel.seperator + "" + scope.uniqueNodes[targetID].name;
-
-                        var data = obj[0].data;
-                        var sum = 0;
-                        if (scope.panel.direction != "directed") {
+                        var source_color = scope.uniqueNodes[sourceID].color,
+                            target_color = scope.uniqueNodes[targetID].color,
+                            label = scope.uniqueNodes[sourceID].name + '' + scope.panel.seperator + '' + scope.uniqueNodes[targetID].name,
+                            data = obj[0].data,
+                            sum = 0;
+                        if (scope.panel.direction !== "directed") {
                             sum = scope.chordMatrix[sourceID][targetID];
                         }
                         var object = {
@@ -647,7 +653,7 @@ define([
                             "label": label,
                             "data": data,
                             "sum": sum
-                        }
+                        };
                         return object;
                     }
                 }

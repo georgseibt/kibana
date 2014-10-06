@@ -140,8 +140,7 @@ define([
                     boolQuery,
                     queries;
 
-                $scope.field = _.contains(fields.list, $scope.panel.field + '.raw') ?
-                    $scope.panel.field + '.raw' : $scope.panel.field;
+                $scope.field = _.contains(fields.list, $scope.panel.field + '.raw') ? $scope.panel.field + '.raw' : $scope.panel.field;
 
                 request = $scope.ejs.Request().indices(dashboard.indices);
 
@@ -161,19 +160,20 @@ define([
                 request = request
                     .facet(
                         $scope.ejs.TermsFacet('terms')
-                        .field($scope.field)
-                        .size($scope.panel.size)
-                        .order($scope.panel.order)
-                        .exclude($scope.panel.exclude)
-                        .facetFilter(
-                            $scope.ejs.QueryFilter(
-                                $scope.ejs.FilteredQuery(
-                                    boolQuery,
-                                    filterSrv.getBoolFilter(filterSrv.ids())
+                            .field($scope.field)
+                            .size($scope.panel.size)
+                            .order($scope.panel.order)
+                            .exclude($scope.panel.exclude)
+                            .facetFilter(
+                                $scope.ejs.QueryFilter(
+                                    $scope.ejs.FilteredQuery(
+                                        boolQuery,
+                                        filterSrv.getBoolFilter(filterSrv.ids())
+                                    )
                                 )
                             )
-                        )
-                    ).size(0);
+                    )
+                    .size(0);
 
 
                 // Populate the inspector panel; The current request will be shown in the inspector panel
@@ -183,10 +183,7 @@ define([
                 results = request.doSearch().then(function (results) {
                     $scope.panelMeta.loading = false;
                     $scope.hits = results.hits.total;
-                    
                     $scope.results = results;
-                    
-
                     $scope.$emit('render'); //dispatches the event upwards through the scope hierarchy of controllers.
                 });
             };
@@ -197,10 +194,10 @@ define([
                 $scope.data.forEach(function (d) {
                     if (d.label.indexOf(nodeName) > -1) {
                         if (queryterm === "") {
-                            queryterm = queryterm + "" + $scope.field + ":\"" + d.label +"\""
+                            queryterm = queryterm + '' + $scope.field + ':\"' + d.label + '\"';
                         }
                         else {
-                            queryterm = queryterm + " OR " + $scope.field + ":\"" + d.label+"\""
+                            queryterm = queryterm + ' OR ' + $scope.field + ':\"' + d.label + '\"';
                         }
                     }
                 })
@@ -230,7 +227,6 @@ define([
             return {
                 restrict: 'A',
                 link: function (scope, elem) {
-                    var plot;
 
                     // Receive render events
                     scope.$on('render', function () {
@@ -258,8 +254,7 @@ define([
                         scope.data = [];
                         _.each(scope.results.facets.terms.terms, function (v) {
                             var slice;
-                            slice = { label: v.term, data: v.count, color: querySrv.colors[k] };
-                            
+                            slice = { label: v.term, data: v.count, color: querySrv.colors[k] };                            
                             scope.data.push(slice);
                             k = k + 1;
                         });
@@ -269,7 +264,7 @@ define([
 
             function createNetworkDiagram(scope, dataset, elem) {
                 $(elem[0]).empty();  //removes all elements from the current element
-                var dataset, svg, force,
+                var svg, force,
                     margin = { top: -5, right: -5, bottom: -5, left: -5 },
 				max_value = 0,
 				max_radius_out = 0,
@@ -351,21 +346,22 @@ define([
                         .style("stroke-width", 10) //the width of the path is scaled on a scale from 0 to 5
                         .on("mouseover", function (d) {
                             //show tooltip when hovering over chords
-                            var detailstext = "";
-                            var details = [];
+                            var detailstext = "",
+                                details = [],
+                                sum = 0;
                             details.push(get_detailsOnChord(d.source.index, d.target.index));
-                            if (scope.panel.direction != "directed")
+                            if (scope.panel.direction !== "directed") {
                                 details.push(get_detailsOnChord(d.target.index, d.source.index));
+                            }
 
                             //creation of detailstext for the directed graph
-                            var sum = 0;
                             details.forEach(function (d) {
-                                if (d != null) {
-                                    detailstext = detailstext + (kbn.query_color_dot(d.source_color, 15) + kbn.query_color_dot(d.target_color, 15) + ' ' + d.label + " (" + d.data + ")<br/>");
+                                if (d !== null) {
+                                    detailstext = detailstext + (kbn.query_color_dot(d.source_color, 15) + kbn.query_color_dot(d.target_color, 15) + ' ' + d.label + ' (' + d.data + ')<br/>');
                                     sum = sum + d.data;
                                 }
-                            })
-                            if (scope.panel.direction != "directed") {
+                            });
+                            if (scope.panel.direction !== "directed") {
                                 detailstext = detailstext + 'Sum: ' + sum;
                             }
                             if (scope.panel.tooltipsetting) {
@@ -383,7 +379,7 @@ define([
                         .append("path")
                         .attr("class", "link")
                         .attr("id", function (d, i) { return "linkId_" + i; })
-                        .style("stroke-width", function (d) { return (d.value / max_value) * 5; }) //the width of the path is scaled on a scale from 0 to 5
+                        .style("stroke-width", function (d) { return (d.value / max_value) * 5; }); //the width of the path is scaled on a scale from 0 to 5
                         
                     if (scope.panel.direction === "directed") {
                         path.attr("marker-end", "url(#end)");
@@ -400,8 +396,9 @@ define([
                         .on("mouseout", fade(1.0))
                         .on("click", function (d) {
                             //if clicking on a node, the dataset is filtered for this node. All other nodes are not shown anymore. The data is also filtered for the other graphics
-                            if (!d3.event.ctrlKey) //node is only filtered if ctrl Key is NOT pressed
+                            if (!d3.event.ctrlKey) { //node is only filtered if ctrl Key is NOT pressed
                                 scope.build_search(d.name);
+                            }
 
                             hide_tooltip(100, 0);
                         })
@@ -411,7 +408,7 @@ define([
                     node.append("circle")
                         .attr("r", function (d) {
                             if (scope.panel.direction === "directed") {
-                                if (node_highlighter == 'outgoing') { return d.radius_out / max_radius_out * 10 + 5; }
+                                if (node_highlighter === 'outgoing') { return d.radius_out / max_radius_out * 10 + 5; }
                                 else { return d.radius_in / max_radius_in * 10 + 5; }
                             }
                             else {
@@ -428,7 +425,7 @@ define([
                         .attr("dy", ".35em")
                         .style("font", function (d) {
                             if (scope.panel.direction === "directed") {
-                                if (node_highlighter == 'outgoing') { return (12 + (d.radius_out / max_radius_out * 10) + "px Arial"); }
+                                if (node_highlighter === 'outgoing') { return (12 + (d.radius_out / max_radius_out * 10) + "px Arial"); }
                                 else { return (12 + (d.radius_in / max_radius_in * 10) + "px Arial"); }
                             }
                             else {
@@ -454,7 +451,7 @@ define([
                     }
 
                     function isConnected(a, b) {
-                        return ((linkedByIndex[a.index + "," + b.index] || linkedByIndex[b.index + "," + a.index] || a == b) == 1);
+                        return ((linkedByIndex[a.index + "," + b.index] || linkedByIndex[b.index + "," + a.index] || a === b) === 1);
                     }
                     
                     function fade(opacity) {
@@ -464,12 +461,12 @@ define([
                         are connected the node and the connection between the nodes stay visible.
                         */
                         return function (selected_node) {
-                            var details = get_detailsOnNode(selected_node.index);
                             //show tooltip when hovering over node
-                            var detailstext = "<h5>"+selected_node.name + "</h5>"
+                            var details = get_detailsOnNode(selected_node.index),
+                                detailstext = "<h5>" + selected_node.name + "</h5>";
                             details.forEach(function (d) {
-                                detailstext = detailstext + "" + (kbn.query_color_dot(d.source_color, 15) + kbn.query_color_dot(d.target_color, 15) + ' ' + d.label + " (" + d.data + ") <br/>");
-                            })
+                                detailstext = detailstext + '' + (kbn.query_color_dot(d.source_color, 15) + kbn.query_color_dot(d.target_color, 15) + ' ' + d.label + ' (' + d.data + ') <br/>');
+                            });
                             if (scope.panel.tooltipsetting && opacity < 1) {
                                 show_tooltip(100, 0.9, detailstext, d3.event.pageX + 15, d3.event.pageY);
                             }
@@ -492,14 +489,14 @@ define([
                     function linkArc(d, direction) {
                         if (direction === "directed") {
                             //if the the grapgh is directed, the links are drawn as curved lines
-                            var sx = d.source.x;
-                            var sy = d.source.y;
-                            var tx = d.target.x;
-                            var ty = d.target.y;
+                            var sx = d.source.x,
+                                sy = d.source.y,
+                                tx = d.target.x,
+                                ty = d.target.y;
 
                             var source_nodeRadius;
                             var target_nodeRadius;
-                            if (node_highlighter == 'outgoing') {
+                            if (node_highlighter === 'outgoing') {
                                 source_nodeRadius = d.source.radius_out / max_radius_out * 10 + 5;
                                 target_nodeRadius = d.target.radius_out / max_radius_out * 10 + 5;
                             }
@@ -556,9 +553,9 @@ define([
                         scope.panel.seperator = " ";
                     }
 
-                    var uniqueNodes = findUniqueNodes(dataset); //is a one dimensional array with all nodes
-                    var nodesJSON = createNodeJSON(uniqueNodes);
-                    var linksJSON = createLinkJSON(dataset, nodesJSON);
+                    var uniqueNodes = findUniqueNodes(dataset), //is a one dimensional array with all nodes
+                        nodesJSON = createNodeJSON(uniqueNodes),
+                        linksJSON = createLinkJSON(dataset, nodesJSON);
                     scope.directed_links = linksJSON.directed_links;
                     scope.undirected_links = linksJSON.undirected_links;
                     
@@ -572,10 +569,12 @@ define([
 
                     scope.uniqueNodes = nodesJSON; //format: name, radius_out, radius_in, color
                     
-                    if(scope.panel.direction==="directed")
+                    if (scope.panel.direction === "directed") {
                         return { nodes: nodesJSON, links: scope.directed_links };
-                    else
+                    }
+                    else {
                         return { nodes: nodesJSON, links: scope.undirected_links };
+                    }
                                        
                     function aggregateLinks(aggregateType, nodeIndex, linksJSON) {
                         //aggregateType can be 'in' or 'out'. If 'in' all incoming values are aggregated, if 'out' all outgoing values are aggregated
@@ -594,15 +593,13 @@ define([
                                 }
                             });
                         }
-                        else {
-
-                        }
+                        else {}
                         return sum;
                     }
 
                     function createNodeJSON(uniqueNodes) {  //creates a JSON file for all nodes with the attributes: name, radius_in, radius_out. When creating the file the values of radius_in, and radius_out are still empty. They are filled later.
-                        var nodes = []; //create array with several objects of the nodes
-                        var k = 0;
+                        var nodes = [], //create array with several objects of the nodes
+                            k = 0;
                         uniqueNodes.forEach(function (d) {
                             if (scope.panel.colorcode === "black-white") {
                                 var colorcode = "white";
@@ -616,7 +613,7 @@ define([
                                 "radius_in": null,
                                 "radius_total": null,
                                 "color": colorcode
-                            }
+                            };
                             k = k + 1;
                             nodes.push(object);
                         });
@@ -632,7 +629,7 @@ define([
                                 "source": nodes.map(function (e) { return e.name; }).indexOf(seperateRelation(d.label)[0]),
                                 "target": nodes.map(function (e) { return e.name; }).indexOf(seperateRelation(d.label)[1]),
                                 "value": d.data
-                            }
+                            };
                             directed_links.push(object);
                         }); //format: relation, source, target, color, 
 
@@ -641,7 +638,7 @@ define([
                         directed_links.forEach(function (d) {
                             var obj = _.clone(d);
                             undirected_links.push(obj);
-                        })
+                        });
 
                         if (scope.panel.direction === "directed") {
                             //the links are not aggregated. Values for A->B and B->A stay seperate records
@@ -655,16 +652,18 @@ define([
                                     var help = d.source;
                                     d.source = d.target;
                                     d.target = help;
-                                    d.relation = nodesJSON[d.source].name + "" + scope.panel.seperator + "" + nodesJSON[d.target].name
+                                    d.relation = nodesJSON[d.source].name + '' + scope.panel.seperator + '' + nodesJSON[d.target].name;
                                 }
-                            })
+                            });
                             undirected_links.sort(function (a, b) {
-                                if (a.relation < b.relation)
+                                if (a.relation < b.relation) {
                                     return -1;
-                                if (a.relation > b.relation)
+                                }
+                                if (a.relation > b.relation) {
                                     return 1;
+                                }
                                 return 0;
-                            })
+                            });
 
                             var undirected_links = _.chain(undirected_links)
                                 .groupBy("relation")
@@ -723,15 +722,17 @@ define([
                                 "label": d.label,
                                 "data": d.data,
                                 "sum": 0
-                            }
+                            };
                             links.push(object);
                         }
-                    })
+                    });
                     links.sort(function (a, b) {
-                        if (a.label < b.label)
+                        if (a.label < b.label) {
                             return -1;
-                        if (a.label > b.label)
+                        }
+                        if (a.label > b.label) {
                             return 1;
+                        }
                         return 0;
                     })
                     return links;
@@ -747,7 +748,7 @@ define([
                     else {
                         var source_color = scope.uniqueNodes[sourceID].color;
                         var target_color = scope.uniqueNodes[targetID].color;
-                        var label = scope.uniqueNodes[sourceID].name + "" + scope.panel.seperator + "" + scope.uniqueNodes[targetID].name;
+                        var label = scope.uniqueNodes[sourceID].name + '' + scope.panel.seperator + '' + scope.uniqueNodes[targetID].name;
 
                         var data = obj[0].data;
                         var object = {
@@ -755,7 +756,7 @@ define([
                             "target_color": target_color,
                             "label": label,
                             "data": data
-                        }
+                        };
                         return object;
                     }
                 }
@@ -769,7 +770,7 @@ define([
                         .style("top", pos_top + "px");
                 }
 
-                    function hide_tooltip(duration, opacity) {
+                function hide_tooltip(duration, opacity) {
                     scope.tooltip.transition()
                         .duration(duration)
                         .style("opacity", opacity);
