@@ -34,12 +34,41 @@
             <label class="small">Legend Format</label>
             <select class="input-small" ng-model="panel.arrangement" ng-options="f for f in ['horizontal','vertical']"></select></span>
         </div>
-        <div class="editor-option">
-            <label class="small">Tooltips</label><input type="checkbox" ng-model="panel.tooltipsetting" ng-checked="panel.tooltipsetting">
+
+        <div class="editor-option" ng-show="true">
+            <label class="small">Sorting nodes by</label>
+            <select class="input-small" ng-model="panel.sortingNodes" ng-options="f.value as f.text for f in [{'value': 'label', 'text':'Alphabetically'},{'value': 'outgoingTotal', 'text':'Outgoing Total'},{'value': 'incomingTotal', 'text':'Incoming total'},{'value': 'total', 'text':'Total'},{'value': 'numberOfLinks', 'text':'Number of Links'}]" ng-change="set_refresh(true)"></select></span>
         </div>
         <div class="editor-option" ng-show="true">
-            <label class="small">Direction</label>
-            <select class="input-small" ng-model="panel.direction" ng-options="f for f in ['directed','undirected']" ng-change="set_refresh(true)"></select></span>
+            <label class="small">Order nodes by</label>
+            <select class="input-small" ng-model="panel.sortingOrderNodes" ng-options="f.value as f.text for f in [{'value': true, 'text':'Ascending'},{'value': false, 'text':'Descending'}]" ng-change="set_refresh(true)"></select></span>
+        </div>
+        <div class="editor-option" ng-show="true">
+            <label class="small">Segment size based on</label>
+            <select class="input-small" ng-model="panel.segmentSize" ng-options="f.value as f.text for f in [{'value': 'outgoing', 'text':'Outgoing'},{'value': 'incoming', 'text':'Incoming'}]" ng-change="set_refresh(true)"></select></span>
+        </div>
+        <div class="editor-option" ng-show="true">
+            <label class="small">Directed</label>
+            <select class="input-small" ng-model="panel.directed" ng-options="f.value as f.text for f in [{'value': true, 'text':'Directed'},{'value': false, 'text':'Undirected'}]" ng-change="set_refresh(true)"></select></span>
+        </div>
+        <div class="editor-option" ng-show="true">
+            <label class="small">Number of Ticks</label>
+            <select class="input-small" ng-model="panel.numberOfTicks" ng-options="f for f in [1,2,3,4,5,6,7,8,9,10]" ng-change="set_refresh(true)"></select></span>
+        </div>
+        <div class="editor-option" ng-show="true">
+            <label class="small">Number of Labels</label>
+            <select class="input-small" ng-model="panel.ticksLabel" ng-options="f for f in [1,2,3,4,5,6,7,8,9,10]" ng-change="set_refresh(true)"></select></span>
+        </div>
+        <div class="editor-option" ng-show="true">
+            <label class="small">Sorting Tooltip by</label>
+            <select class="input-small" ng-model="panel.sortingTooltip" ng-options="f.value as f.text for f in [{'value': 'source', 'text':'Alphabetically by source'},{'value': 'target', 'text':'Alphabetically by target'},{'value':'data', 'text':'Data'}]" ng-change="set_refresh(true)"></select></span>
+        </div>
+        <div class="editor-option" ng-show="true">
+            <label class="small">Order Tooltip</label>
+            <select class="input-small" ng-model="panel.sortingOrderTooltip" ng-options="f.value as f.text for f in [{'value': true, 'text':'Ascending'},{'value': false, 'text':'Descending'}]" ng-change="set_refresh(true)"></select></span>
+        </div>
+        <div class="editor-option">
+            <label class="small">Tooltips</label><input type="checkbox" ng-model="panel.tooltipsetting" ng-checked="panel.tooltipsetting">
         </div>
     </div>
 </div>

@@ -83,13 +83,41 @@ define([
                 */
                 counter_pos: 'above',
                 /** @scratch /panels/network/5
+                * sortingNodes:: Indicates how the nodes are sorted
+                */
+                sortingNodes: 'label',
+                /** @scratch /panels/network/5
+                * sortingOrderNodes:: Indicates if the nodes are sorted ascending (true) or descending (false)
+                */
+                sortingOrderNodes: true,
+                /** @scratch /panels/network/5
+                * segmentSize:: In the default case the attribute 'segmentSize' is set to the value 'outgoing'. That means that the width of a chord on the side of a node indicates how much leaves the node from there. For example if we have a connection from A to B with the value 4, the chord has a width of 4 where it is connected to node A, but a width of 0 at the other side.
+                */
+                segmentSize: 'outgoing',
+                /** @scratch /panels/network/5
+                * directed:: Defines if the paths in the chorddiagram should be directed (true) or undirected (false)
+                */
+                directed: true,
+                /** @scratch /panels/network/5
+                * numberOfTicks:: defines how many ticks should be displayed. For example a 1 indicates that every tick should be shown, a 4 that every 4th tick is shown
+                */
+                numberOfTicks: null,
+                /** @scratch /panels/network/5
+                * ticksLabel:: defines that each n th label of a tick is shown. For example a 1 indicates that every label is shown, a 4 that every 4th label is shown
+                */
+                ticksLabel: null,
+                /** @scratch /panels/network/5
+                * sortingTooltip:: defines by which criteria the connections in the tooltip should be sorted
+                */
+                sortingTooltip: 'source',
+                /** @scratch /panels/network/5
+                * sortingOrderTooltip:: defines if the nodes should be ordered ascending or descending
+                */
+                sortingOrderTooltip: true,
+                /** @scratch /panels/network/5
                 * tooltipsetting:: Indicates if tooltips should be shown if the user hovers over a segment or chord
                 */
-                tooltipsetting: 'true',
-                /** @scratch /panels/network/5
-                * direction:: Defines if the paths in the chorddiagram should be directed or undirected
-                */
-                direction: 'directed',
+                tooltipsetting: true,
                 /** @scratch /panels/chord/5
                 * spyable:: Set spyable to false to disable the inspect button
                 */
@@ -256,423 +284,53 @@ define([
             };
 
             function createChordDiagram(scope, dataset, elem) {
-                $(elem[0]).empty();  //removes all elements from the current element
-                //Define Website Layout
-                var width = window.screen.availWidth / 12 * scope.panel.span - 50,
-                    height = parseInt(scope.row.height.replace("px", "")) - 10,
-                    innerRadius = Math.min(width, height) * 0.4,
-                    outerRadius = innerRadius + (Math.max(20, innerRadius* 0.12));
+                document.getElementById("c1").innerHTML = '';
+                d3.select(elem[0]).append('div')
+                    .attr("width", 300)
+                    .attr("height", 700)
+                    .attr("id", "c4")
+                    .attr("style", "outline: thin solid green;");
 
-                //Define where the svg will be and how it will look like
-                var svg = d3.select(elem[0]).append("svg")
-                        .attr("width", width)
-                        .attr("height", height)
-                        .append("g")
-                        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
-                var dataset = prepareDataset(dataset);
-                var uniqueNodes = dataset.nodes;
-                var chordMatrix = dataset.matrix;
-                scope.chordMatrix = chordMatrix;
-
-                //Define the layout of the chords
-                var chord = d3.layout.chord()
-                        .matrix(chordMatrix)
-                        .padding(0.05)
-                        .sortSubgroups(d3.descending);
-                var fill = d3.scale.category10();
-
-                var g = svg.selectAll("g.group")
-                        .data(chord.groups)
-                        .enter().append("svg:g")
-                        .attr("class", "group");
-
-                var arc = d3.svg.arc()
-                        .innerRadius(innerRadius)
-                        .outerRadius(outerRadius);
-
-                g.append("path")    //outer circle segment
-                    .attr("d", arc)
-                    .style("fill", function (d) { return uniqueNodes[d.index].color; })
-                    .style("stroke", function (d) { return uniqueNodes[d.index].color; })
-                    .attr("id", function (d, i) { return 'group-' + elem[0].id + '' + d.index });
-
-                g.append("svg:text")    //name label of node in the outer circle segment
-                        .attr("dx", function (d) {
-                            if (d.endAngle - d.startAngle < 0.01) {
-                                return 0;
-                            }
-                            else {
-                                return 10;
-                            }
-                        }) //larger number puts the label farer away from the border
-                        .attr("dy", function (d) {
-                            if (d.endAngle - d.startAngle < 0.01) {
-                                return 3;
-                            }
-                            else {
-                                return (outerRadius - innerRadius) - (outerRadius - innerRadius - 12) / 2;
-                            }
-                        })
-                        .style("fill", "white")
-                        .style("font", "12px Arial")
-                        .append("svg:textPath")
-                        .attr("xlink:href", function (d) { return '#group-' + elem[0].id + '' + d.index; })
-                        .text(function (d) {
-                            var segmentlength = 2 * outerRadius * Math.PI * ((d.endAngle - d.startAngle) / 2 / Math.PI);
-                            if (d.endAngle - d.startAngle < 0.01 || segmentlength < uniqueNodes[d.index].name.length * 15) {
-                                var countchar = (segmentlength - (segmentlength % 15)) / 15; //says how many characters can be shown theoretically (Assumption: a character needs 15px)
-                                if (countchar <= 0) {
-                                    return (null);
-                                }
-                                else {
-                                    return (uniqueNodes[d.index].name.slice(0, Math.max(0, countchar - 1)) + '...');
-                                }
-                            }
-                            else {
-                                return uniqueNodes[d.index].name;
-                            }
-                        });
-
-                var ticks = g.selectAll("g")
-                        .data(groupTicks)
-                        .enter().append("g")
-                        .attr("transform", function (d) {
-                            return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")"
-                            + "translate(" + outerRadius + ",0)";
-                        });
-
-                ticks.append("line")    //small lines (scale) on the outside of the outer circle segment
-                    //every fifth tick is shown. If more ticks should be shown, the value of d.show can be changed in the fundtion groupTicks()
-                    .attr("x1", function (d) {
-                        return d.show ? 1 : 0;
-                    })
-                    .attr("y1", 0)
-                    .attr("x2", function (d) {
-                        return d.show ? 5 : 0;
-                    })
-                    .attr("y2", 0)
-                    .attr("class", "ticks");
-
-                ticks.append("text")    //small text (scale) on the outside of the outer circle segment
-                    .attr("x", 8)
-                    .attr("dy", ".35em")
-                    .attr("class", "ticks")
-                    .style("font", "8px Arial")
-                    .attr("transform", function (d) {
-                        // Turn label if angle is > 180°
-                        return d.angle > Math.PI ? "rotate(180)translate(-16)" : null;
-                    })
-                    .style("text-anchor", function (d) {
-                        return d.angle > Math.PI ? "end" : null;
-                    })
-                    .text(function (d) { return d.label; });
-
-                svg.append("g")     //chords (connections) between the circle segments
-                    .attr("class", "chord")
-                    .selectAll("path")
-                    .data(chord.chords)
-                    .enter().append("path")
-                    .attr("d", d3.svg.chord().radius(innerRadius))
-                    .style("fill", chordColor)
-                    .attr("class", "chord")
-                    .style("opacity", 1)
-                    .on("mouseover", function (d) {
-                        highlight_Chord(d);
-                    })
-                    .on("mouseout", function (d) {
-                        hide_tooltip(100, 0);
-                        fadeChord(1, d);
-                    })
-                    .on("mousemove", function (d) {
-                        highlight_Chord(d);
-                    });
+                var data = prepareData(dataset);
                 
-                g.on("mouseover", fade(0.0))
-                    .on("mouseout", fade(1.0))
-                    .on("mousemove", fade(0.0))
-                    .on("click", clickedNode());
-
-                //define tooltip
-                scope.tooltip = d3.select("body").append("div")
-                    .attr("class", "tooltip")
-                    .style("opacity", 0);
-                
-                function highlight_Chord(d) {
-                    var detailstext = "",
-                        details = [];
-                    details.push(get_detailsOnChord(d.source.index, d.target.index));
-                    details.push(get_detailsOnChord(d.target.index, d.source.index));
-
-                    //creation of detailstext for the directed graph
-                    details.forEach(function (d) {
-                        if (d !== null) {
-                            detailstext = detailstext + (kbn.query_color_dot(d.source_color, 15) + kbn.query_color_dot(d.target_color, 15) + ' ' + d.label + ' (' + d.data + ')<br/>');
+                new Chorddiagram.Chart({
+                    //Mandatory
+                    "elem": "c1",
+                    "data": data,
+                    //Optional
+                    "colors": null,
+                    "numberOfTicks": scope.panel.numberOfTicks,
+                    "ticksLabel": scope.panel.ticksLabel,
+                    "direction": scope.panel.segmentSize,                         //possible values: [outgoing, incoming]
+                    "directed": scope.panel.directed,                           //possible values: [true, false] true means directed, false means undirected
+                    "sorting": scope.panel.sortingNodes,                        //possible values: [label, color, outgoingTotal, incomingTotal, total, numberOfLinks]
+                    "sortingOrder": scope.panel.sortingOrderNodes,              //possible values: [true, false] true means ascending, false means descending
+                    "sortingTooltip": scope.panel.sortingTooltip,               //possible values: [source, target, data]
+                    "sortingOrderTooltip": scope.panel.sortingOrderTooltip,     //possible values: [true, false] true means ascending, false means descending
+                    "tooltipSetting": scope.panel.tooltipSetting,
+                    "onClickNode": function (d) {
+                        if (!d3.event.ctrlKey) { //node is only filtered if ctrl Key is NOT pressed
+                            scope.build_search(d.label);
                         }
-                    });
+                    },
+                    "onClickLink": null
+                });
 
-                    if (scope.panel.direction !== "directed") {
-                        if (details[0] !== null) {
-                            detailstext = detailstext + 'Sum: ' + details[0].sum;
-                        }
-                        else {
-                            detailstext = detailstext + 'Sum: ' + details[1].sum;
-                        }
-                    }
-                    fadeChord(0, d);
+                function prepareData(dataset) {
+                    var data = [];
 
-                    if (scope.panel.tooltipsetting) {
-                        show_tooltip(100, 0.9, detailstext, d3.event.pageX+15, d3.event.pageY);
-                    }
-                }
-
-                function chordColor(d) {
-                    return (d.source.value > d.target.value ? uniqueNodes[d.source.index].color : uniqueNodes[d.target.index].color);
-                }
-
-                function groupTicks(d) {
-                    var k = (d.endAngle - d.startAngle) / d.value;
-                    return d3.range(0, d.value, 1).map(function (v, i) {
-                        return {
-                            angle: v * k + d.startAngle,
-                            show: i%5 !== 0 ? false: true,
-                            label: i % 10 !== 0 ? null : v 
-                        };
-                    });
-                }
-
-                function fadeChord(opacity, chord) {
-                    /*
-                    *   This function hides chords in case of a mouseover event over a chord. If the mouse is over a chord, all other chords are hiden,
-                    *   If the mouse goes out of the area, the chords are shown again
-                    */
-                    if (opacity < 1) {
-                        svg.selectAll(".chord path")
-                                .filter(function (d) {
-                                    return !(d.source.index === chord.source.index && d.target.index === chord.target.index);
-                                })
-                                .transition()
-                                .style("opacity", opacity);
-                    }
-                    else {
-                        svg.selectAll(".chord path")
-                                .filter(function (d) {
-                                    return !(d.source.index === chord.source.index && d.target.index === chord.target.index);
-                                })
-                                .transition()
-                                .style("opacity", opacity);
-                    }
-                }
-
-                function fade(opacity) {
-                    /*
-                    *   This function hides chords in case of a mouseover event over a circle segment (node).
-                    *   If the mouse is over the node, all chords which are not connected to the node are hidden.
-                    *   If the mouse goes out of the area, the chords are shown again
-                    *   In addition a tooltip is shown (show_tooltip)
-                    */
-                    if (opacity<1){
-                        return function (g, i) {
-                            var details = get_detailsOnNode(i),
-                            //show tooltip when hovering over node
-                                detailstext = '<h4>' + uniqueNodes[i].name + '</h4>';
-                            details.forEach(function (d) {
-                                detailstext = detailstext + (kbn.query_color_dot(d.source_color, 15) + kbn.query_color_dot(d.target_color, 15) + ' ' + d.label + ' (' + d.data + ')<br/>');
-                            });
-                            show_tooltip(100, 0.9, detailstext, d3.event.pageX+15, d3.event.pageY);
-
-                            //Hide unrelated chords
-                            svg.selectAll(".chord path")
-                                .filter(function (d) {
-                                    return d.source.index !== i && d.target.index !== i;
-                                })
-                                .transition()
-                                .style("opacity", opacity);
-                        };
-                    }
-                    else {
-                        return function (g, i) {
-                            hide_tooltip(100, 0);
-                            svg.selectAll(".chord path")
-                                .filter(function (d) {
-                                    return d.source.index !== i && d.target.index !== i;
-                                })
-                                .transition()
-                                .style("opacity", opacity);
-                        };
-                    }
-                }
-
-                function clickedNode() {
-                    return function (g, i) {
-                        hide_tooltip(100, 0);
-                        scope.build_search(uniqueNodes[i].name);
-                    };
-                }
-
-                function prepareDataset(dataset) {
-                    if (scope.panel.seperator === "") {
-                        //if user enters space as seperator, the user interface ignores this value and leaves the variable blank.
-                        //For that reason we catch this exception here and define the seperator as a space
-                        scope.panel.seperator = " ";
-                    }
-
-                    scope.uniqueNodes = findUniqueNodes(dataset); //is a one dimensional array with all nodes
-                    scope.chordMatrix = createChordMatrix(dataset, scope.uniqueNodes);    //is a two dimensional array with all values of the links between the nodes
-                    scope.uniqueNodes = addColorToNodes(scope.uniqueNodes); //This function adds a colorcode to each node
-                    return { nodes: scope.uniqueNodes, matrix: scope.chordMatrix };
-
-                    
-                }
-                function createChordMatrix(dataset, nodes) {
-                    var chordMatrix = [];
-                    //fill Matrix with '0's and name columns and rows with the values from the array 'nodes'
-                    for (var count = 0; count < nodes.length; count++) {
-                        var row = [];
-                        for (var count2 = 0; count2 < nodes.length; count2++) {
-                            row[count2] = 0;
-                        }
-                        chordMatrix[count] = row;
-                    }
-
-                    dataset.forEach(function (d) {
-                        //fill the 'chordMatrix' with the values from the JSON. If there are no values. The value will remain 0.
-                        var rowname = nodes.indexOf(seperateRelation(d.label)[0]);
-                        var columnname = nodes.indexOf(seperateRelation(d.label)[1]);
-
-                        chordMatrix[rowname][columnname] = chordMatrix[rowname][columnname] + d.data;
-                    });
-
-                    if (scope.panel.direction === "directed") {
-                        return chordMatrix;
-                    }
-                    else {
-                        //if the graph should be undirected, the vallues are aggregated
-                        var _chordMatrix = [];
-                        for (var count = 0; count < nodes.length; count++) {
-                            var row = [];
-                            for (var count2 = 0; count2 < nodes.length; count2++) {
-                                if (count !== count2) {
-                                    row[count2] = chordMatrix[count][count2] + chordMatrix[count2][count];
-                                }
-                                else {
-                                    row[count2] = chordMatrix[count][count2];
-                                }
-                            }
-                            _chordMatrix[count] = row;
-                        }
-                        return _chordMatrix;
-                    }
-                }
-
-                function findUniqueNodes(dataset) {
-                    var nodes = [];  //create array for the nodes
-
-                    dataset.forEach(function (d) {
-                        //seperates all nodes and stores them in the array 'nodes'
-                        seperateRelation(d.label).forEach(function (d) {
-                            nodes.push(d);
-                        });
-                    });
-                    var uniqueNodes = nodes.filter(onlyUnique); //all nodes in the array 'nodes' are filtered and only unique values remain
-
-                    return uniqueNodes;
-                }
-
-                function addColorToNodes(nodes) {
-                    var uniqueNodes = [],
-                        k = 0;
-                    nodes.forEach(function (d) {
-                        var ob;
-                        ob = { name: d, color: querySrv.colors2[k] };
-                        uniqueNodes.push(ob);
-                        k = k + 1;
-                    });
-                    return uniqueNodes;
-                }
-
-                function onlyUnique(value, index, self) {
-                    return self.indexOf(value) === index;
-                }
-
-                function seperateRelation(text) {
-                    var splittedRelation = text.split(scope.panel.seperator);
-                    return splittedRelation;
-                }
-
-                function get_detailsOnNode(nodeID) {
-                    var nodeName = scope.uniqueNodes[nodeID].name,
-                        links = [];
-
-                    scope.data.forEach(function (d) {
-                        if (d.label.indexOf(nodeName) > -1) {
-                            var object = {
-                                "source_color": scope.uniqueNodes.filter(function (obj) {
-                                    return obj.name === seperateRelation(d.label)[0]; //=sourceName
-                                })[0].color,
-                                "target_color": scope.uniqueNodes.filter(function (obj) {
-                                    return obj.name === seperateRelation(d.label)[1]; //=targetName
-                                })[0].color,
-                                "label": d.label,
-                                "data": d.data,
-                                "sum": 0
-                            };
-                            links.push(object);
-                        }
-                    });
-                    links.sort(function (a, b) {
-                        if (a.label < b.label) {
-                            return -1;
-                        }
-                        if (a.label > b.label) {
-                            return 1;
-                        }
-                        return 0;
-                    });
-                    return links;
-                }
-
-                function get_detailsOnChord(sourceID, targetID) {
-                    var obj = scope.data.filter(function (obj) {
-                        return obj.label === scope.uniqueNodes[sourceID].name + scope.panel.seperator + scope.uniqueNodes[targetID].name;
-                    });
-                    if (typeof obj[0] === 'undefined') {
-                        return null;
-                    }
-                    else {
-                        var source_color = scope.uniqueNodes[sourceID].color,
-                            target_color = scope.uniqueNodes[targetID].color,
-                            label = scope.uniqueNodes[sourceID].name + '' + scope.panel.seperator + '' + scope.uniqueNodes[targetID].name,
-                            data = obj[0].data,
-                            sum = 0;
-                        if (scope.panel.direction !== "directed") {
-                            sum = scope.chordMatrix[sourceID][targetID];
-                        }
+                    dataset.forEach(function (link) {
                         var object = {
-                            "source_color": source_color,
-                            "target_color": target_color,
-                            "label": label,
-                            "data": data,
-                            "sum": sum
-                        };
-                        return object;
-                    }
-                }
+                            source: link.label.split(scope.panel.seperator)[0],
+                            target: link.label.split(scope.panel.seperator)[1],
+                            value: link.data
+                        }
+                        data.push(object);
+                    });
 
-                function show_tooltip(duration, opacity, text, pos_left, pos_top) {
-                    scope.tooltip.transition()
-                                    .duration(duration)
-                                    .style("opacity", opacity);
-                    scope.tooltip.html(text);
-                    scope.tooltip.style("left", pos_left + "px")
-                        .style("top", pos_top + "px");
+                    return data;
                 }
-
-                function hide_tooltip(duration, opacity) {
-                    scope.tooltip.transition()
-                        .duration(duration)
-                        .style("opacity", opacity);
-                }
-            }
+            }            
         });
     }
     );

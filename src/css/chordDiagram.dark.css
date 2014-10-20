@@ -1,0 +1,46 @@
+﻿.chorddiagram-h4{
+    font-size: 16px;
+}
+
+.chorddiagram-ticks {
+    stroke: #eee;
+    fill: #eee;
+}
+
+.chorddiagram-chord {
+    stroke: #eee;
+}
+
+.chorddiagram-marker {
+    stroke: #eee;
+    fill: #eee;
+}
+
+path.chorddiagram-link {
+    fill: none;
+    stroke: #eee;
+    stroke-width: 1.5px;
+}
+
+.chorddiagram-linklabel {
+    fill: #eee;
+    font-size: 13px;
+}
+
+.link.chorddiagram-active {
+    stroke: #DC143C;
+    stroke-width: 4px;
+    stroke-opacity: 0.8;
+}
+
+div.chorddiagram-tooltip {
+    position: absolute;
+    text-align: left;
+    padding: 2px;
+    color: white;
+    font: 12px sans-serif;
+    background: black;
+    border: 0px;
+    border-radius: 8px;
+    pointer-events: none;
+}

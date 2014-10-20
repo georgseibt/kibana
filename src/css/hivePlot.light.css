@@ -1,0 +1,42 @@
+﻿.hiveplot-ticks {
+    stroke: #555;
+    fill: #555;
+}
+
+.hiveplot-chord {
+    stroke: #555;
+}
+
+.hiveplot-marker {
+    stroke: #555;
+    fill: #555;
+}
+
+path.hiveplot-link {
+    fill: none;
+    stroke: #555;
+    stroke-width: 1.5px;
+}
+
+.hiveplot-linklabel {
+    fill: #555;
+    font-size: 13px;
+}
+
+.hiveplot-link.hiveplot-active {
+    stroke: #DC143C;
+    stroke-width: 4px;
+    stroke-opacity: 0.8;
+}
+
+div.hiveplot-tooltip {
+    position: absolute;
+    text-align: left;
+    padding: 2px;
+    color: white;
+    font: 12px sans-serif;
+    background: black;
+    border: 0px;
+    border-radius: 8px;
+    pointer-events: none;
+}

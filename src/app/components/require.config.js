@@ -47,7 +47,7 @@ require.config({
     modernizr:                '../vendor/modernizr-2.6.1',
     numeral:                  '../vendor/numeral',
     jsonpath:                 '../vendor/jsonpath',
-    elasticjs:                '../vendor/elasticjs/elastic-angular-client',
+    elasticjs: '../vendor/elasticjs/elastic-angular-client',
   },
   shim: {
     angular: {

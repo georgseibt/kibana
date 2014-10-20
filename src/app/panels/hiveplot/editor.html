@@ -23,22 +23,90 @@
 </div>
 <div class="section">
     <h5>Axis</h5>
-    <div class="editor-option">
-        <label class="small">Number of Axis</label>
-        <select class="input-medium" ng-model="panel.number_of_axis" ng-options="f for f in [2,3]" ng-change="set_refresh(true)" ng-show="true"></select>
-    </div>
-    <div class="editor-option">
-        <label class="small">Axis 1</label>
-        <select class="input-medium" ng-model="panel.axis1" ng-options="f for f in ['source','target','connection','time']" ng-change="set_refresh(true)" ng-show="true"></select>
-    </div>
-    <div class="editor-option">
-        <label class="small">Axis 2</label>
-        <select class="input-medium" ng-model="panel.axis2" ng-options="f for f in ['source','target','connection','time']" ng-change="set_refresh(true)" ng-show="true"></select>
-    </div>
-    <div class="editor-option" ng-show="panel.number_of_axis>=3">
-        <label class="small">Axis 3</label>
-        <select class="input-medium" ng-model="panel.axis3" ng-options="f for f in ['source','target','connection','time']" ng-change="set_refresh(true)" ng-show="true"></select>
-    </div>
+    <table>
+        <tr>
+            <td>
+                <div class="editor-option">
+                    <label class="small">Number of Axis</label>
+                    <select class="input-medium" ng-model="panel.numberOfAxis" ng-options="f for f in [2,3]" ng-change="set_refresh(true)" ng-show="true"></select>
+                </div>
+            </td>            
+        </tr>
+        <tr>
+            <td>
+                <label class="small"></label>
+            </td>
+            <td>
+                <label class="small">Axis 1</label>
+            </td>
+            <td>
+                <label class="small">Axis 2</label>
+            </td>
+            <td>
+                <label class="editor-option" ng-show="panel.numberOfAxis>=3">Axis 3</label>
+            </td>            
+        </tr>
+        <tr>
+            <td>
+                <label>Axis name</label>
+            </td>
+            <td>
+                <div class="editor-option">
+                    <select class="input-medium" ng-model="panel.axis1Label" ng-options="f for f in ['from','to','connection','time']" ng-change="set_refresh(true)" ng-show="true"></select>
+                </div>
+            </td>
+            <td>
+                <div class="editor-option">
+                    <select class="input-medium" ng-model="panel.axis2Label" ng-options="f for f in ['from','to','connection','time']" ng-change="set_refresh(true)" ng-show="true"></select>
+                </div>
+            </td>
+            <td>
+                <div class="editor-option" ng-show="panel.numberOfAxis>=3">
+                    <select class="input-medium" ng-model="panel.axis3Label" ng-options="f for f in ['from','to','connection','time']" ng-change="set_refresh(true)" ng-show="true"></select>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label>Axis sorting by</label>
+            </td>
+            <td>
+                <div class="editor-option">
+                    <select class="input-medium" ng-model="panel.axis1Sorting" ng-options="f for f in ['label','value','numberOfLinks']" ng-change="set_refresh(true)" ng-show="true"></select>
+                </div>
+            </td>
+            <td>
+                <div class="editor-option">
+                    <select class="input-medium" ng-model="panel.axis2Sorting" ng-options="f for f in ['label','value','numberOfLinks']" ng-change="set_refresh(true)" ng-show="true"></select>
+                </div>
+            </td>
+            <td>
+                <div class="editor-option" ng-show="panel.numberOfAxis>=3">
+                    <select class="input-medium" ng-model="panel.axis3Sorting" ng-options="f for f in ['label','value','numberOfLinks']" ng-change="set_refresh(true)" ng-show="true"></select>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label>Axis Order</label>
+            </td>
+            <td>
+                <div class="editor-option">
+                    <select class="input-medium" ng-model="panel.axis1Order" ng-options="f.value as f.text for f in [{'value': true, 'text':'Ascending'},{'value': false, 'text':'Descending'}]" ng-change="set_refresh(true)" ng-show="true"></select>
+                </div>
+            </td>
+            <td>
+                <div class="editor-option">
+                    <select class="input-medium" ng-model="panel.axis2Order" ng-options="f.value as f.text for f in [{'value': true, 'text':'Ascending'},{'value': false, 'text':'Descending'}]" ng-change="set_refresh(true)" ng-show="true"></select>
+                </div>
+            </td>
+            <td>
+                <div class="editor-option" ng-show="panel.numberOfAxis>=3">
+                    <select class="input-medium" ng-model="panel.axis3Order" ng-options="f.value as f.text for f in [{'value': true, 'text':'Ascending'},{'value': false, 'text':'Descending'}]" ng-change="set_refresh(true)" ng-show="true"></select>
+                </div>
+            </td>
+        </tr>
+    </table>
 </div>
 <div class="editor-row">
     <div class="section">
@@ -51,20 +119,22 @@
             <label class="small">Legend Format</label>
             <select class="input-small" ng-model="panel.arrangement" ng-options="f for f in ['horizontal','vertical']"></select></span>
         </div>
-        <div class="editor-option" ng-show="true">
-            <label class="small">Node size</label>
-            <select class="input-small" ng-model="panel.nodesize" ng-options="f for f in ['outgoing','incoming']" ng-change="set_refresh(true)"></select></span>
-        </div>
-        <div class="editor-option">
-            <label class="small">Tooltips</label><input type="checkbox" ng-model="panel.tooltipsetting" ng-checked="panel.tooltipsetting">
-        </div>
+
+
         <div class="editor-option" ng-show="true">
             <label class="small">Node coloring</label>
-            <select class="input-small" ng-model="panel.colorcode" ng-options="f for f in ['black-white','coloured']"></select></span>
+            <select class="input-small" ng-model="panel.colorcode" ng-options="f for f in ['black-white','colored']"></select></span>
         </div>
         <div class="editor-option" ng-show="true">
-            <label class="small">Direction</label>
-            <select class="input-small" ng-model="panel.direction" ng-options="f for f in ['directed','undirected']" ng-change="set_refresh(true)"></select></span>
+            <label class="small">Sorting Tooltip by</label>
+            <select class="input-small" ng-model="panel.sortingTooltip" ng-options="f.value as f.text for f in [{'value': 'source', 'text':'Alphabetically by source'},{'value': 'target', 'text':'Alphabetically by target'},{'value':'data', 'text':'Data'}]" ng-change="set_refresh(true)"></select></span>
+        </div>
+        <div class="editor-option" ng-show="true">
+            <label class="small">Order Tooltip</label>
+            <select class="input-small" ng-model="panel.sortingOrderTooltip" ng-options="f.value as f.text for f in [{'value': true, 'text':'Ascending'},{'value': false, 'text':'Descending'}]" ng-change="set_refresh(true)"></select></span>
+        </div>
+        <div class="editor-option">
+            <label class="small">Tooltips</label><input type="checkbox" ng-model="panel.tooltipSetting" ng-checked="panel.tooltipSetting">
         </div>
     </div>
 </div>

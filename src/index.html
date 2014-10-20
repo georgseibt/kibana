@@ -10,11 +10,17 @@
 
     <title>Kibana 3{{dashboard.current.title ? " - "+dashboard.current.title : ""}}</title>
     <link rel="stylesheet" href="css/bootstrap.light.min.css" title="Light">
+    <link rel="stylesheet" href="css/chordDiagram.light.css">
+    <link rel="stylesheet" href="css/network.light.css">
+    <link rel="stylesheet" href="css/hivePlot.light.css">
     <link rel="stylesheet" href="css/timepicker.css">
     <link rel="stylesheet" href="css/animate.min.css">
     <link rel="stylesheet" href="css/normalize.min.css">
     <!-- load the root require context -->
-      <script src="vendor/d3/d3.min.js"></script>
+    <script src="vendor/chorddiagram.js"></script>
+    <script src="vendor/hiveplot.js"></script>
+    <script src="vendor/network.js"></script>
+    <script src="vendor/d3/d3.min.js"></script>
     <script src="vendor/require/require.js"></script>
     <script src="app/components/require.config.js"></script>
     <script>require(['app'], function () {})</script>
@@ -31,6 +37,9 @@
     </noscript>
     <!--<link rel="stylesheet" ng-href="css/bootstrap.{{dashboard.current.style||'dark'}}.min.css">-->
     <link rel="stylesheet" ng-href="css/bootstrap.{{dashboard.current.style||'dark'}}.min.css">
+    <link rel="stylesheet" ng-href="css/chordDiagram.{{dashboard.current.style||'dark'}}.css">
+    <link rel="stylesheet" ng-href="css/hivePlot.{{dashboard.current.style||'dark'}}.css">
+    <link rel="stylesheet" ng-href="css/network.{{dashboard.current.style||'dark'}}.css">
     <link rel="stylesheet" href="css/bootstrap-responsive.min.css">
     <link rel="stylesheet" href="css/font-awesome.min.css">
 

@@ -30,26 +30,34 @@
         <h5>View Options</h5>
         <div class="editor-option" ng-show="true">
             <label class="small">Legend</label>
-            <select class="input-small" ng-model="panel.counter_pos" ng-options="f for f in ['above','below','none']"></select></span>
+            <select class="input-small" ng-model="panel.counter_pos" ng-options="f for f in ['above','below','none']" ng-change="set_refresh(true)"></select></span>
         </div>
         <div class="editor-option" ng-show="true">
             <label class="small">Legend Format</label>
-            <select class="input-small" ng-model="panel.arrangement" ng-options="f for f in ['horizontal','vertical']"></select></span>
+            <select class="input-small" ng-model="panel.arrangement" ng-options="f for f in ['horizontal','vertical']" ng-change="set_refresh(true)"></select></span>
+        </div>
+        <div class="editor-option" ng-show="true">
+            <label class="small">Colorcode</label>
+            <select class="input-small" ng-model="panel.colorcode" ng-options="f for f in ['colored','black-white']" ng-change="set_refresh(true)"></select></span>
         </div>
         <div class="editor-option" ng-show="true">
             <label class="small">Node size</label>
-            <select class="input-small" ng-model="panel.nodesize" ng-options="f for f in ['outgoing','incoming']" ng-change="set_refresh(true)"></select></span>
+            <select class="input-small" ng-model="panel.nodeSize" ng-options="f.value as f.text for f in [{'value': 'outgoing', 'text':'Outgoing'},{'value': 'incoming', 'text':'Incoming'}]" ng-change="set_refresh(true)"></select></span>
+        </div>
+        <div class="editor-option" ng-show="true">
+            <label class="small">Directed</label>
+            <select class="input-small" ng-model="panel.directed" ng-options="f.value as f.text for f in [{'value': true, 'text':'Directed'},{'value': false, 'text':'Undirected'}]" ng-change="set_refresh(true)"></select></span>
+        </div>
+        <div class="editor-option" ng-show="true">
+            <label class="small">Sorting Tooltip by</label>
+            <select class="input-small" ng-model="panel.sortingTooltip" ng-options="f.value as f.text for f in [{'value': 'source', 'text':'Alphabetically by source'},{'value': 'target', 'text':'Alphabetically by target'},{'value':'data', 'text':'Data'}]" ng-change="set_refresh(true)"></select></span>
+        </div>
+        <div class="editor-option" ng-show="true">
+            <label class="small">Order nodes by</label>
+            <select class="input-small" ng-model="panel.sortingOrderTooltip" ng-options="f.value as f.text for f in [{'value': true, 'text':'Ascending'},{'value': false, 'text':'Descending'}]" ng-change="set_refresh(true)"></select></span>
         </div>
         <div class="editor-option">
             <label class="small">Tooltips</label><input type="checkbox" ng-model="panel.tooltipsetting" ng-checked="panel.tooltipsetting">
-        </div>
-        <div class="editor-option" ng-show="true">
-            <label class="small">Node coloring</label>
-            <select class="input-small" ng-model="panel.colorcode" ng-options="f for f in ['black-white','coloured']"></select></span>
-        </div>
-        <div class="editor-option" ng-show="true">
-            <label class="small">Direction</label>
-            <select class="input-small" ng-model="panel.direction" ng-options="f for f in ['directed','undirected']" ng-change="set_refresh(true)"></select></span>
         </div>
     </div>
 </div>
