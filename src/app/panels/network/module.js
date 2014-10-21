@@ -102,9 +102,9 @@ define([
                 */
                 sortingOrderTooltip: true,
                 /** @scratch /panels/network/5
-                * tooltipsetting:: Indicates if tooltips should be shown if the user hovers over a segment or chord
+                * tooltipSetting:: Indicates if tooltips should be shown if the user hovers over a segment or chord
                 */
-                tooltipsetting: true,
+                tooltipSetting: true,
                 /** @scratch /panels/network/5
                 * direction:: defines if the paths in the network should be directed (true) or undirected (false)
                 */

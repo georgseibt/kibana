@@ -94,23 +94,23 @@ define([
                 */
                 sortingOrderTooltip: true,
                 /** @scratch /panels/hiveplot/5
-                * tooltipsetting:: Indicates if tooltips should be shown if the user hovers over a segment or chord
+                * tooltipSetting:: Indicates if tooltips should be shown if the user hovers over a segment or chord
                 */
-                tooltipsetting: true,
+                tooltipSetting: true,
                 /** @scratch /panels/hiveplot/5
                 * number_of_axis:: defines how many axis should be drawn in the hiveplot
                 */
                 numberOfAxis: 3,
                 /** @scratch /panels/hiveplot/5
-                * axis1:: defines the label for axis1 and which nodes should be displayed on this axis (possible values are: 'source', 'target', 'time' and 'connection'
+                * axis1:: defines the label for axis1 and which nodes should be displayed on this axis (possible values are: 'from', 'to', 'time' and 'connection'
                 */
                 axis1Label: 'from',
                 /** @scratch /panels/hiveplot/5
-                * axis2:: defines the label for axis2 and which nodes should be displayed on this axis (possible values are: 'source', 'target', 'time' and 'connection'
+                * axis2:: defines the label for axis2 and which nodes should be displayed on this axis (possible values are: 'from', 'to', 'time' and 'connection'
                 */
                 axis2Label: 'to',
                 /** @scratch /panels/hiveplot/5
-                * axis3:: defines the label for axis3 and which nodes should be displayed on this axis (possible values are: 'source', 'target', 'time' and 'connection'
+                * axis3:: defines the label for axis3 and which nodes should be displayed on this axis (possible values are: 'from', 'to', 'time' and 'connection'
                 */
                 axis3Label: 'time',
                 /** @scratch /panels/hiveplot/5

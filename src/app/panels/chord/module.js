@@ -115,9 +115,9 @@ define([
                 */
                 sortingOrderTooltip: true,
                 /** @scratch /panels/network/5
-                * tooltipsetting:: Indicates if tooltips should be shown if the user hovers over a segment or chord
+                * tooltipSetting:: Indicates if tooltips should be shown if the user hovers over a segment or chord
                 */
-                tooltipsetting: true,
+                tooltipSetting: true,
                 /** @scratch /panels/chord/5
                 * spyable:: Set spyable to false to disable the inspect button
                 */
