@@ -193,24 +193,25 @@ define([
                 different filters and queries, etc.
                 This is saved in the variable 'request'
                 */
+                
                 request = request
                     .facet(
-                        $scope.ejs.TermsFacet('terms')
-                            .field($scope.field)
-                            .size($scope.panel.size)
+                        $scope.ejs.DateHistogramFacet('terms')
+                            .field("Timestamp")
+                            //.valueField("Country_Connection")
+                            //.keyField("Timestamp")
+                            .interval("day")
                             .order($scope.panel.order)
-                            .exclude($scope.panel.exclude)
-                            .facetFilter(
-                                $scope.ejs.QueryFilter(
-                                    $scope.ejs.FilteredQuery(
-                                        boolQuery,
-                                        filterSrv.getBoolFilter(filterSrv.ids())
-                                    )
-                                )
-                            )
+                            //.facetFilter(
+                            //    $scope.ejs.QueryFilter(
+                            //        $scope.ejs.FilteredQuery(
+                            //            boolQuery,
+                            //            filterSrv.getBoolFilter(filterSrv.ids())
+                            //        )
+                            //    )
+                            //)
                     )
                     .size(0);
-
 
                 // Populate the inspector panel; The current request will be shown in the inspector panel
                 $scope.inspector = angular.toJson(JSON.parse(request.toString()), true);
@@ -271,7 +272,7 @@ define([
 
                     // Function for rendering panel
                     function render_panel(elem) {
-                        var chartData =[];
+                        var chartData = [];
                         build_results();
                         // IE doesn't work without this
                         elem.css({ height: scope.panel.height || scope.row.height });
@@ -280,19 +281,18 @@ define([
                             var obj = _.clone(d);
                             chartData.push(obj);
                         });
-                        //chartData = _.clone(scope.data);
+                        //chartData = _.clone(scope.data););
                         createHivePlot(scope, chartData, elem);
                     }
 
                     function build_results() {
-                        var k = 0;
                         //the result data (the data how we need them to draw the hiveplot diagram are now saved in the array 'scope.data'
                         scope.data = [];
-                        _.each(scope.results.facets.terms.terms, function (v) {
+
+                        _.each(scope.results.facets.terms.entries, function (v) {
                             var slice;
-                            slice = { label: v.term, data: v.count, color: querySrv.colors[k] };                            
+                            slice = { label: "", time: v.time, data: v.count };                            
                             scope.data.push(slice);
-                            k = k + 1;
                         });
                     }
                 }
