@@ -26,6 +26,9 @@
             colors                  is an array of different colors. These colors are used for the filling of the nodes
                                     default: a number of colors in the attribute 'default_colorset'
                                     possible values: any array of colors
+            colorscale              defines a set of colors which are used to highlight the links depending on their strength.
+                                    A stronger link will be darker, a weaker link will be brighter.
+                                    By default the scale has a length of ten colors. But a arbitrary set with any length can be passed.
             axisConfig              is an array of objects. Each object defines how the nodes on the axis should be sorted. Each object has the
                                     following structure:
                                     {   axis:   name of the axis
@@ -63,6 +66,11 @@
         /*
             Initializing default values
         */
+
+        var default_colorscale = [
+            "#FFD700", "#FFC200", "#FFAC00", "#FF9700", "#FF8100",
+            "#FF5600", "#FF4100", "#FF2B00", "#FF1600", "#FF0000"
+        ];
         var default_colorset = [
             "#8E388E", "#7171C6", "#7D9EC0", "#388E8E", "#71C671", "#8E8E38", "#C5C1AA", "#C67171",
             "#B0171F", "#9400D3", "#0000FF", "#CAE1FF", "#36648B", "#00F5FF", "#00C78C", "#FF8247",
@@ -87,10 +95,13 @@
             outerRadius = Math.min(plotWidth, plotHeight) * 0.4,
             colorcode = ((typeof _config.colorcode === 'undefined' || _config.colorcode === null) ? default_colorcode : _config.colorcode),
             colors = ((typeof _config.colors === 'undefined' || _config.colors === null) ? default_colorset : _config.colors.concat(default_colorset)),
+            colorscale = ((typeof _config.colorscale === 'undefined' || _config.colorscale === null) ? default_colorscale : _config.colorscale),
             data = prepareData(_config.data),
             nodes = data.nodes,
             links = data.links,
             angleDomain = data.axis,
+            linkMin = data.linkMin,
+            linkMax = data.linkMax,
             angleRange = [];
         
         for (var i = 0; i < angleDomain.length; i++) {
@@ -111,11 +122,9 @@
             .attr("width", plotWidth)
             .attr("height", plotHeight)
             .attr("id", DOMelem + '-Panel')
-            .attr("style", "outline: thin solid green;")
             .append("svg")
             .attr("width", plotWidth)
             .attr("height", plotHeight)
-            .attr("style", "outline: thin solid blue;")
             .append("g")
             .attr("transform", "translate(" + plotWidth / 2 + "," + plotHeight / 2 + ")");
 
@@ -152,6 +161,10 @@
                     return radius(d.y);
                 }))
             .attr("class", "hiveplot-link")
+            .attr("fill", "none")
+            .attr("stroke", function (d) {
+                return colorscale[Math.ceil((d.value - linkMin) / ((linkMax - linkMin) / colorscale.length))-1];
+            })
             .attr("stroke-width", function (d) { return d.value })
             .on("mouseover", function (d) {
                 linkMouseover(d);
@@ -309,13 +322,19 @@
                 links = [],         //list of all links. Source and target are references to the nodes (objectstructure: source, target, value)
                 histCurrent = [],
                 arrHelp = [],
-                k = 0;
+                k = 0,
+                linkMax = 0,
+                linkMin = 0;    //assigning one random value from the data as the minimum
+
 
             /*
                 Creates a list for all axis names and a list with all nodes and the axis on which they are. The list still contains duplicates.
                 The list with the axis names is filtered for duplicates after the loop.
+                Moreover the loop defines the maximum and minimum value of the links.
             */
             data.forEach(function (d) {
+                linkMax = Math.max(linkMax, d.value);
+                linkMin = Math.min(linkMin, d.value);
                 uniqueAxis.push(d.axis1);
                 uniqueAxis.push(d.axis2);
                 nodes.push({ axis: d.axis1, y: 0, label: d.axis1NodeLabel, color: 'black', value: d.value, numberOfLinks: 1 });
@@ -426,7 +445,7 @@
                 }
                 links.push(obj);
             })
-            return { axis: uniqueAxis, nodes: uniqueNodes, links: links };
+            return { axis: uniqueAxis, nodes: uniqueNodes, links: links, linkMin: linkMin, linkMax: linkMax };
         }
 
         function linkMouseover(d) {

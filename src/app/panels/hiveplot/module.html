@@ -37,6 +37,11 @@
             .hiveplot-legend {
                 display: table-row;
             }
+
+            .hiveplot-panel {
+                height: 100%;
+                width: 100%;
+            }
     </style>
 
     <div class="hiveplot-wrapper">
@@ -66,7 +71,7 @@
 
         <!-- CHART -->
         <div id="{{$id}}-hivePlot" ng-show="true" hiveplot-chart params="{{panel}}" style="position: relative; text-align: center;" class="pointer hiveplot-chart">
-            <div id="c3" style="width:100%; height: 100%; border:solid; border-color:black"></div>
+
         </div>
 
         <!-- LEGEND -->

@@ -271,18 +271,16 @@ define([
             };
 
             function createNetworkDiagram(scope, dataset, elem) {
-                document.getElementById("c2").innerHTML = '';
+                $(elem[0]).empty();  //removes all elements from the current element
                 d3.select(elem[0]).append('div')
-                    .attr("width", 300)
-                    .attr("height", 700)
-                    .attr("id", "c4")
-                    .attr("style", "outline: thin solid green;");
+                    .attr("class", "network-panel")
+                    .attr("id", "networkpanel-" + elem[0].id);
 
                 var data = prepareData(dataset);
 
                 new Networkdiagram.Chart({
                     //Mandatory
-                    "elem": "c2",
+                    "elem": "networkpanel-" + elem[0].id,     //id of the just created div
                     "data": data,
                     //Optional
                     "charge": scope.panel.charge,

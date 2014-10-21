@@ -63,7 +63,7 @@ define([
                 * size:: Show this many terms
                 */
                 size: 10,
-                /** @scratch /panels/chord/5
+                /** @scratch /panels/hiveplot/5
                 * === Parameters
                 *
                 * seperator:: The character which divides the column for the connections
@@ -85,15 +85,15 @@ define([
                 * colorcode:: Indicates if the nodes should be coloured or black-white
                 */
                 colorcode: 'colored',
-                /** @scratch /panels/network/5
+                /** @scratch /panels/hiveplot/5
                 * sortingTooltip:: defines by which criteria the connections in the tooltip should be sorted
                 */
                 sortingTooltip: 'source',
-                /** @scratch /panels/network/5
+                /** @scratch /panels/hiveplot/5
                 * sortingOrderTooltip:: defines if the nodes should be ordered ascending or descending
                 */
                 sortingOrderTooltip: true,
-                /** @scratch /panels/network/5
+                /** @scratch /panels/hiveplot/5
                 * tooltipsetting:: Indicates if tooltips should be shown if the user hovers over a segment or chord
                 */
                 tooltipsetting: true,
@@ -299,12 +299,10 @@ define([
             };
 
             function createHivePlot(scope, dataset, elem) {
-                document.getElementById("c3").innerHTML = '';
+                $(elem[0]).empty();  //removes all elements from the current element
                 d3.select(elem[0]).append('div')
-                    .attr("width", 300)
-                    .attr("height", 700)
-                    .attr("id", "c4")
-                    .attr("style", "outline: thin solid green;");
+                    .attr("class", "hiveplot-panel")
+                    .attr("id", "hiveplotpanel-" + elem[0].id);
 
                 var data = prepareData(dataset);
                 
@@ -316,7 +314,7 @@ define([
 
                 new Hiveplot.Chart({
                     //Mandatory
-                    "elem": "c3",
+                    "elem": "hiveplotpanel-" + elem[0].id,     //id of the just created div
                     "data": data,
                     //Optional
                     "colorcode": scope.panel.colorcode,                         //possible values: ['black-white', 'colored']

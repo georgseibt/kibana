@@ -27,6 +27,11 @@
         .chord-legend {
             display: table-row;
         }
+
+        .chord-panel {
+            height: 100%;
+            width: 100%;
+        }
     </style>
 
     <div class="chord-wrapper">
@@ -56,7 +61,7 @@
 
         <!-- CHART -->
         <div id="{{$id}}-chordDiagram" ng-show="true" chord-chart params="{{panel}}" style="position: relative; text-align:center" class="pointer chord-chart">
-            <div id="c1" style="width:100%; height: 100%; border:solid; border-color:black"></div>
+
         </div>
 
         <!-- LEGEND -->

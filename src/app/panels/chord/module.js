@@ -284,24 +284,22 @@ define([
             };
 
             function createChordDiagram(scope, dataset, elem) {
-                document.getElementById("c1").innerHTML = '';
+                $(elem[0]).empty();  //removes all elements from the current element
                 d3.select(elem[0]).append('div')
-                    .attr("width", 300)
-                    .attr("height", 700)
-                    .attr("id", "c4")
-                    .attr("style", "outline: thin solid green;");
+                    .attr("class", "chord-panel")
+                    .attr("id", "chordpanel-" + elem[0].id);
 
                 var data = prepareData(dataset);
                 
                 new Chorddiagram.Chart({
                     //Mandatory
-                    "elem": "c1",
+                    "elem": "chordpanel-" + elem[0].id,     //id of the just created div
                     "data": data,
                     //Optional
                     "colors": null,
                     "numberOfTicks": scope.panel.numberOfTicks,
                     "ticksLabel": scope.panel.ticksLabel,
-                    "direction": scope.panel.segmentSize,                         //possible values: [outgoing, incoming]
+                    "direction": scope.panel.segmentSize,                       //possible values: [outgoing, incoming]
                     "directed": scope.panel.directed,                           //possible values: [true, false] true means directed, false means undirected
                     "sorting": scope.panel.sortingNodes,                        //possible values: [label, color, outgoingTotal, incomingTotal, total, numberOfLinks]
                     "sortingOrder": scope.panel.sortingOrderNodes,              //possible values: [true, false] true means ascending, false means descending
