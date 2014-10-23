@@ -194,22 +194,51 @@ define([
                 This is saved in the variable 'request'
                 */
                 
+                /*Request for DateHistogramFacet*/
+                    //request = request
+                    //    .facet(
+                    //        $scope.ejs.DateHistogramFacet('terms')
+                    //            .field("Timestamp")
+                    //            //.valueField("Country_Connection")
+                    //            //.keyField("Timestamp")
+                    //            .interval("day")
+                    //            .order($scope.panel.order)
+                    //            .facetFilter(
+                    //                $scope.ejs.QueryFilter(
+                    //                    $scope.ejs.FilteredQuery(
+                    //                        boolQuery,
+                    //                        filterSrv.getBoolFilter(filterSrv.ids())
+                    //                    )
+                    //                )
+                    //            )
+                    //    )
+                    //    .size(0);
+               
                 request = request
                     .facet(
-                        $scope.ejs.DateHistogramFacet('terms')
-                            .field("Timestamp")
-                            //.valueField("Country_Connection")
-                            //.keyField("Timestamp")
-                            .interval("day")
+                        $scope.ejs.TermsFacet('terms')
+                            .field($scope.field)
+                            .size($scope.panel.size)
                             .order($scope.panel.order)
-                            //.facetFilter(
-                            //    $scope.ejs.QueryFilter(
-                            //        $scope.ejs.FilteredQuery(
-                            //            boolQuery,
-                            //            filterSrv.getBoolFilter(filterSrv.ids())
-                            //        )
-                            //    )
-                            //)
+                            .exclude($scope.panel.exclude)
+                            .facetFilter(
+                                //$scope.ejs.AndFilter(
+                                //    [
+                                        $scope.ejs.QueryFilter(
+                                            $scope.ejs.FilteredQuery(
+                                                boolQuery,
+                                                filterSrv.getBoolFilter(filterSrv.ids())
+                                            )
+                                        //),
+                                    //    $scope.ejs.QueryFilter(
+                                    //        $scope.ejs.TermQuery(
+                                    //            'Timestamp',
+                                    //            '2014-03-14'
+                                    //        )
+                                    //    )
+                                    //]
+                                )
+                            )
                     )
                     .size(0);
 
@@ -285,20 +314,34 @@ define([
                         createHivePlot(scope, chartData, elem);
                     }
 
-                    function build_results() {
-                        //the result data (the data how we need them to draw the hiveplot diagram are now saved in the array 'scope.data'
-                        scope.data = [];
+                    /*Build results function for DateHistogramFacet*/
+                        //function build_results() {
+                        //    //the result data (the data how we need them to draw the hiveplot diagram are now saved in the array 'scope.data'
+                        //    scope.data = [];
 
-                        _.each(scope.results.facets.terms.entries, function (v) {
+                        //    _.each(scope.results.facets.terms.entries, function (v) {
+                        //        var slice;
+                        //        slice = { label: v.term, data: v.count };                            
+                        //        scope.data.push(slice);
+                        //    });
+                        //}
+
+                    function build_results() {
+                        var k = 0;
+                        //the result data (the data how we need them to draw the network diagram are now saved in the array 'scope.data'
+                        scope.data = [];
+                        _.each(scope.results.facets.terms.terms, function (v) {
                             var slice;
-                            slice = { label: "", time: v.time, data: v.count };                            
+                            slice = { label: v.term, data: v.count, color: querySrv.colors[k] };
                             scope.data.push(slice);
+                            k = k + 1;
                         });
                     }
                 }
             };
 
             function createHivePlot(scope, dataset, elem) {
+                console.log(dataset);
                 $(elem[0]).empty();  //removes all elements from the current element
                 d3.select(elem[0]).append('div')
                     .attr("class", "hiveplot-panel")
@@ -340,21 +383,36 @@ define([
                         console.log("Function still has to be implemented");
                     }
                 });
-
+                                
                 function prepareData(dataset) {
-                    var data = [
-                        { axis1: "from", axis1NodeLabel: "Augsburg", axis2: "to", axis2NodeLabel: "Bremen", value: 5 },
-                        { axis1: "from", axis1NodeLabel: "Augsburg", axis2: "to", axis2NodeLabel: "Chemnitz", value: 6 },
-                        { axis1: "from", axis1NodeLabel: "Bremen", axis2: "to", axis2NodeLabel: "Augsburg", value: 2 },
-                        { axis1: "from", axis1NodeLabel: "Bremen", axis2: "to", axis2NodeLabel: "Hamburg", value: 1 },
-                        { axis1: "from", axis1NodeLabel: "Chemnitz", axis2: "to", axis2NodeLabel: "Bremen", value: 1 },
-                        { axis1: "from", axis1NodeLabel: "München", axis2: "to", axis2NodeLabel: "Augsburg", value: 1 },
-                        { axis1: "to", axis1NodeLabel: "Augsburg", axis2: "time", axis2NodeLabel: "Monday", value: 1 },
-                        { axis1: "to", axis1NodeLabel: "München", axis2: "time", axis2NodeLabel: "Monday", value: 5 },
-                        { axis1: "to", axis1NodeLabel: "Hamburg", axis2: "time", axis2NodeLabel: "Wednesday", value: 1 },
-                        { axis1: "to", axis1NodeLabel: "Hamburg", axis2: "time", axis2NodeLabel: "Friday", value: 1 },
-                        { axis1: "from", axis1NodeLabel: "Augsburg", axis2: "time", axis2NodeLabel: "Wednesday", value: 3 }
-                    ];
+                    //var data = [
+                    //    { axis1: "from", axis1NodeLabel: "Augsburg", axis2: "to", axis2NodeLabel: "Bremen", value: 5 },
+                    //    { axis1: "from", axis1NodeLabel: "Augsburg", axis2: "to", axis2NodeLabel: "Chemnitz", value: 6 },
+                    //    { axis1: "from", axis1NodeLabel: "Bremen", axis2: "to", axis2NodeLabel: "Augsburg", value: 2 },
+                    //    { axis1: "from", axis1NodeLabel: "Bremen", axis2: "to", axis2NodeLabel: "Hamburg", value: 1 },
+                    //    { axis1: "from", axis1NodeLabel: "Chemnitz", axis2: "to", axis2NodeLabel: "Bremen", value: 1 },
+                    //    { axis1: "from", axis1NodeLabel: "München", axis2: "to", axis2NodeLabel: "Augsburg", value: 1 },
+                    //    { axis1: "to", axis1NodeLabel: "Augsburg", axis2: "time", axis2NodeLabel: "Monday", value: 1 },
+                    //    { axis1: "to", axis1NodeLabel: "München", axis2: "time", axis2NodeLabel: "Monday", value: 5 },
+                    //    { axis1: "to", axis1NodeLabel: "Hamburg", axis2: "time", axis2NodeLabel: "Wednesday", value: 1 },
+                    //    { axis1: "to", axis1NodeLabel: "Hamburg", axis2: "time", axis2NodeLabel: "Friday", value: 1 },
+                    //    { axis1: "from", axis1NodeLabel: "Augsburg", axis2: "time", axis2NodeLabel: "Wednesday", value: 3 }
+                    //];
+
+                    //return data;
+
+                    var data = [];
+
+                    dataset.forEach(function (link) {
+                        var object = {
+                            axis1: 'from',
+                            axis1NodeLabel: link.label.split(scope.panel.seperator)[0],
+                            axis2: 'to',
+                            axis2NodeLabel: link.label.split(scope.panel.seperator)[1],
+                            value: link.data
+                        }
+                        data.push(object);
+                    });
 
                     return data;
                 }
