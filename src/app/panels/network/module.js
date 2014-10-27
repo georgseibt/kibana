@@ -90,7 +90,7 @@ define([
                 */
                 colorcode: 'colored',
                 /** @scratch /panels/network/5
-                * nodesize:: Indicates if the size of the nodes (radius) should be proportional to the incoming, outgoing ot total number of edges
+                * nodeSize:: Indicates if the size of the nodes (radius) should be proportional to the incoming, outgoing ot total number of edges
                 */
                 nodeSize: 'outgoing',
                 /** @scratch /panels/network/5
@@ -106,7 +106,7 @@ define([
                 */
                 tooltipSetting: true,
                 /** @scratch /panels/network/5
-                * direction:: defines if the paths in the network should be directed (true) or undirected (false)
+                * directed:: defines if the paths in the network should be directed (true) or undirected (false)
                 */
                 directed: true,
                 /** @scratch /panels/network/5
@@ -277,7 +277,7 @@ define([
                     .attr("id", "networkpanel-" + elem[0].id);
 
                 var data = prepareData(dataset);
-
+                
                 new Networkdiagram.Chart({
                     //Mandatory
                     "elem": "networkpanel-" + elem[0].id,     //id of the just created div

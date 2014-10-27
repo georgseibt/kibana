@@ -128,6 +128,19 @@
             .links(links)
             .on("tick", tick)
             .start();
+                
+        // add the links and the arrows
+        var path = svg.append("g").selectAll("path")
+            .data(force.links())
+            .enter()
+            .append("path")
+            .attr("class", "networkdiagram-link")
+            .attr("id", function (d, i) { return "linkId_" + i; })
+            .style("stroke-width", function (d) { return ((d.value - 1) / maxValueOfLink) * 5 + 1; }); //the width of the path is scaled on a scale from 1 to 5
+
+        if (directed) {
+            path.attr("marker-end", "url(#end)");
+        }
 
         var path_invisible = svg.append("g").selectAll("path_invisible")
             .data(force.links())
@@ -150,19 +163,6 @@
                     }
                 }
             });
-
-        // add the links and the arrows
-        var path = svg.append("g").selectAll("path")
-            .data(force.links())
-            .enter()
-            .append("path")
-            .attr("class", "networkdiagram-link")
-            .attr("id", function (d, i) { return "linkId_" + i; })
-            .style("stroke-width", function (d) { return (d.value / maxValueOfLink) * 5; }); //the width of the path is scaled on a scale from 0 to 5
-
-        if (directed) {
-            path.attr("marker-end", "url(#end)");
-        }
 
         // define the nodes
         var node = svg.selectAll(".node")

@@ -105,7 +105,13 @@
             angleRange = [];
         
         for (var i = 0; i < angleDomain.length; i++) {
-            angleRange[i] = 2 * Math.PI / angleDomain.length * i;
+            if (angleDomain.length === 2) {
+                angleRange[0] = 0;
+                angleRange[1] = 2 * Math.PI / 3;
+            }
+            else {
+                angleRange[i] = 2 * Math.PI / angleDomain.length * i;
+            }
         }
                
         var angle = d3.scale.ordinal()
@@ -476,7 +482,7 @@
                 The links to and from this node are also highlighted.
             */
             if (tooltipSetting) {
-                var detailstext = '<h5>' + d.label + ' (' + d.value + ')</h5>';
+                var detailstext = '<h4 class=hiveplot-h4>' + d.label + ' (' + d.value + ')</h4>';
                 var data = links.filter(function (obj) {
                     return (obj.source === d || obj.target === d)
                 });

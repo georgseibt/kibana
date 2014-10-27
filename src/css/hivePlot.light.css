@@ -1,4 +1,9 @@
-﻿.hiveplot-ticks {
+﻿.hiveplot-h4 {
+    font-size: 16px;
+    color: white;
+}
+
+.hiveplot-ticks {
     stroke: #555;
     fill: #555;
 }

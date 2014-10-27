@@ -55,11 +55,19 @@ define([
                 *
                 * field:: The field on which to computer the facet
                 */
-                field   : '_type',
+                field: '_type',
+                /** @scratch /panels/chord/5
+                * sourceField:: The source field on which to computer the facet
+                */
+                sourceField : [],
+                /** @scratch /panels/chord/5
+                * targetField:: The target field on which to computer the facet
+                */
+                targetField : [],
                 /** @scratch /panels/chord/5
                 * exclude:: terms to exclude from the results
                 */
-                exclude : [],
+                exclude: [],
                 /** @scratch /panels/chord/5
                 * size:: Show this many terms
                 */
@@ -157,8 +165,8 @@ define([
                     boolQuery,
                     queries;
 
-                $scope.field = _.contains(fields.list, $scope.panel.field + '.raw') ?
-                    $scope.panel.field + '.raw' : $scope.panel.field;
+                //$scope.field = _.contains(fields.list, $scope.panel.field + '.raw') ?
+                //    $scope.panel.field + '.raw' : $scope.panel.field;
 
                 request = $scope.ejs.Request().indices(dashboard.indices);
 
@@ -175,52 +183,183 @@ define([
                 different filters and queries, etc.
                 This is saved in the variable 'request'
                 */
-                request = request
+
+                //if ($scope.panel.sourceField !== "" && $scope.panel.targetField !== "" && $scope.panel.field === "") {
+                var request1 = $scope.ejs.Request().indices(dashboard.indices);
+                request1 = request1
                     .facet(
                         $scope.ejs.TermsFacet('terms')
-                        .field($scope.field)
-                        .size($scope.panel.size)
-                        .order($scope.panel.order)
-                        .exclude($scope.panel.exclude)
+                        .field($scope.panel.sourceField)
                         .facetFilter(
-                            $scope.ejs.QueryFilter(
-                                $scope.ejs.FilteredQuery(
-                                    boolQuery,
-                                    filterSrv.getBoolFilter(filterSrv.ids())
+                                $scope.ejs.AndFilter(
+                                    [
+                                        $scope.ejs.QueryFilter(
+                                            $scope.ejs.FilteredQuery(
+                                                boolQuery,
+                                                filterSrv.getBoolFilter(filterSrv.ids())
+                                            )
+                                        )
+                                    ]
                                 )
                             )
-                        )
-                    ).size(0);
+                        );
+                var results1 = request1.doSearch().then(function (results1) {
+                    $scope.singleNodes = [];
 
+                    _.each(results1.facets.terms.terms, function (v) {
+                        $scope.singleNodes.push(v.term);
+                    });
 
-                // Populate the inspector panel; The current request will be shown in the inspector panel
-                $scope.inspector = angular.toJson(JSON.parse(request.toString()), true);
+                    $scope.singleNodes.forEach(function (sourceNode) {
+                        request = request
+                        .facet(
+                            $scope.ejs.TermsFacet(sourceNode)
+                            .field($scope.panel.targetField)
+                            .size($scope.panel.size)
+                            .order($scope.panel.order)
+                            .exclude($scope.panel.exclude)
+                            .facetFilter(
+                                    $scope.ejs.AndFilter(
+                                        [
+                                            $scope.ejs.QueryFilter(
+                                                $scope.ejs.FilteredQuery(
+                                                    boolQuery,
+                                                    filterSrv.getBoolFilter(filterSrv.ids())
+                                                )
+                                            ),
+                                            $scope.ejs.QueryFilter(
+                                                $scope.ejs.TermQuery(
+                                                    $scope.panel.sourceField,
+                                                    sourceNode
+                                                )
+                                            )
+                                        ]
+                                    )
+                                )
+                            );
+                    });
 
-                // Populate scope when we have results
-                results = request.doSearch().then(function (results) {
-                    $scope.panelMeta.loading = false;
-                    $scope.hits = results.hits.total;
-                    
-                    $scope.results = results;
+                    //request = request
+                    //    .facet(
+                    //        $scope.ejs.TermsFacet('USA')
+                    //        .field('Country_Connection')
+                    //        .size($scope.panel.size)
+                    //        .order($scope.panel.order)
+                    //        .exclude($scope.panel.exclude)
+                    //        .facetFilter(
+                    //                $scope.ejs.AndFilter(
+                    //                    [
+                    //                        $scope.ejs.QueryFilter(
+                    //                            $scope.ejs.FilteredQuery(
+                    //                                boolQuery,
+                    //                                filterSrv.getBoolFilter(filterSrv.ids())
+                    //                            )
+                    //                        ),
+                    //                        $scope.ejs.QueryFilter(
+                    //                            $scope.ejs.TermQuery(
+                    //                                'Country_Target',
+                    //                                'USA'
+                    //                            )
+                    //                        )
+                    //                    ]
+                    //                )
+                    //            )
+                    //        )
+                    //    .facet(
+                    //        $scope.ejs.TermsFacet('GB')
+                    //        .field('Country_Connection')
+                    //        .size($scope.panel.size)
+                    //        .order($scope.panel.order)
+                    //        .exclude($scope.panel.exclude)
+                    //        .facetFilter(
+                    //                $scope.ejs.AndFilter(
+                    //                    [
+                    //                        $scope.ejs.QueryFilter(
+                    //                            $scope.ejs.FilteredQuery(
+                    //                                boolQuery,
+                    //                                filterSrv.getBoolFilter(filterSrv.ids())
+                    //                            )
+                    //                        ),
+                    //                        $scope.ejs.QueryFilter(
+                    //                            $scope.ejs.TermQuery(
+                    //                                'Country_Target',
+                    //                                'GB'
+                    //                            )
+                    //                        )
+                    //                    ]
+                    //                )
+                    //            )
+                    //        );
 
+                    // Populate the inspector panel; The current request will be shown in the inspector panel
+                    $scope.inspector = angular.toJson(JSON.parse(request.toString()), true);
 
-                    $scope.$emit('render'); //dispatches the event upwards through the scope hierarchy of controllers.
+                    // Populate scope when we have results
+                    results = request.doSearch().then(function (results) {
+                        $scope.panelMeta.loading = false;
+                        $scope.hits = results.hits.total;
+
+                        $scope.results = results;
+                        $scope.$emit('render'); //dispatches the event upwards through the scope hierarchy of controllers.
+                    });
                 });
+                //}
+                //else {
+                //    request = request
+                //    .facet(
+                //        $scope.ejs.TermsFacet('terms')
+                //            .field($scope.panel.field)
+                //            .size($scope.panel.size)
+                //            .order($scope.panel.order)
+                //            .exclude($scope.panel.exclude)
+                //            .facetFilter(
+                //                $scope.ejs.QueryFilter(
+                //                    $scope.ejs.FilteredQuery(
+                //                        boolQuery,
+                //                        filterSrv.getBoolFilter(filterSrv.ids())
+                //                    )
+                //                )
+                //            )
+                //    )
+                //    .size(0);
+
+
+                //    // Populate the inspector panel; The current request will be shown in the inspector panel
+                //    $scope.inspector = angular.toJson(JSON.parse(request.toString()), true);
+
+                //    // Populate scope when we have results
+                //    results = request.doSearch().then(function (results) {
+                //        $scope.panelMeta.loading = false;
+                //        $scope.hits = results.hits.total;
+                //        $scope.results = results;
+                //        $scope.$emit('render'); //dispatches the event upwards through the scope hierarchy of controllers.
+                //    });
+                //}
             };
 
             $scope.build_search = function (nodeName) {
                 //This function filters the result. If you click on a node (border segment of the circle), just the Connections to and from this node are shown
                 var queryterm = "";
-                $scope.data.forEach(function (d) {
-                    if (d.label.indexOf(nodeName) > -1) {
-                        if (queryterm === "") {
-                            queryterm = queryterm + '' + $scope.field + ':\"' + d.label + '\"';
-                        }
-                        else {
-                            queryterm = queryterm + ' OR ' + $scope.field + ':\"' + d.label + '\"';
-                        }
-                    }
-                });
+                //$scope.data.forEach(function (d) {
+                //    if (d.label.indexOf(nodeName) > -1) {
+                //        if (queryterm === "") {
+                //            queryterm = queryterm + '' + $scope.panel.field + ':\"' + d.label + '\"';
+                //        }
+                //        else {
+                //            queryterm = queryterm + ' OR ' + $scope.panel.field + ':\"' + d.label + '\"';
+                //        }
+                //    }
+                //});
+                //$scope.data.forEach(function (d) {
+                //    if (d.source === nodeName || d.target === nodeName) {
+                if (queryterm === "") {
+                    queryterm = queryterm + '' + $scope.panel.sourceField + ':\"' + nodeName + '\"' + ' OR ' + $scope.panel.targetField + ':\"' + nodeName + '\"';
+                }
+                else {
+                    queryterm = queryterm + ' OR ' + $scope.panel.sourceField + ':\"' + nodeName + '\"' + ' OR ' + $scope.panel.targetField + ':\"' + nodeName + '\"';
+                }
+                //    }
+                //});
                 filterSrv.set({
                     type: 'querystring', query: queryterm,
                     mandate: 'must'
@@ -272,13 +411,37 @@ define([
                         var k = 0;
                         //the result data (the data how we need them to draw the chord diagram are now saved in the array 'scope.data'
                         scope.data = [];
-                        _.each(scope.results.facets.terms.terms, function (v) {
-                            var slice;
-                            slice = { label: v.term, data: v.count, color: querySrv.colors[k] };
-                            
-                            scope.data.push(slice);
-                            k = k + 1;
+                        
+                        //if (scope.panel.sourceField !== "" && scope.panel.targetField !== "" && scope.panel.field === "") {
+                        scope.singleNodes.forEach(function (sourceNode) {
+                            //_.each(eval('scope.results.facets.' + sourceNode + '.terms'), function (v) {
+                            _.each(scope.results.facets[sourceNode].terms, function (v) {
+                                var slice;
+                                slice = {
+                                    source: sourceNode,
+                                    target: v.term,
+                                    data: v.count,
+                                    color: querySrv.colors[k]
+                                };
+
+                                scope.data.push(slice);
+                                k = k + 1;
+                            });
                         });
+                        //}
+                        //else {
+                        //    _.each(scope.results.facets.terms.terms, function (v) {
+                        //        var slice;
+                        //        slice = {
+                        //            source: v.term.split(scope.panel.seperator)[0],
+                        //            target: v.term.split(scope.panel.seperator)[1],
+                        //            data: v.count,
+                        //            color: querySrv.colors[k]
+                        //        };
+                        //        scope.data.push(slice);
+                        //        k = k + 1;
+                        //    });
+                        //}
                     }
                 }
             };
@@ -299,7 +462,7 @@ define([
                     "colors": null,
                     "numberOfTicks": scope.panel.numberOfTicks,
                     "ticksLabel": scope.panel.ticksLabel,
-                    "direction": scope.panel.segmentSize,                       //possible values: [outgoing, incoming]
+                    "segmentSize": scope.panel.segmentSize,                     //possible values: [outgoing, incoming]
                     "directed": scope.panel.directed,                           //possible values: [true, false] true means directed, false means undirected
                     "sorting": scope.panel.sortingNodes,                        //possible values: [label, color, outgoingTotal, incomingTotal, total, numberOfLinks]
                     "sortingOrder": scope.panel.sortingOrderNodes,              //possible values: [true, false] true means ascending, false means descending
@@ -319,8 +482,8 @@ define([
 
                     dataset.forEach(function (link) {
                         var object = {
-                            source: link.label.split(scope.panel.seperator)[0],
-                            target: link.label.split(scope.panel.seperator)[1],
+                            source: link.source,
+                            target: link.target,
                             value: link.data
                         }
                         data.push(object);

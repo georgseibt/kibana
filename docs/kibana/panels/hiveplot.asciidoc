@@ -13,13 +13,20 @@ seperator:: The character which divides the column for the connections
 order:: How the terms are sorted: count, term, reverse_count or reverse_term,
 arrangement:: Arrangement of the legend: horizontal or vertical
 counter_pos:: The location of the legend in respect to the diagram: above, below, or none.
-charge:: defines the charge for the forced layout network
 colorcode:: Indicates if the nodes should be coloured or black-white
-nodeSize:: Indicates if the size of the nodes (radius) should be proportional to the incoming, outgoing ot total number of edges
 sortingTooltip:: defines by which criteria the connections in the tooltip should be sorted
-sortingOrderTooltip:: defines if the nodes should be ordered ascending (true) or descending (false)
+sortingOrderTooltip:: defines if the nodes should be ordered ascending or descending
 tooltipSetting:: Indicates if tooltips should be shown if the user hovers over a segment or chord
-directed:: defines if the paths in the network should be directed (true) or undirected (false)
+numberOfAxis:: defines how many axis should be drawn in the hiveplot
+axis1Label:: defines the label for axis1 and which nodes should be displayed on this axis (possible values are: 'from', 'to', 'time' and 'connection')
+axis2Label:: defines the label for axis2 and which nodes should be displayed on this axis (possible values are: 'from', 'to', 'time' and 'connection')
+axis3Label:: defines the label for axis3 and which nodes should be displayed on this axis (possible values are: 'from', 'to', 'time' and 'connection')
+axis1Sorting:: defines by which criteria the nodes on axis1 are sorted
+axis2Sorting:: defines by which criteria the nodes on axis2 are sorted
+axis3Sorting:: defines by which criteria the nodes on axis3 are sorted
+axis1Order:: defines how the nodes on axis1 are ordered
+axis2Order:: defines how the nodes on axis2 are ordered
+axis3Order:: defines how the nodes on axis3 are ordered
 spyable:: Set spyable to false to disable the inspect button
 
 ==== Queries

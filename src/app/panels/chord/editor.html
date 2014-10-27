@@ -2,8 +2,16 @@
     <div class="section">
         <h5>Parameters</h5>
         <div class="editor-option">
-            <label class="small">Field</label>
+            <label class="small">Connection Field</label>
             <input type="text" class="input-small" bs-typeahead="fields.list" ng-model="panel.field" ng-change="set_refresh(true)">
+        </div>
+        <div class="editor-option">
+            <label class="small">Source Field</label>
+            <input type="text" class="input-small" bs-typeahead="fields.list" ng-model="panel.sourceField" ng-change="set_refresh(true)">
+        </div>
+        <div class="editor-option">
+            <label class="small">Target Field</label>
+            <input type="text" class="input-small" bs-typeahead="fields.list" ng-model="panel.targetField" ng-change="set_refresh(true)">
         </div>
         <div class="editor-option">
             <label class="small">Length</label>
@@ -52,12 +60,12 @@
             <select class="input-small" ng-model="panel.directed" ng-options="f.value as f.text for f in [{'value': true, 'text':'Directed'},{'value': false, 'text':'Undirected'}]" ng-change="set_refresh(true)"></select></span>
         </div>
         <div class="editor-option" ng-show="true">
-            <label class="small">Number of Ticks</label>
-            <select class="input-small" ng-model="panel.numberOfTicks" ng-options="f for f in [1,2,3,4,5,6,7,8,9,10]" ng-change="set_refresh(true)"></select></span>
+            <label class="small">Every n th tick shown</label>
+            <input type="text" class="input-small" ng-model="panel.numberOfTicks" ng-change="set_refresh(true)">
         </div>
         <div class="editor-option" ng-show="true">
-            <label class="small">Number of Labels</label>
-            <select class="input-small" ng-model="panel.ticksLabel" ng-options="f for f in [1,2,3,4,5,6,7,8,9,10]" ng-change="set_refresh(true)"></select></span>
+            <label class="small">Every n th label shown</label>
+            <input type="text" class="input-small" ng-model="panel.ticksLabel" ng-change="set_refresh(true)">
         </div>
         <div class="editor-option" ng-show="true">
             <label class="small">Sorting Tooltip by</label>

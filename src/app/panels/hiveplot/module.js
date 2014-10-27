@@ -98,43 +98,43 @@ define([
                 */
                 tooltipSetting: true,
                 /** @scratch /panels/hiveplot/5
-                * number_of_axis:: defines how many axis should be drawn in the hiveplot
+                * numberOfAxis:: defines how many axis should be drawn in the hiveplot
                 */
                 numberOfAxis: 3,
                 /** @scratch /panels/hiveplot/5
-                * axis1:: defines the label for axis1 and which nodes should be displayed on this axis (possible values are: 'from', 'to', 'time' and 'connection'
+                * axis1Label:: defines the label for axis1 and which nodes should be displayed on this axis (possible values are: 'from', 'to', 'time' and 'connection')
                 */
                 axis1Label: 'from',
                 /** @scratch /panels/hiveplot/5
-                * axis2:: defines the label for axis2 and which nodes should be displayed on this axis (possible values are: 'from', 'to', 'time' and 'connection'
+                * axis2Label:: defines the label for axis2 and which nodes should be displayed on this axis (possible values are: 'from', 'to', 'time' and 'connection')
                 */
                 axis2Label: 'to',
                 /** @scratch /panels/hiveplot/5
-                * axis3:: defines the label for axis3 and which nodes should be displayed on this axis (possible values are: 'from', 'to', 'time' and 'connection'
+                * axis3Label:: defines the label for axis3 and which nodes should be displayed on this axis (possible values are: 'from', 'to', 'time' and 'connection')
                 */
                 axis3Label: 'time',
                 /** @scratch /panels/hiveplot/5
-                * axis1:: defines by which criteria the nodes on axis1 are sorted
+                * axis1Sorting:: defines by which criteria the nodes on axis1 are sorted
                 */
                 axis1Sorting: 'label',
                 /** @scratch /panels/hiveplot/5
-                * axis2:: defines by which criteria the nodes on axis2 are sorted
+                * axis2Sorting:: defines by which criteria the nodes on axis2 are sorted
                 */
                 axis2Sorting: 'label',
                 /** @scratch /panels/hiveplot/5
-                * axis3:: defines by which criteria the nodes on axis3 are sorted
+                * axis3Sorting:: defines by which criteria the nodes on axis3 are sorted
                 */
                 axis3Sorting: 'label',
                 /** @scratch /panels/hiveplot/5
-                * axis1:: defines how the nodes on axis1 are ordered
+                * axis1Order:: defines how the nodes on axis1 are ordered
                 */
                 axis1Order: true,
                 /** @scratch /panels/hiveplot/5
-                * axis2:: defines how the nodes on axis1 are ordered
+                * axis2Order:: defines how the nodes on axis2 are ordered
                 */
                 axis2Order: true,
                 /** @scratch /panels/hiveplot/5
-                * axis3:: defines how the nodes on axis1 are ordered
+                * axis3Order:: defines how the nodes on axis3 are ordered
                 */
                 axis3Order: true,
                 /** @scratch /panels/hiveplot/5
@@ -341,7 +341,6 @@ define([
             };
 
             function createHivePlot(scope, dataset, elem) {
-                console.log(dataset);
                 $(elem[0]).empty();  //removes all elements from the current element
                 d3.select(elem[0]).append('div')
                     .attr("class", "hiveplot-panel")

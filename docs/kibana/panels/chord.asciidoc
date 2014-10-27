@@ -7,14 +7,23 @@ A chord diagram based on the results of an Elasticsearch terms facet.
 === Parameters
 
 field:: The field on which to computer the facet
+sourceField:: The source field on which to computer the facet
+targetField:: The target field on which to computer the facet
 exclude:: terms to exclude from the results
 size:: Show this many terms
 seperator:: The character which divides the column for the connections
 order:: How the terms are sorted: count, term, reverse_count or reverse_term,
 arrangement:: Arrangement of the legend: horizontal or vertical
 counter_pos:: The location of the legend in respect to the diagram: above, below, or none.
-tooltipsetting:: Indicates if tooltips should be shown if the user hovers over a segment or chord
-direction:: Defines if the paths in the chorddiagram should be directed or undirected
+sortingNodes:: Indicates how the nodes are sorted
+sortingOrderNodes:: Indicates if the nodes are sorted ascending (true) or descending (false)
+segmentSize:: In the default case the attribute 'segmentSize' is set to the value 'outgoing'. That means that the width of a chord on the side of a node indicates how much leaves the node from there. For example if we have a connection from A to B with the value 4, the chord has a width of 4 where it is connected to node A, but a width of 0 at the other side.
+directed:: Defines if the paths in the chorddiagram should be directed (true) or undirected (false)
+numberOfTicks:: defines how many ticks should be displayed. For example a 1 indicates that every tick should be shown, a 4 that every 4th tick is shown
+ticksLabel:: defines that each n th label of a tick is shown. For example a 1 indicates that every label is shown, a 4 that every 4th label is shown
+sortingTooltip:: defines by which criteria the connections in the tooltip should be sorted
+sortingOrderTooltip:: defines if the nodes should be ordered ascending or descending
+tooltipSetting:: Indicates if tooltips should be shown if the user hovers over a segment or chord
 spyable:: Set spyable to false to disable the inspect button
 
 ==== Queries

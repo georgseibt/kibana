@@ -110,8 +110,8 @@
                 numberOfTicks = numberOfTicks + chordMatrix[count][count2];
             }
         }
-        if (typeof _config.numberOfTicks === 'undefined' || _config.numberOfTicks === null) {
-            if (typeof _config.ticksLabel === 'undefined' || _config.ticksLabel === null) {
+        if (typeof _config.numberOfTicks === 'undefined' || _config.numberOfTicks === null || _config.numberOfTicks === "") {
+            if (typeof _config.ticksLabel === 'undefined' || _config.ticksLabel === null || _config.ticksLabel === "") {
                 //both are undefined
                 numberOfTicks = Math.ceil(numberOfTicks / 48);
                 ticksLabel = numberOfTicks * 2;
@@ -123,7 +123,7 @@
             }
         }
         else {
-            if (typeof _config.ticksLabel === 'undefined' || _config.ticksLabel === null) {
+            if (typeof _config.ticksLabel === 'undefined' || _config.ticksLabel === null || _config.ticksLabel === "") {
                 //numberOfTicks is defined BUT ticksLabel is undefined
                 numberOfTicks = _config.numberOfTicks;
                 ticksLabel = _config.numberOfTicks * 2;
