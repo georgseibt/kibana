@@ -49,26 +49,26 @@ define([
 
             // Set and populate defaults
             var _d = {
-                /** @scratch /panels/network/5
-                * === Parameters
-                *
-                * field:: The field on which to computer the facet
+                /** @scratch /panels/chord/5
+                * sourceField:: The source field on which to computer the facet
                 */
-                field   : '_type',
+                sourceField: '_type',
+                /** @scratch /panels/chord/5
+                * targetField:: The target field on which to computer the facet
+                */
+                targetField: '_type',
                 /** @scratch /panels/network/5
                 * exclude:: terms to exclude from the results
                 */
-                exclude : [],
-                /** @scratch /panels/network/5
-                * size:: Show this many terms
-                */
-                size: 10,
+                exclude: [],
                 /** @scratch /panels/chord/5
-                * === Parameters
-                *
-                * seperator:: The character which divides the column for the connections
+                * size1:: Show this many terms for field 1
                 */
-                seperator: '-',
+                size1: 10,
+                /** @scratch /panels/chord/5
+                * size2:: Show this many terms for field 2
+                */
+                size2: 10,
                 /** @scratch /panels/network/5
                 * order:: How the terms are sorted: count, term, reverse_count or reverse_term,
                 */
@@ -148,8 +148,6 @@ define([
                     boolQuery,
                     queries;
 
-                $scope.field = _.contains(fields.list, $scope.panel.field + '.raw') ? $scope.panel.field + '.raw' : $scope.panel.field;
-
                 request = $scope.ejs.Request().indices(dashboard.indices);
 
                 $scope.panel.queries.ids = querySrv.idsByMode($scope.panel.queries);
@@ -165,50 +163,87 @@ define([
                 different filters and queries, etc.
                 This is saved in the variable 'request'
                 */
-                request = request
+
+                var request1 = $scope.ejs.Request().indices(dashboard.indices);
+                request1 = request1
                     .facet(
                         $scope.ejs.TermsFacet('terms')
-                            .field($scope.field)
-                            .size($scope.panel.size)
+                        .field($scope.panel.sourceField)
+                        .size($scope.panel.size1)
+                        .order($scope.panel.order)
+                        .exclude($scope.panel.exclude)
+                        .facetFilter(
+                                $scope.ejs.AndFilter(
+                                    [
+                                        $scope.ejs.QueryFilter(
+                                            $scope.ejs.FilteredQuery(
+                                                boolQuery,
+                                                filterSrv.getBoolFilter(filterSrv.ids())
+                                            )
+                                        )
+                                    ]
+                                )
+                            )
+                        );
+                var results1 = request1.doSearch().then(function (results1) {
+                    var singleNodes = [];
+
+                    _.each(results1.facets.terms.terms, function (v) {
+                        singleNodes.push(v.term);
+                    });
+
+                    singleNodes.forEach(function (sourceNode) {
+                        request = request
+                        .facet(
+                            $scope.ejs.TermsFacet(sourceNode)
+                            .field($scope.panel.targetField)
+                            .size($scope.panel.size2)
                             .order($scope.panel.order)
                             .exclude($scope.panel.exclude)
                             .facetFilter(
-                                $scope.ejs.QueryFilter(
-                                    $scope.ejs.FilteredQuery(
-                                        boolQuery,
-                                        filterSrv.getBoolFilter(filterSrv.ids())
+                                    $scope.ejs.AndFilter(
+                                        [
+                                            $scope.ejs.QueryFilter(
+                                                $scope.ejs.FilteredQuery(
+                                                    boolQuery,
+                                                    filterSrv.getBoolFilter(filterSrv.ids())
+                                                )
+                                            ),
+                                            $scope.ejs.QueryFilter(
+                                                $scope.ejs.TermQuery(
+                                                    $scope.panel.sourceField,
+                                                    sourceNode
+                                                )
+                                            )
+                                        ]
                                     )
                                 )
-                            )
-                    )
-                    .size(0);
+                            );
+                    });
 
+                    // Populate the inspector panel; The current request will be shown in the inspector panel
+                    $scope.inspector = angular.toJson(JSON.parse(request.toString()), true);
 
-                // Populate the inspector panel; The current request will be shown in the inspector panel
-                $scope.inspector = angular.toJson(JSON.parse(request.toString()), true);
+                    // Populate scope when we have results
+                    results = request.doSearch().then(function (results) {
+                        $scope.panelMeta.loading = false;
+                        $scope.hits = results.hits.total;
 
-                // Populate scope when we have results
-                results = request.doSearch().then(function (results) {
-                    $scope.panelMeta.loading = false;
-                    $scope.hits = results.hits.total;
-                    $scope.results = results;
-                    $scope.$emit('render'); //dispatches the event upwards through the scope hierarchy of controllers.
+                        $scope.results = results;
+                        $scope.$emit('render'); //dispatches the event upwards through the scope hierarchy of controllers.
+                    });
                 });
             };
 
             $scope.build_search = function (nodeName) {
-                //This function filters the result. If you click on a node just the Connections to and from this node are shown
+                //This function filters the result. If you click on a node (border segment of the circle), just the Connections to and from this node are shown
                 var queryterm = "";
-                $scope.data.forEach(function (d) {
-                    if (d.label.indexOf(nodeName) > -1) {
-                        if (queryterm === "") {
-                            queryterm = queryterm + '' + $scope.field + ':\"' + d.label + '\"';
-                        }
-                        else {
-                            queryterm = queryterm + ' OR ' + $scope.field + ':\"' + d.label + '\"';
-                        }
-                    }
-                })
+                if (queryterm === "") {
+                    queryterm = queryterm + '' + $scope.panel.sourceField + ':\"' + nodeName + '\"' + ' OR ' + $scope.panel.targetField + ':\"' + nodeName + '\"';
+                }
+                else {
+                    queryterm = queryterm + ' OR ' + $scope.panel.sourceField + ':\"' + nodeName + '\"' + ' OR ' + $scope.panel.targetField + ':\"' + nodeName + '\"';
+                }
                 filterSrv.set({
                     type: 'querystring', query: queryterm,
                     mandate: 'must'
@@ -258,13 +293,22 @@ define([
 
                     function build_results() {
                         var k = 0;
-                        //the result data (the data how we need them to draw the network diagram are now saved in the array 'scope.data'
+                        //the result data (the data how we need them to draw the chord diagram are now saved in the array 'scope.data'
                         scope.data = [];
-                        _.each(scope.results.facets.terms.terms, function (v) {
-                            var slice;
-                            slice = { label: v.term, data: v.count, color: querySrv.colors[k] };                            
-                            scope.data.push(slice);
-                            k = k + 1;
+
+                        Object.keys(scope.results.facets).forEach(function (sourceNode) {
+                            _.each(scope.results.facets[sourceNode].terms, function (v) {
+                                var slice;
+                                slice = {
+                                    source: sourceNode,
+                                    target: v.term,
+                                    data: v.count,
+                                    color: querySrv.colors[k]
+                                };
+
+                                scope.data.push(slice);
+                                k = k + 1;
+                            });
                         });
                     }
                 }
@@ -304,8 +348,8 @@ define([
 
                     dataset.forEach(function (link) {
                         var object = {
-                            source: link.label.split(scope.panel.seperator)[0],
-                            target: link.label.split(scope.panel.seperator)[1],
+                            source: link.source,
+                            target: link.target,
                             value: link.data
                         }
                         data.push(object);
@@ -315,6 +359,5 @@ define([
                 }
             }
         });
-
     }
 );

@@ -2,20 +2,20 @@
     <div class="section">
         <h5>Parameters</h5>
         <div class="editor-option">
-            <label class="small">Connection Field</label>
-            <input type="text" class="input-small" bs-typeahead="fields.list" ng-model="panel.field" ng-change="set_refresh(true)">
-        </div>
-        <div class="editor-option">
             <label class="small">Source Field</label>
             <input type="text" class="input-small" bs-typeahead="fields.list" ng-model="panel.sourceField" ng-change="set_refresh(true)">
+        </div>
+        <div class="editor-option">
+            <label class="small">Length for Field 1</label>
+            <input class="input-small" type="number" ng-model="panel.size1" ng-change="set_refresh(true)">
         </div>
         <div class="editor-option">
             <label class="small">Target Field</label>
             <input type="text" class="input-small" bs-typeahead="fields.list" ng-model="panel.targetField" ng-change="set_refresh(true)">
         </div>
         <div class="editor-option">
-            <label class="small">Length</label>
-            <input class="input-small" type="number" ng-model="panel.size" ng-change="set_refresh(true)">
+            <label class="small">Length for Field 2</label>
+            <input class="input-small" type="number" ng-model="panel.size2" ng-change="set_refresh(true)">
         </div>
         <div class="editor-option">
             <label class="small">Order</label>
@@ -24,10 +24,6 @@
         <div class="editor-option" ng-show="true">
             <label class="small">Exclude Terms(s) (comma separated)</label>
             <input array-join type="text" ng-model='panel.exclude'></input>
-        </div>
-        <div class="editor-option" ng-show="true">
-            <label class="small">Seperator</label>
-            <input type="text" class="input-small" bs-typeahead="fields.list" ng-model="panel.seperator" ng-change="set_refresh(true)">
         </div>
     </div>
 </div>

@@ -102,17 +102,17 @@ define([
                 */
                 numberOfAxis: 3,
                 /** @scratch /panels/hiveplot/5
-                * axis1Label:: defines the label for axis1 and which nodes should be displayed on this axis (possible values are: 'from', 'to', 'time' and 'connection')
+                * axis1Label:: defines the label for axis1 and which nodes should be displayed on this axis
                 */
-                axis1Label: 'from',
+                axis1Label: '_type',
                 /** @scratch /panels/hiveplot/5
-                * axis2Label:: defines the label for axis2 and which nodes should be displayed on this axis (possible values are: 'from', 'to', 'time' and 'connection')
+                * axis2Label:: defines the label for axis2 and which nodes should be displayed on this axis
                 */
-                axis2Label: 'to',
+                axis2Label: '_type',
                 /** @scratch /panels/hiveplot/5
-                * axis3Label:: defines the label for axis3 and which nodes should be displayed on this axis (possible values are: 'from', 'to', 'time' and 'connection')
+                * axis3Label:: defines the label for axis3 and which nodes should be displayed on this axis
                 */
-                axis3Label: 'time',
+                axis3Label: '_type',
                 /** @scratch /panels/hiveplot/5
                 * axis1Sorting:: defines by which criteria the nodes on axis1 are sorted
                 */
@@ -176,8 +176,6 @@ define([
                     boolQuery,
                     queries;
 
-                $scope.field = _.contains(fields.list, $scope.panel.field + '.raw') ? $scope.panel.field + '.raw' : $scope.panel.field;
-
                 request = $scope.ejs.Request().indices(dashboard.indices);
 
                 $scope.panel.queries.ids = querySrv.idsByMode($scope.panel.queries);
@@ -188,85 +186,202 @@ define([
                 _.each(queries, function (q) {
                     boolQuery = boolQuery.should(querySrv.toEjsObj(q));
                 });
+
                 /*
                 Different parts of the request are sticked together: from where the data should be,
                 different filters and queries, etc.
                 This is saved in the variable 'request'
                 */
-                
-                /*Request for DateHistogramFacet*/
-                    //request = request
-                    //    .facet(
-                    //        $scope.ejs.DateHistogramFacet('terms')
-                    //            .field("Timestamp")
-                    //            //.valueField("Country_Connection")
-                    //            //.keyField("Timestamp")
-                    //            .interval("day")
-                    //            .order($scope.panel.order)
-                    //            .facetFilter(
-                    //                $scope.ejs.QueryFilter(
-                    //                    $scope.ejs.FilteredQuery(
-                    //                        boolQuery,
-                    //                        filterSrv.getBoolFilter(filterSrv.ids())
-                    //                    )
-                    //                )
-                    //            )
-                    //    )
-                    //    .size(0);
-               
-                request = request
+
+                var request1 = $scope.ejs.Request().indices(dashboard.indices);
+                request1 = request1
                     .facet(
-                        $scope.ejs.TermsFacet('terms')
-                            .field($scope.field)
-                            .size($scope.panel.size)
-                            .order($scope.panel.order)
-                            .exclude($scope.panel.exclude)
-                            .facetFilter(
-                                //$scope.ejs.AndFilter(
-                                //    [
+                        $scope.ejs.TermsFacet($scope.panel.axis1Label)
+                        .field($scope.panel.axis1Label)
+                        .size($scope.panel.size)
+                        .order($scope.panel.order)
+                        .exclude($scope.panel.exclude)
+                        .facetFilter(
+                                $scope.ejs.AndFilter(
+                                    [
                                         $scope.ejs.QueryFilter(
                                             $scope.ejs.FilteredQuery(
                                                 boolQuery,
                                                 filterSrv.getBoolFilter(filterSrv.ids())
                                             )
-                                        //),
-                                    //    $scope.ejs.QueryFilter(
-                                    //        $scope.ejs.TermQuery(
-                                    //            'Timestamp',
-                                    //            '2014-03-14'
-                                    //        )
-                                    //    )
-                                    //]
+                                        )
+                                    ]
                                 )
                             )
-                    )
-                    .size(0);
+                        );
 
-                // Populate the inspector panel; The current request will be shown in the inspector panel
-                $scope.inspector = angular.toJson(JSON.parse(request.toString()), true);
+                if ($scope.panel.numberOfAxis >= 3) {
+                    request1 = request1
+                        .facet(
+                            $scope.ejs.TermsFacet($scope.panel.axis2Label)
+                            .field($scope.panel.axis2Label)
+                            .size($scope.panel.size)
+                            .order($scope.panel.order)
+                            .exclude($scope.panel.exclude)
+                            .facetFilter(
+                                    $scope.ejs.AndFilter(
+                                        [
+                                            $scope.ejs.QueryFilter(
+                                                $scope.ejs.FilteredQuery(
+                                                    boolQuery,
+                                                    filterSrv.getBoolFilter(filterSrv.ids())
+                                                )
+                                            )
+                                        ]
+                                    )
+                                )
+                            )
+                        .facet(
+                            $scope.ejs.TermsFacet($scope.panel.axis3Label)
+                            .field($scope.panel.axis3Label)
+                            .size($scope.panel.size)
+                            .order($scope.panel.order)
+                            .exclude($scope.panel.exclude)
+                            .facetFilter(
+                                    $scope.ejs.AndFilter(
+                                        [
+                                            $scope.ejs.QueryFilter(
+                                                $scope.ejs.FilteredQuery(
+                                                    boolQuery,
+                                                    filterSrv.getBoolFilter(filterSrv.ids())
+                                                )
+                                            )
+                                        ]
+                                    )
+                                )
+                            );
+                }
+                var results1 = request1.doSearch().then(function (results1) {
+                    var axis1Labels = [];
+                    var axis2Labels = [];
+                    var axis3Labels = [];
 
-                // Populate scope when we have results
-                results = request.doSearch().then(function (results) {
-                    $scope.panelMeta.loading = false;
-                    $scope.hits = results.hits.total;
-                    $scope.results = results;
-                    $scope.$emit('render'); //dispatches the event upwards through the scope hierarchy of controllers.
+                    _.each(results1.facets[$scope.panel.axis1Label].terms, function (v) {
+                        axis1Labels.push(v.term);
+                    });
+                    
+                    axis1Labels.forEach(function (sourceNode) {
+                        request = request
+                        .facet(
+                            $scope.ejs.TermsFacet($scope.panel.axis1Label + '~/-#--#-/~' + $scope.panel.axis2Label + '~/-#--#-/~' + sourceNode)
+                            .field($scope.panel.axis2Label)
+                            .size($scope.panel.size)
+                            .order($scope.panel.order)
+                            .exclude($scope.panel.exclude)
+                            .facetFilter(
+                                    $scope.ejs.AndFilter(
+                                        [
+                                            $scope.ejs.QueryFilter(
+                                                $scope.ejs.FilteredQuery(
+                                                    boolQuery,
+                                                    filterSrv.getBoolFilter(filterSrv.ids())
+                                                )
+                                            ),
+                                            $scope.ejs.QueryFilter(
+                                                $scope.ejs.TermQuery(
+                                                    $scope.panel.axis1Label,
+                                                    sourceNode
+                                                )
+                                            )
+                                        ]
+                                    )
+                                )
+                            );
+                    });
+
+                    if ($scope.panel.numberOfAxis >= 3) {
+                        _.each(results1.facets[$scope.panel.axis2Label].terms, function (v) {
+                            axis2Labels.push(v.term);
+                        });
+                        _.each(results1.facets[$scope.panel.axis3Label].terms, function (v) {
+                            axis3Labels.push(v.term);
+                        });
+                        axis2Labels.forEach(function (sourceNode) {
+                            request = request
+                            .facet(
+                                $scope.ejs.TermsFacet($scope.panel.axis2Label + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + sourceNode)
+                                .field($scope.panel.axis3Label)
+                                .size($scope.panel.size)
+                                .order($scope.panel.order)
+                                .exclude($scope.panel.exclude)
+                                .facetFilter(
+                                        $scope.ejs.AndFilter(
+                                            [
+                                                $scope.ejs.QueryFilter(
+                                                    $scope.ejs.FilteredQuery(
+                                                        boolQuery,
+                                                        filterSrv.getBoolFilter(filterSrv.ids())
+                                                    )
+                                                ),
+                                                $scope.ejs.QueryFilter(
+                                                    $scope.ejs.TermQuery(
+                                                        $scope.panel.axis2Label,
+                                                        sourceNode
+                                                    )
+                                                )
+                                            ]
+                                        )
+                                    )
+                                );
+                        });
+                        axis3Labels.forEach(function (sourceNode) {
+                            request = request
+                            .facet(
+                                $scope.ejs.TermsFacet($scope.panel.axis3Label + '~/-#--#-/~' + $scope.panel.axis1Label + '~/-#--#-/~' + sourceNode)
+                                .field($scope.panel.axis1Label)
+                                .size($scope.panel.size)
+                                .order($scope.panel.order)
+                                .exclude($scope.panel.exclude)
+                                .facetFilter(
+                                        $scope.ejs.AndFilter(
+                                            [
+                                                $scope.ejs.QueryFilter(
+                                                    $scope.ejs.FilteredQuery(
+                                                        boolQuery,
+                                                        filterSrv.getBoolFilter(filterSrv.ids())
+                                                    )
+                                                ),
+                                                $scope.ejs.QueryFilter(
+                                                    $scope.ejs.TermQuery(
+                                                        $scope.panel.axis3Label,
+                                                        sourceNode
+                                                    )
+                                                )
+                                            ]
+                                        )
+                                    )
+                                );
+                        });
+                    }
+
+                    // Populate the inspector panel; The current request will be shown in the inspector panel
+                    $scope.inspector = angular.toJson(JSON.parse(request.toString()), true);
+
+                    // Populate scope when we have results
+                    results = request.doSearch().then(function (results) {
+                        $scope.panelMeta.loading = false;
+                        $scope.hits = results.hits.total;
+
+                        $scope.results = results;
+                        $scope.$emit('render'); //dispatches the event upwards through the scope hierarchy of controllers.
+                    });
                 });
             };
 
-            $scope.build_search = function (nodeName) {
+            $scope.build_search = function (axisName, nodeName) {
                 //This function filters the result. If you click on a node just the Connections to and from this node are shown
                 var queryterm = "";
-                $scope.data.forEach(function (d) {
-                    if (d.label.indexOf(nodeName) > -1) {
-                        if (queryterm === "") {
-                            queryterm = queryterm + '' + $scope.field + ':\"' + d.label + '\"';
-                        }
-                        else {
-                            queryterm = queryterm + ' OR ' + $scope.field + ':\"' + d.label + '\"';
-                        }
-                    }
-                })
+                if (queryterm === "") {
+                    queryterm = queryterm + '' + axisName + ':\"' + nodeName + '\"';
+                }
+                else {
+                    queryterm = queryterm + ' OR ' + axisName + ':\"' + nodeName + '\"';
+                }
                 filterSrv.set({
                     type: 'querystring', query: queryterm,
                     mandate: 'must'
@@ -315,26 +430,25 @@ define([
                     }
 
                     /*Build results function for DateHistogramFacet*/
-                        //function build_results() {
-                        //    //the result data (the data how we need them to draw the hiveplot diagram are now saved in the array 'scope.data'
-                        //    scope.data = [];
-
-                        //    _.each(scope.results.facets.terms.entries, function (v) {
-                        //        var slice;
-                        //        slice = { label: v.term, data: v.count };                            
-                        //        scope.data.push(slice);
-                        //    });
-                        //}
-
                     function build_results() {
                         var k = 0;
                         //the result data (the data how we need them to draw the network diagram are now saved in the array 'scope.data'
                         scope.data = [];
-                        _.each(scope.results.facets.terms.terms, function (v) {
-                            var slice;
-                            slice = { label: v.term, data: v.count, color: querySrv.colors[k] };
-                            scope.data.push(slice);
-                            k = k + 1;
+
+                        Object.keys(scope.results.facets).forEach(function (sourceNode) {
+                            _.each(scope.results.facets[sourceNode].terms, function (v) {
+                                var slice;
+                                slice = {axis1: sourceNode.split('~/-#--#-/~')[0],
+                                    source: sourceNode.split('~/-#--#-/~')[2],
+                                    axis2: sourceNode.split('~/-#--#-/~')[1],
+                                    target: v.term,
+                                    data: v.count,
+                                    color: querySrv.colors[k]
+                                };
+
+                                scope.data.push(slice);
+                                k = k + 1;
+                            });
                         });
                     }
                 }
@@ -349,8 +463,8 @@ define([
                 var data = prepareData(dataset);
                 
                 var axisConfig = [
-                    { 'axis': scope.panel.axis1Label, 'sort': scope.panel.axis1Sorting, 'order': scope.panel.axis1Order },   //possible values for sort [label, value, numberOfLinks]
-                    { 'axis': scope.panel.axis2Label, 'sort': scope.panel.axis2Sorting, 'order': scope.panel.axis2Order },     //possible values for order [true, false] true means ascending, false means descending
+                    { 'axis': scope.panel.axis1Label, 'sort': scope.panel.axis1Sorting, 'order': scope.panel.axis1Order },      //possible values for sort [label, value, numberOfLinks]
+                    { 'axis': scope.panel.axis2Label, 'sort': scope.panel.axis2Sorting, 'order': scope.panel.axis2Order },      //possible values for order [true, false] true means ascending, false means descending
                     { 'axis': scope.panel.axis3Label, 'sort': scope.panel.axis3Sorting, 'order': scope.panel.axis3Order }
                 ];
 
@@ -371,7 +485,7 @@ define([
                             clicks on a node in the HivePlot.
                             In our case this function should filter the data.
                         */
-                        console.log("Function still has to be implemented");
+                        scope.build_search(node.axis, node.label);
                     },
                     "onClickLink": function (link) {
                         /*
@@ -391,28 +505,25 @@ define([
                     //    { axis1: "from", axis1NodeLabel: "Bremen", axis2: "to", axis2NodeLabel: "Hamburg", value: 1 },
                     //    { axis1: "from", axis1NodeLabel: "Chemnitz", axis2: "to", axis2NodeLabel: "Bremen", value: 1 },
                     //    { axis1: "from", axis1NodeLabel: "München", axis2: "to", axis2NodeLabel: "Augsburg", value: 1 },
-                    //    { axis1: "to", axis1NodeLabel: "Augsburg", axis2: "time", axis2NodeLabel: "Monday", value: 1 },
-                    //    { axis1: "to", axis1NodeLabel: "München", axis2: "time", axis2NodeLabel: "Monday", value: 5 },
-                    //    { axis1: "to", axis1NodeLabel: "Hamburg", axis2: "time", axis2NodeLabel: "Wednesday", value: 1 },
-                    //    { axis1: "to", axis1NodeLabel: "Hamburg", axis2: "time", axis2NodeLabel: "Friday", value: 1 },
-                    //    { axis1: "from", axis1NodeLabel: "Augsburg", axis2: "time", axis2NodeLabel: "Wednesday", value: 3 }
+                    //    { axis1: "to", axis1NodeLabel: "Augsburg", axis2: "Timestamp", axis2NodeLabel: "1395878400000", value: 1 },
+                    //    { axis1: "to", axis1NodeLabel: "München", axis2: "Timestamp", axis2NodeLabel: "1395878400000", value: 5 },
+                    //    { axis1: "to", axis1NodeLabel: "Hamburg", axis2: "Timestamp", axis2NodeLabel: "1394236800000", value: 1 },
+                    //    { axis1: "to", axis1NodeLabel: "Hamburg", axis2: "Timestamp", axis2NodeLabel: "1394409600000", value: 1 },
+                    //    { axis1: "from", axis1NodeLabel: "Augsburg", axis2: "Timestamp", axis2NodeLabel: "1394236800000", value: 3 },
+                    //    { axis1: "Timestamp", axis1NodeLabel: "1394582400000", axis2: "from", axis2NodeLabel: "Hamburg", value: 3 }
                     //];
 
-                    //return data;
-
                     var data = [];
-
                     dataset.forEach(function (link) {
                         var object = {
-                            axis1: 'from',
-                            axis1NodeLabel: link.label.split(scope.panel.seperator)[0],
-                            axis2: 'to',
-                            axis2NodeLabel: link.label.split(scope.panel.seperator)[1],
+                            axis1: link.axis1,
+                            axis1NodeLabel: link.source.toString(),
+                            axis2: link.axis2,
+                            axis2NodeLabel: link.target.toString(),
                             value: link.data
                         }
                         data.push(object);
                     });
-
                     return data;
                 }
             }

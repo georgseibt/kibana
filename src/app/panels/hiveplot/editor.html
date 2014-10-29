@@ -52,17 +52,17 @@
             </td>
             <td>
                 <div class="editor-option">
-                    <select class="input-medium" ng-model="panel.axis1Label" ng-options="f for f in ['from','to','connection','time']" ng-change="set_refresh(true)" ng-show="true"></select>
+                    <input type="text" class="input-small" ng-model="panel.axis1Label" ng-change="set_refresh(true)">
                 </div>
             </td>
             <td>
                 <div class="editor-option">
-                    <select class="input-medium" ng-model="panel.axis2Label" ng-options="f for f in ['from','to','connection','time']" ng-change="set_refresh(true)" ng-show="true"></select>
+                    <input type="text" class="input-small" ng-model="panel.axis2Label" ng-change="set_refresh(true)">
                 </div>
             </td>
             <td>
                 <div class="editor-option" ng-show="panel.numberOfAxis>=3">
-                    <select class="input-medium" ng-model="panel.axis3Label" ng-options="f for f in ['from','to','connection','time']" ng-change="set_refresh(true)" ng-show="true"></select>
+                    <input type="text" class="input-small" ng-model="panel.axis3Label" ng-change="set_refresh(true)">
                 </div>
             </td>
         </tr>
