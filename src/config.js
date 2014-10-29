@@ -78,7 +78,8 @@ function (Settings) {
 	  'chord',
       'network',
       'hiveplot',
-      'testpanel_20140917'
+      'testpanel_20140917',
+	  'datareadtest_20141029'
     ]
   });
 });

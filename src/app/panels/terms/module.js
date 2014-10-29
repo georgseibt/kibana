@@ -193,7 +193,6 @@ function (angular, app, _, $, kbn) {
               filterSrv.getBoolFilter(filterSrv.ids())
             )))).size(0);
       }
-
       // Populate the inspector panel
       $scope.inspector = angular.toJson(JSON.parse(request.toString()),true);
 

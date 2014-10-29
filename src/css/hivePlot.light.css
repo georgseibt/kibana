@@ -33,6 +33,10 @@ path.hiveplot-link {
     stroke-opacity: 0.8;
 }
 
+.hiveplot-link.hiveplot-inactive {
+    stroke-opacity: 0.1;
+}
+
 div.hiveplot-tooltip {
     position: absolute;
     text-align: left;

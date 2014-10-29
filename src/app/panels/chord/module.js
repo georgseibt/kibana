@@ -59,11 +59,11 @@ define([
                 /** @scratch /panels/chord/5
                 * sourceField:: The source field on which to computer the facet
                 */
-                sourceField : [],
+                sourceField: '_type',
                 /** @scratch /panels/chord/5
                 * targetField:: The target field on which to computer the facet
                 */
-                targetField : [],
+                targetField: '_type',
                 /** @scratch /panels/chord/5
                 * exclude:: terms to exclude from the results
                 */

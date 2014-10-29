@@ -103,7 +103,7 @@
             linkMin = data.linkMin,
             linkMax = data.linkMax,
             angleRange = [];
-        
+                
         for (var i = 0; i < angleDomain.length; i++) {
             if (angleDomain.length === 2) {
                 angleRange[0] = 0;
@@ -206,7 +206,7 @@
             })
             .on("click", function (d) {
                 if (typeof _config.onClickNode === 'undefined' || _config.onClickNode === null) {
-                    console.log("No function implemented")
+                    console.log("No function implemented");
                 }
                 else {
                     _config.onClickNode(d);
@@ -450,7 +450,7 @@
                     value: d.value
                 }
                 links.push(obj);
-            })
+            });
             return { axis: uniqueAxis, nodes: uniqueNodes, links: links, linkMin: linkMin, linkMax: linkMax };
         }
 
@@ -472,6 +472,9 @@
             }
             svg.selectAll(".hiveplot-link").classed("hiveplot-active", function (p) {
                 return p === d;
+            });
+            svg.selectAll(".hiveplot-link").classed("hiveplot-inactive", function (p) {
+                return p !== d;
             });
         }
         function nodeMouseover(d) {
@@ -509,6 +512,9 @@
             svg.selectAll(".hiveplot-link").classed("hiveplot-active", function (p) {
                 return p.source === d || p.target === d;
             });
+            svg.selectAll(".hiveplot-link").classed("hiveplot-inactive", function (p) {
+                return p.source !== d && p.target !== d;
+            });
         }
         function mouseout(d, svg) {
             try {
@@ -516,6 +522,7 @@
             }
             catch (err) { };
             svg.selectAll(".hiveplot-link").classed("hiveplot-active", false);
+            svg.selectAll(".hiveplot-link").classed("hiveplot-inactive", false);
         }
 
         function showTooltip(duration, opacity, text, posLeft, posTop) {
