@@ -201,10 +201,11 @@ define([
                         singleNodes.push(v.term);
                     });
 
-                    singleNodes.forEach(function (sourceNode) {
+                    if (singleNodes.length === 0) {
+                        /*if no terms are in 'singleNodes' we have to make sure that the request is not empty, so we create an alibi request here*/
                         request = request
                         .facet(
-                            $scope.ejs.TermsFacet(sourceNode)
+                            $scope.ejs.TermsFacet('terms')
                             .field($scope.panel.targetField)
                             .size($scope.panel.size2)
                             .order($scope.panel.order)
@@ -217,19 +218,44 @@ define([
                                                     boolQuery,
                                                     filterSrv.getBoolFilter(filterSrv.ids())
                                                 )
-                                            ),
-                                            $scope.ejs.QueryFilter(
-                                                $scope.ejs.TermQuery(
-                                                    $scope.panel.sourceField,
-                                                    sourceNode
-                                                )
                                             )
                                         ]
                                     )
                                 )
                             );
-                    });
-
+                    }
+                    else {
+                        /* creating the request*/
+                        singleNodes.forEach(function (sourceNode) {
+                            request = request
+                            .facet(
+                                $scope.ejs.TermsFacet(sourceNode)
+                                .field($scope.panel.targetField)
+                                .size($scope.panel.size2)
+                                .order($scope.panel.order)
+                                .exclude($scope.panel.exclude)
+                                .facetFilter(
+                                        $scope.ejs.AndFilter(
+                                            [
+                                                $scope.ejs.QueryFilter(
+                                                    $scope.ejs.FilteredQuery(
+                                                        boolQuery,
+                                                        filterSrv.getBoolFilter(filterSrv.ids())
+                                                    )
+                                                ),
+                                                $scope.ejs.QueryFilter(
+                                                    $scope.ejs.TermQuery(
+                                                        $scope.panel.sourceField,
+                                                        sourceNode
+                                                    )
+                                                )
+                                            ]
+                                        )
+                                    )
+                                );
+                        });
+                    }
+                    
                     // Populate the inspector panel; The current request will be shown in the inspector panel
                     $scope.inspector = angular.toJson(JSON.parse(request.toString()), true);
 

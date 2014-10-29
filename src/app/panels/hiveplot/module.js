@@ -193,15 +193,23 @@ define([
                 This is saved in the variable 'request'
                 */
 
-                var request1 = $scope.ejs.Request().indices(dashboard.indices);
-                request1 = request1
-                    .facet(
-                        $scope.ejs.TermsFacet($scope.panel.axis1Label)
-                        .field($scope.panel.axis1Label)
-                        .size($scope.panel.size)
-                        .order($scope.panel.order)
-                        .exclude($scope.panel.exclude)
-                        .facetFilter(
+                /*
+                There are two options how the hiveplot should be created.
+                1. One hiveplot for all data in a certain range of time, for example, all data between 1st January and 25th May. Or one hiveplot for all data in the database (no start and end date is given).
+                2. Severall hiveplots where each plot only shows the data from a smaller range of time. The data are shown from subcategories. For example, per day, per week, per year, etc.
+                */
+
+                /*Implementation for case one*/
+                if (false) {
+                    var request1 = $scope.ejs.Request().indices(dashboard.indices);
+                    request1 = request1
+                        .facet(
+                            $scope.ejs.TermsFacet($scope.panel.axis1Label)
+                            .field($scope.panel.axis1Label)
+                            .size($scope.panel.size)
+                            .order($scope.panel.order)
+                            .exclude($scope.panel.exclude)
+                            .facetFilter(
                                 $scope.ejs.AndFilter(
                                     [
                                         $scope.ejs.QueryFilter(
@@ -215,15 +223,15 @@ define([
                             )
                         );
 
-                if ($scope.panel.numberOfAxis >= 3) {
-                    request1 = request1
-                        .facet(
-                            $scope.ejs.TermsFacet($scope.panel.axis2Label)
-                            .field($scope.panel.axis2Label)
-                            .size($scope.panel.size)
-                            .order($scope.panel.order)
-                            .exclude($scope.panel.exclude)
-                            .facetFilter(
+                    if ($scope.panel.numberOfAxis >= 3) {
+                        request1 = request1
+                            .facet(
+                                $scope.ejs.TermsFacet($scope.panel.axis2Label)
+                                .field($scope.panel.axis2Label)
+                                .size($scope.panel.size)
+                                .order($scope.panel.order)
+                                .exclude($scope.panel.exclude)
+                                .facetFilter(
                                     $scope.ejs.AndFilter(
                                         [
                                             $scope.ejs.QueryFilter(
@@ -236,13 +244,13 @@ define([
                                     )
                                 )
                             )
-                        .facet(
-                            $scope.ejs.TermsFacet($scope.panel.axis3Label)
-                            .field($scope.panel.axis3Label)
-                            .size($scope.panel.size)
-                            .order($scope.panel.order)
-                            .exclude($scope.panel.exclude)
-                            .facetFilter(
+                            .facet(
+                                $scope.ejs.TermsFacet($scope.panel.axis3Label)
+                                .field($scope.panel.axis3Label)
+                                .size($scope.panel.size)
+                                .order($scope.panel.order)
+                                .exclude($scope.panel.exclude)
+                                .facetFilter(
                                     $scope.ejs.AndFilter(
                                         [
                                             $scope.ejs.QueryFilter(
@@ -255,25 +263,26 @@ define([
                                     )
                                 )
                             );
-                }
-                var results1 = request1.doSearch().then(function (results1) {
-                    var axis1Labels = [];
-                    var axis2Labels = [];
-                    var axis3Labels = [];
+                    }
 
-                    _.each(results1.facets[$scope.panel.axis1Label].terms, function (v) {
-                        axis1Labels.push(v.term);
-                    });
-                    
-                    axis1Labels.forEach(function (sourceNode) {
-                        request = request
-                        .facet(
-                            $scope.ejs.TermsFacet($scope.panel.axis1Label + '~/-#--#-/~' + $scope.panel.axis2Label + '~/-#--#-/~' + sourceNode)
-                            .field($scope.panel.axis2Label)
-                            .size($scope.panel.size)
-                            .order($scope.panel.order)
-                            .exclude($scope.panel.exclude)
-                            .facetFilter(
+                    var results1 = request1.doSearch().then(function (results1) {
+                        var axis1Labels = [];
+                        var axis2Labels = [];
+                        var axis3Labels = [];
+
+                        _.each(results1.facets[$scope.panel.axis1Label].terms, function (v) {
+                            axis1Labels.push(v.term);
+                        });
+
+                        axis1Labels.forEach(function (sourceNode) {
+                            request = request
+                            .facet(
+                                $scope.ejs.TermsFacet($scope.panel.axis1Label + '~/-#--#-/~' + $scope.panel.axis2Label + '~/-#--#-/~' + sourceNode)
+                                .field($scope.panel.axis2Label)
+                                .size($scope.panel.size)
+                                .order($scope.panel.order)
+                                .exclude($scope.panel.exclude)
+                                .facetFilter(
                                     $scope.ejs.AndFilter(
                                         [
                                             $scope.ejs.QueryFilter(
@@ -292,24 +301,24 @@ define([
                                     )
                                 )
                             );
-                    });
+                        });
 
-                    if ($scope.panel.numberOfAxis >= 3) {
-                        _.each(results1.facets[$scope.panel.axis2Label].terms, function (v) {
-                            axis2Labels.push(v.term);
-                        });
-                        _.each(results1.facets[$scope.panel.axis3Label].terms, function (v) {
-                            axis3Labels.push(v.term);
-                        });
-                        axis2Labels.forEach(function (sourceNode) {
-                            request = request
-                            .facet(
-                                $scope.ejs.TermsFacet($scope.panel.axis2Label + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + sourceNode)
-                                .field($scope.panel.axis3Label)
-                                .size($scope.panel.size)
-                                .order($scope.panel.order)
-                                .exclude($scope.panel.exclude)
-                                .facetFilter(
+                        if ($scope.panel.numberOfAxis >= 3) {
+                            _.each(results1.facets[$scope.panel.axis2Label].terms, function (v) {
+                                axis2Labels.push(v.term);
+                            });
+                            _.each(results1.facets[$scope.panel.axis3Label].terms, function (v) {
+                                axis3Labels.push(v.term);
+                            });
+                            axis2Labels.forEach(function (sourceNode) {
+                                request = request
+                                .facet(
+                                    $scope.ejs.TermsFacet($scope.panel.axis2Label + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + sourceNode)
+                                    .field($scope.panel.axis3Label)
+                                    .size($scope.panel.size)
+                                    .order($scope.panel.order)
+                                    .exclude($scope.panel.exclude)
+                                    .facetFilter(
                                         $scope.ejs.AndFilter(
                                             [
                                                 $scope.ejs.QueryFilter(
@@ -328,16 +337,16 @@ define([
                                         )
                                     )
                                 );
-                        });
-                        axis3Labels.forEach(function (sourceNode) {
-                            request = request
-                            .facet(
-                                $scope.ejs.TermsFacet($scope.panel.axis3Label + '~/-#--#-/~' + $scope.panel.axis1Label + '~/-#--#-/~' + sourceNode)
-                                .field($scope.panel.axis1Label)
-                                .size($scope.panel.size)
-                                .order($scope.panel.order)
-                                .exclude($scope.panel.exclude)
-                                .facetFilter(
+                            });
+                            axis3Labels.forEach(function (sourceNode) {
+                                request = request
+                                .facet(
+                                    $scope.ejs.TermsFacet($scope.panel.axis3Label + '~/-#--#-/~' + $scope.panel.axis1Label + '~/-#--#-/~' + sourceNode)
+                                    .field($scope.panel.axis1Label)
+                                    .size($scope.panel.size)
+                                    .order($scope.panel.order)
+                                    .exclude($scope.panel.exclude)
+                                    .facetFilter(
                                         $scope.ejs.AndFilter(
                                             [
                                                 $scope.ejs.QueryFilter(
@@ -356,21 +365,228 @@ define([
                                         )
                                     )
                                 );
+                            });
+                        }
+                        /*Because we filtered the data before creating the request it can happen that the request remains empty*/
+
+                        // Populate the inspector panel; The current request will be shown in the inspector panel
+                        $scope.inspector = angular.toJson(JSON.parse(request.toString()), true);
+
+                        // Populate scope when we have results
+                        results = request.doSearch().then(function (results) {
+                            $scope.panelMeta.loading = false;
+                            $scope.hits = results.hits.total;
+
+                            $scope.results = results;
+                            $scope.$emit('render'); //dispatches the event upwards through the scope hierarchy of controllers.
                         });
+
+                    });
+                }
+                    /*Implementation for case two*/
+                else {
+                    $scope.daysOfInterest = ['2014-10-01', '2014-10-02', '2014-10-03', '2014-10-04', '2014-10-05'];//, '2014-03-11', '2014-03-12', '2014-03-13', '2014-03-14'];
+
+                    var request1 = $scope.ejs.Request().indices(dashboard.indices);
+                    request1 = request1
+                        .facet(
+                            $scope.ejs.TermsFacet($scope.panel.axis1Label)
+                            .field($scope.panel.axis1Label)
+                            .size($scope.panel.size)
+                            .order($scope.panel.order)
+                            .exclude($scope.panel.exclude)
+                            .facetFilter(
+                                    $scope.ejs.AndFilter(
+                                        [
+                                            $scope.ejs.QueryFilter(
+                                                $scope.ejs.FilteredQuery(
+                                                    boolQuery,
+                                                    filterSrv.getBoolFilter(filterSrv.ids())
+                                                )
+                                            )
+                                        ]
+                                    )
+                                )
+                            );
+
+                    if ($scope.panel.numberOfAxis >= 3) {
+                        request1 = request1
+                            .facet(
+                                $scope.ejs.TermsFacet($scope.panel.axis2Label)
+                                .field($scope.panel.axis2Label)
+                                .size($scope.panel.size)
+                                .order($scope.panel.order)
+                                .exclude($scope.panel.exclude)
+                                .facetFilter(
+                                        $scope.ejs.AndFilter(
+                                            [
+                                                $scope.ejs.QueryFilter(
+                                                    $scope.ejs.FilteredQuery(
+                                                        boolQuery,
+                                                        filterSrv.getBoolFilter(filterSrv.ids())
+                                                    )
+                                                )
+                                            ]
+                                        )
+                                    )
+                                )
+                            .facet(
+                                $scope.ejs.TermsFacet($scope.panel.axis3Label)
+                                .field($scope.panel.axis3Label)
+                                .size($scope.panel.size)
+                                .order($scope.panel.order)
+                                .exclude($scope.panel.exclude)
+                                .facetFilter(
+                                        $scope.ejs.AndFilter(
+                                            [
+                                                $scope.ejs.QueryFilter(
+                                                    $scope.ejs.FilteredQuery(
+                                                        boolQuery,
+                                                        filterSrv.getBoolFilter(filterSrv.ids())
+                                                    )
+                                                )
+                                            ]
+                                        )
+                                    )
+                                );
                     }
 
-                    // Populate the inspector panel; The current request will be shown in the inspector panel
-                    $scope.inspector = angular.toJson(JSON.parse(request.toString()), true);
+                    var results1 = request1.doSearch().then(function (results1) {
+                        var axis1Labels = [];
+                        var axis2Labels = [];
+                        var axis3Labels = [];
 
-                    // Populate scope when we have results
-                    results = request.doSearch().then(function (results) {
-                        $scope.panelMeta.loading = false;
-                        $scope.hits = results.hits.total;
+                        _.each(results1.facets[$scope.panel.axis1Label].terms, function (v) {
+                            axis1Labels.push(v.term);
+                        });
 
-                        $scope.results = results;
-                        $scope.$emit('render'); //dispatches the event upwards through the scope hierarchy of controllers.
+                        $scope.daysOfInterest.forEach(function (day) {
+                            axis1Labels.forEach(function (sourceNode) {
+                                request = request
+                                .facet(
+                                    $scope.ejs.TermsFacet(day + '~/-#--#-/~' + $scope.panel.axis1Label + '~/-#--#-/~' + $scope.panel.axis2Label + '~/-#--#-/~' + sourceNode)
+                                    .field($scope.panel.axis2Label)
+                                    .size($scope.panel.size)
+                                    .order($scope.panel.order)
+                                    .exclude($scope.panel.exclude)
+                                    .facetFilter(
+                                            $scope.ejs.AndFilter(
+                                                [
+                                                    $scope.ejs.QueryFilter(
+                                                        $scope.ejs.FilteredQuery(
+                                                            boolQuery,
+                                                            filterSrv.getBoolFilter(filterSrv.ids())
+                                                        )
+                                                    ),
+                                                    $scope.ejs.QueryFilter(
+                                                        $scope.ejs.TermQuery(
+                                                            $scope.panel.axis1Label,
+                                                            sourceNode
+                                                        )
+                                                    ),
+                                                    $scope.ejs.QueryFilter(
+                                                        $scope.ejs.TermQuery(
+                                                            'Timestamp',
+                                                            day
+                                                        )
+                                                    )
+                                                ]
+                                            )
+                                        )
+                                    );
+                            });
+
+                            if ($scope.panel.numberOfAxis >= 3) {
+                                _.each(results1.facets[$scope.panel.axis2Label].terms, function (v) {
+                                    axis2Labels.push(v.term);
+                                });
+                                _.each(results1.facets[$scope.panel.axis3Label].terms, function (v) {
+                                    axis3Labels.push(v.term);
+                                });
+                                axis2Labels.forEach(function (sourceNode) {
+                                    request = request
+                                    .facet(
+                                        $scope.ejs.TermsFacet(day + '~/-#--#-/~' + $scope.panel.axis2Label + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + sourceNode)
+                                        .field($scope.panel.axis3Label)
+                                        .size($scope.panel.size)
+                                        .order($scope.panel.order)
+                                        .exclude($scope.panel.exclude)
+                                        .facetFilter(
+                                                $scope.ejs.AndFilter(
+                                                    [
+                                                        $scope.ejs.QueryFilter(
+                                                            $scope.ejs.FilteredQuery(
+                                                                boolQuery,
+                                                                filterSrv.getBoolFilter(filterSrv.ids())
+                                                            )
+                                                        ),
+                                                        $scope.ejs.QueryFilter(
+                                                            $scope.ejs.TermQuery(
+                                                                $scope.panel.axis2Label,
+                                                                sourceNode
+                                                            )
+                                                        ),
+                                                        $scope.ejs.QueryFilter(
+                                                            $scope.ejs.TermQuery(
+                                                                'Timestamp',
+                                                                day
+                                                            )
+                                                        )
+                                                    ]
+                                                )
+                                            )
+                                        );
+                                });
+                                axis3Labels.forEach(function (sourceNode) {
+                                    request = request
+                                    .facet(
+                                        $scope.ejs.TermsFacet(day + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + $scope.panel.axis1Label + '~/-#--#-/~' + sourceNode)
+                                        .field($scope.panel.axis1Label)
+                                        .size($scope.panel.size)
+                                        .order($scope.panel.order)
+                                        .exclude($scope.panel.exclude)
+                                        .facetFilter(
+                                                $scope.ejs.AndFilter(
+                                                    [
+                                                        $scope.ejs.QueryFilter(
+                                                            $scope.ejs.FilteredQuery(
+                                                                boolQuery,
+                                                                filterSrv.getBoolFilter(filterSrv.ids())
+                                                            )
+                                                        ),
+                                                        $scope.ejs.QueryFilter(
+                                                            $scope.ejs.TermQuery(
+                                                                $scope.panel.axis3Label,
+                                                                sourceNode
+                                                            )
+                                                        ),
+                                                        $scope.ejs.QueryFilter(
+                                                            $scope.ejs.TermQuery(
+                                                                'Timestamp',
+                                                                day
+                                                            )
+                                                        )
+                                                    ]
+                                                )
+                                            )
+                                        );
+                                });
+                            }
+                        });
+
+                        // Populate the inspector panel; The current request will be shown in the inspector panel
+                        $scope.inspector = angular.toJson(JSON.parse(request.toString()), true);
+
+                        // Populate scope when we have results
+                        results = request.doSearch().then(function (results) {
+                            $scope.panelMeta.loading = false;
+                            $scope.hits = results.hits.total;
+
+                            $scope.results = results;
+                            $scope.$emit('render'); //dispatches the event upwards through the scope hierarchy of controllers.
+                        });                        
                     });
-                });
+                }
             };
 
             $scope.build_search = function (axisName, nodeName) {
@@ -421,12 +637,11 @@ define([
                         // IE doesn't work without this
                         elem.css({ height: scope.panel.height || scope.row.height });
                         // Make a clone we can operate on and save it in 'chartData'.
-                        scope.data.forEach(function (d) {
-                            var obj = _.clone(d);
-                            chartData.push(obj);
-                        });
-                        //chartData = _.clone(scope.data););
-                        createHivePlot(scope, chartData, elem);
+                        //scope.data.forEach(function (d) {
+                        //    var obj = _.clone(d);
+                        //    chartData.push(obj);
+                        //});
+                        createHivePlot(scope, scope.data, elem);
                     }
 
                     /*Build results function for DateHistogramFacet*/
@@ -435,32 +650,85 @@ define([
                         //the result data (the data how we need them to draw the network diagram are now saved in the array 'scope.data'
                         scope.data = [];
 
-                        Object.keys(scope.results.facets).forEach(function (sourceNode) {
-                            _.each(scope.results.facets[sourceNode].terms, function (v) {
-                                var slice;
-                                slice = {axis1: sourceNode.split('~/-#--#-/~')[0],
-                                    source: sourceNode.split('~/-#--#-/~')[2],
-                                    axis2: sourceNode.split('~/-#--#-/~')[1],
-                                    target: v.term,
-                                    data: v.count,
-                                    color: querySrv.colors[k]
-                                };
+                        if (false) {
+                            /*
+                            Implementation of building the results for case one 
+                            (One hiveplot for all data in a certain range of time, for example, all data between 1st January and 25th May. 
+                            Or one hiveplot for all data in the database (no start and end date is given).)
+                            */
+                            if (typeof scope.results.facets !== 'object') {
+                                /*
+                                Because of some filtering of the data before sending the request, it can happen, that the results.facet is not created. In that case no data should be stored in scope.data
+                                */
+                            }
+                            else {
+                                Object.keys(scope.results.facets).forEach(function (sourceNode) {
+                                    _.each(scope.results.facets[sourceNode].terms, function (v) {
+                                        var slice;
+                                        slice = {
+                                            axis1: sourceNode.split('~/-#--#-/~')[0],
+                                            source: sourceNode.split('~/-#--#-/~')[2].toString(),
+                                            axis2: sourceNode.split('~/-#--#-/~')[1],
+                                            target: v.term.toString(),
+                                            data: v.count,
+                                            color: querySrv.colors[k]
+                                        };
 
-                                scope.data.push(slice);
-                                k = k + 1;
-                            });
-                        });
+                                        scope.data.push(slice);
+                                        k = k + 1;
+                                    });
+                                });
+                            }
+                        }
+                        else {
+                            /*
+                            Implementation of building the results for case two 
+                            (Severall hiveplots where each plot only shows the data from a smaller range of time. The data are shown from subcategories. For example, per day, per week, per year, etc.)
+                            */
+                            if (typeof scope.results.facets !== 'object') {
+                                /*
+                                Because of some filtering of the data before sending the request, it can happen, that the results.facet is not created. In that case no data should be stored in scope.data
+                                */
+                            }
+                            else {
+                                scope.daysOfInterest.forEach(function (day) {
+                                    var dataPerDay = [];
+                                    scope.data[day] = [];
+
+                                    Object.keys(scope.results.facets).filter(function (object) { return object.indexOf(day) > -1 }).forEach(function (sourceNode) {
+                                        _.each(scope.results.facets[sourceNode].terms, function (v) {
+                                            var slice;
+                                            slice = {
+                                                axis1: sourceNode.split('~/-#--#-/~')[1],
+                                                source: sourceNode.split('~/-#--#-/~')[3].toString(),
+                                                axis2: sourceNode.split('~/-#--#-/~')[2],
+                                                target: v.term.toString(),
+                                                data: v.count,
+                                                color: querySrv.colors[k]
+                                            };
+                                            dataPerDay.push(slice);
+                                            k = k + 1;
+                                        });
+                                    });
+                                    scope.data[day].push(dataPerDay);
+                                });
+                            }
+                        }
                     }
                 }
             };
 
             function createHivePlot(scope, dataset, elem) {
                 $(elem[0]).empty();  //removes all elements from the current element
-                d3.select(elem[0]).append('div')
-                    .attr("class", "hiveplot-panel")
-                    .attr("id", "hiveplotpanel-" + elem[0].id);
+                //d3.select(elem[0]).append('div')
+                    //.attr("height", $(elem[0]).height())
+                    //.attr("width", $(elem[0]).width())
+                    //.attr("class", "hiveplot-panel")
+                    //.attr("id", "hiveplotpanel-" + elem[0].id);
+                //console.log($(elem[0]).width());
+                //console.log($('#hiveplotpanel-' + elem[0].id).width());
 
-                var data = prepareData(dataset);
+                
                 
                 var axisConfig = [
                     { 'axis': scope.panel.axis1Label, 'sort': scope.panel.axis1Sorting, 'order': scope.panel.axis1Order },      //possible values for sort [label, value, numberOfLinks]
@@ -468,34 +736,85 @@ define([
                     { 'axis': scope.panel.axis3Label, 'sort': scope.panel.axis3Sorting, 'order': scope.panel.axis3Order }
                 ];
 
-                new Hiveplot.Chart({
-                    //Mandatory
-                    "elem": "hiveplotpanel-" + elem[0].id,     //id of the just created div
-                    "data": data,
-                    //Optional
-                    "colorcode": scope.panel.colorcode,                         //possible values: ['black-white', 'colored']
-                    "colors": null,
-                    "axisConfig": axisConfig,
-                    "sortingTooltip": scope.panel.sortingTooltip,               //possible values: ['source', 'target', 'data']
-                    "sortingOrderTooltip": scope.panel.sortingOrderTooltip,     //possible values: [true, false] true means ascending, false means descending
-                    "tooltipSetting": scope.panel.tooltipSetting,               //possible values: [true, false]
-                    "onClickNode": function (node) {
-                        /*
-                            Here the user can define a function what happens if the user
-                            clicks on a node in the HivePlot.
-                            In our case this function should filter the data.
-                        */
-                        scope.build_search(node.axis, node.label);
-                    },
-                    "onClickLink": function (link) {
-                        /*
-                            Here the user can define a function what happens if the user
-                            clicks on a link in the HivePlot.
-                            In our case this function should filter the data. 
-                        */
-                        console.log("Function still has to be implemented");
+                if (false) {
+                    d3.select(elem[0]).append('div')
+                        //.attr("height", $(elem[0]).height())
+                        //.attr("width", $(elem[0]).width())
+                        .attr("class", "hiveplot-panel")
+                        .attr("id", "hiveplotpanel-" + elem[0].id);
+                    var data = prepareData(dataset);
+
+                    new Hiveplot.Chart({
+                        //Mandatory
+                        "elem": "hiveplotpanel-" + elem[0].id,     //id of the just created div
+                        "data": data,
+                        //Optional
+                        "colorcode": scope.panel.colorcode,                         //possible values: ['black-white', 'colored']
+                        "colors": null,
+                        "axisConfig": axisConfig,
+                        "sortingTooltip": scope.panel.sortingTooltip,               //possible values: ['source', 'target', 'data']
+                        "sortingOrderTooltip": scope.panel.sortingOrderTooltip,     //possible values: [true, false] true means ascending, false means descending
+                        "tooltipSetting": scope.panel.tooltipSetting,               //possible values: [true, false]
+                        "onClickNode": function (node) {
+                            /*
+                                Here the user can define a function what happens if the user
+                                clicks on a node in the HivePlot.
+                                In our case this function should filter the data.
+                            */
+                            scope.build_search(node.axis, node.label);
+                        },
+                        "onClickLink": function (link) {
+                            /*
+                                Here the user can define a function what happens if the user
+                                clicks on a link in the HivePlot.
+                                In our case this function should filter the data. 
+                            */
+                            console.log("Function still has to be implemented");
+                        }
+                    });
+
+                }
+                else {
+                    for (var count = 0; count < scope.daysOfInterest.length; count++) {
+                        d3.select(elem[0]).append('div')
+                        //.attr("height", $(elem[0]).height())
+                        //.attr("width", $(elem[0]).width())
+                        .attr("class", "hiveplot-panel")
+                        .attr("id", "hiveplotpanel-" + count + '' + elem[0].id);
+                        var data = prepareData(dataset[scope.daysOfInterest[count]][0]);
+                        new Hiveplot.Chart({
+                            //Mandatory
+                            "elem": "hiveplotpanel-" + count + '' + elem[0].id,     //id of the just created div
+                            "data": data,
+                            //Optional
+                            "colorcode": scope.panel.colorcode,                         //possible values: ['black-white', 'colored']
+                            "colors": null,
+                            "axisConfig": axisConfig,
+                            "sortingTooltip": scope.panel.sortingTooltip,               //possible values: ['source', 'target', 'data']
+                            "sortingOrderTooltip": scope.panel.sortingOrderTooltip,     //possible values: [true, false] true means ascending, false means descending
+                            "tooltipSetting": scope.panel.tooltipSetting,               //possible values: [true, false]
+                            "onClickNode": function (node) {
+                                /*
+                                    Here the user can define a function what happens if the user
+                                    clicks on a node in the HivePlot.
+                                    In our case this function should filter the data.
+                                */
+                                scope.build_search(node.axis, node.label);
+                            },
+                            "onClickLink": function (link) {
+                                /*
+                                    Here the user can define a function what happens if the user
+                                    clicks on a link in the HivePlot.
+                                    In our case this function should filter the data. 
+                                */
+                                console.log("Function still has to be implemented");
+                            }
+                        });
                     }
-                });
+                    
+                }
+
+                
                                 
                 function prepareData(dataset) {
                     //var data = [
@@ -517,15 +836,25 @@ define([
                     dataset.forEach(function (link) {
                         var object = {
                             axis1: link.axis1,
-                            axis1NodeLabel: link.source.toString(),
+                            axis1NodeLabel: link.axis1 === 'Timestamp' ? getDateAsString(new Date(parseInt(link.source))) : link.source.toString(),
                             axis2: link.axis2,
-                            axis2NodeLabel: link.target.toString(),
+                            axis2NodeLabel: link.axis2 === 'Timestamp' ? getDateAsString(new Date(parseInt(link.target))) : link.target.toString(),
                             value: link.data
                         }
                         data.push(object);
                     });
                     return data;
                 }
+            }
+
+            function getDateAsString(date) {
+                var year = date.getFullYear();
+                var month = '0' + (date.getMonth() + 1);
+                month = month.slice(-2, (month.length - 2) + 3);
+                var day = '0' + date.getDate();
+                day = day.slice(-2, (day.length - 2) + 3);
+
+                return year + '-' + month + '-' + day;
             }
 
         });
