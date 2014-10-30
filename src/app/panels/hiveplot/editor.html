@@ -1,8 +1,20 @@
 <div class="section">
     <h5>Parameters</h5>
+    <!--<div class="editor-option">
+        <label class="small">Start Date</label>
+        <input type="date" class="input-small" ng-model="panel.startDate" ng-change="set_refresh(true)">
+    </div>
     <div class="editor-option">
-        <label class="small">Field</label>
-        <input type="text" class="input-small" bs-typeahead="fields.list" ng-model="panel.field" ng-change="set_refresh(true)">
+        <label class="small">End Date</label>
+        <input type="date" class="input-small" ng-model="panel.endDate" ng-change="set_refresh(true)">
+    </div>-->
+    <div class="editor-option">
+        <label class="small">Interval</label>
+        <select class="input-medium" ng-model="panel.interval" ng-options="f for f in ['','30m','1h','12h','1d','1w']" ng-change="set_refresh(true)" ng-show="true"></select>
+    </div>
+    <div class="editor-option">
+        <label class="small">Time Field</label>
+        <input type="text" class="input-small" bs-typeahead="fields.list" ng-model="panel.timeField" ng-change="set_refresh(true)">
     </div>
     <div class="editor-option">
         <label class="small">Length</label>

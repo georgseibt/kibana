@@ -49,12 +49,24 @@ define([
 
             // Set and populate defaults
             var _d = {
+                ///** @scratch /panels/hiveplot/5
+                //* startDate:: satrtdate for the results
+                //*/
+                //startDate: '_startdate',
+                ///** @scratch /panels/hiveplot/5
+                //* endDate:: enddate for the results
+                //*/
+                //endDate : '_enddate',
+                /** @scratch /panels/hiveplot/5
+                * interval:: use this as the interval to calculate aggregations
+                */
+                interval: '',
                 /** @scratch /panels/hiveplot/5
                 * === Parameters
                 *
-                * field:: The field on which to computer the facet
+                * timeField:: The field with the time details
                 */
-                field   : '_type',
+                timeField   : '_type',
                 /** @scratch /panels/hiveplot/5
                 * exclude:: terms to exclude from the results
                 */
@@ -199,8 +211,41 @@ define([
                 2. Severall hiveplots where each plot only shows the data from a smaller range of time. The data are shown from subcategories. For example, per day, per week, per year, etc.
                 */
 
+                //
+///*We have to define the oldest and newest date in the dataset. These dates are needed if the user doesn't define a start and end date*/
+//var oldestDate = 0,
+//    newestDate = 0;
+//var request2 = $scope.ejs.Request().indices(dashboard.indices);
+//request2 = request2
+//    .facet(
+//        $scope.ejs.TermsFacet('dates')
+//            .field('Timestamp')
+//            .facetFilter(
+//                $scope.ejs.AndFilter(
+//                    [
+//                        $scope.ejs.QueryFilter(
+//                            $scope.ejs.FilteredQuery(
+//                                boolQuery,
+//                                filterSrv.getBoolFilter(filterSrv.ids())
+//                            )
+//                        )
+//                    ]
+//                )
+//            )
+//    );
+//var results2 = request2.doSearch().then(function (results2) {
+//    $scope.dates=[]
+//    _.each(results2.facets.dates.terms, function (v) {
+                        
+//        $scope.dates.push(v.term);
+//    });
+//    $scope.panel.startDate = $scope.panel.startDate === '' ? $scope.getDateAsString(new Date(Math.min.apply(Math, $scope.dates))) : $scope.panel.startDate;
+//    $scope.panel.endDate = $scope.panel.endDate === '' ? $scope.getDateAsString(new Date(Math.max.apply(Math, $scope.dates))) : $scope.panel.endDate;
+//});
+
+                
                 /*Implementation for case one*/
-                if (false) {
+                if ($scope.panel.interval === '') {
                     var request1 = $scope.ejs.Request().indices(dashboard.indices);
                     request1 = request1
                         .facet(
@@ -209,19 +254,7 @@ define([
                             .size($scope.panel.size)
                             .order($scope.panel.order)
                             .exclude($scope.panel.exclude)
-                            .facetFilter(
-                                $scope.ejs.AndFilter(
-                                    [
-                                        $scope.ejs.QueryFilter(
-                                            $scope.ejs.FilteredQuery(
-                                                boolQuery,
-                                                filterSrv.getBoolFilter(filterSrv.ids())
-                                            )
-                                        )
-                                    ]
-                                )
-                            )
-                        );
+                        )
 
                     if ($scope.panel.numberOfAxis >= 3) {
                         request1 = request1
@@ -231,18 +264,6 @@ define([
                                 .size($scope.panel.size)
                                 .order($scope.panel.order)
                                 .exclude($scope.panel.exclude)
-                                .facetFilter(
-                                    $scope.ejs.AndFilter(
-                                        [
-                                            $scope.ejs.QueryFilter(
-                                                $scope.ejs.FilteredQuery(
-                                                    boolQuery,
-                                                    filterSrv.getBoolFilter(filterSrv.ids())
-                                                )
-                                            )
-                                        ]
-                                    )
-                                )
                             )
                             .facet(
                                 $scope.ejs.TermsFacet($scope.panel.axis3Label)
@@ -250,22 +271,10 @@ define([
                                 .size($scope.panel.size)
                                 .order($scope.panel.order)
                                 .exclude($scope.panel.exclude)
-                                .facetFilter(
-                                    $scope.ejs.AndFilter(
-                                        [
-                                            $scope.ejs.QueryFilter(
-                                                $scope.ejs.FilteredQuery(
-                                                    boolQuery,
-                                                    filterSrv.getBoolFilter(filterSrv.ids())
-                                                )
-                                            )
-                                        ]
-                                    )
-                                )
                             );
                     }
 
-                    var results1 = request1.doSearch().then(function (results1) {
+                    var results1 = request1.doSearch().then(function (results1) {                        
                         var axis1Labels = [];
                         var axis2Labels = [];
                         var axis3Labels = [];
@@ -367,7 +376,6 @@ define([
                                 );
                             });
                         }
-                        /*Because we filtered the data before creating the request it can happen that the request remains empty*/
 
                         // Populate the inspector panel; The current request will be shown in the inspector panel
                         $scope.inspector = angular.toJson(JSON.parse(request.toString()), true);
@@ -383,9 +391,9 @@ define([
 
                     });
                 }
-                    /*Implementation for case two*/
+                /*Implementation for case two*/
                 else {
-                    $scope.daysOfInterest = ['2014-10-01', '2014-10-02', '2014-10-03', '2014-10-04', '2014-10-05'];//, '2014-03-11', '2014-03-12', '2014-03-13', '2014-03-14'];
+                    $scope.rangesOfInterest = $scope.getIntervals();
 
                     var request1 = $scope.ejs.Request().indices(dashboard.indices);
                     request1 = request1
@@ -395,19 +403,7 @@ define([
                             .size($scope.panel.size)
                             .order($scope.panel.order)
                             .exclude($scope.panel.exclude)
-                            .facetFilter(
-                                    $scope.ejs.AndFilter(
-                                        [
-                                            $scope.ejs.QueryFilter(
-                                                $scope.ejs.FilteredQuery(
-                                                    boolQuery,
-                                                    filterSrv.getBoolFilter(filterSrv.ids())
-                                                )
-                                            )
-                                        ]
-                                    )
-                                )
-                            );
+                        );
 
                     if ($scope.panel.numberOfAxis >= 3) {
                         request1 = request1
@@ -417,38 +413,14 @@ define([
                                 .size($scope.panel.size)
                                 .order($scope.panel.order)
                                 .exclude($scope.panel.exclude)
-                                .facetFilter(
-                                        $scope.ejs.AndFilter(
-                                            [
-                                                $scope.ejs.QueryFilter(
-                                                    $scope.ejs.FilteredQuery(
-                                                        boolQuery,
-                                                        filterSrv.getBoolFilter(filterSrv.ids())
-                                                    )
-                                                )
-                                            ]
-                                        )
-                                    )
-                                )
+                            )
                             .facet(
                                 $scope.ejs.TermsFacet($scope.panel.axis3Label)
                                 .field($scope.panel.axis3Label)
                                 .size($scope.panel.size)
                                 .order($scope.panel.order)
                                 .exclude($scope.panel.exclude)
-                                .facetFilter(
-                                        $scope.ejs.AndFilter(
-                                            [
-                                                $scope.ejs.QueryFilter(
-                                                    $scope.ejs.FilteredQuery(
-                                                        boolQuery,
-                                                        filterSrv.getBoolFilter(filterSrv.ids())
-                                                    )
-                                                )
-                                            ]
-                                        )
-                                    )
-                                );
+                            );
                     }
 
                     var results1 = request1.doSearch().then(function (results1) {
@@ -460,11 +432,11 @@ define([
                             axis1Labels.push(v.term);
                         });
 
-                        $scope.daysOfInterest.forEach(function (day) {
+                        $scope.rangesOfInterest.forEach(function (range) {
                             axis1Labels.forEach(function (sourceNode) {
                                 request = request
                                 .facet(
-                                    $scope.ejs.TermsFacet(day + '~/-#--#-/~' + $scope.panel.axis1Label + '~/-#--#-/~' + $scope.panel.axis2Label + '~/-#--#-/~' + sourceNode)
+                                    $scope.ejs.TermsFacet(range.label + '~/-#--#-/~' + $scope.panel.axis1Label + '~/-#--#-/~' + $scope.panel.axis2Label + '~/-#--#-/~' + sourceNode)
                                     .field($scope.panel.axis2Label)
                                     .size($scope.panel.size)
                                     .order($scope.panel.order)
@@ -484,12 +456,9 @@ define([
                                                             sourceNode
                                                         )
                                                     ),
-                                                    $scope.ejs.QueryFilter(
-                                                        $scope.ejs.TermQuery(
-                                                            'Timestamp',
-                                                            day
-                                                        )
-                                                    )
+                                                    $scope.ejs.RangeFilter('Timestamp')
+                                                        .from(range.from)
+                                                        .to(range.to)
                                                 ]
                                             )
                                         )
@@ -497,6 +466,8 @@ define([
                             });
 
                             if ($scope.panel.numberOfAxis >= 3) {
+                                axis2Labels.length = 0;
+                                axis3Labels.length = 0;
                                 _.each(results1.facets[$scope.panel.axis2Label].terms, function (v) {
                                     axis2Labels.push(v.term);
                                 });
@@ -506,7 +477,7 @@ define([
                                 axis2Labels.forEach(function (sourceNode) {
                                     request = request
                                     .facet(
-                                        $scope.ejs.TermsFacet(day + '~/-#--#-/~' + $scope.panel.axis2Label + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + sourceNode)
+                                        $scope.ejs.TermsFacet(range.label + '~/-#--#-/~' + $scope.panel.axis2Label + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + sourceNode)
                                         .field($scope.panel.axis3Label)
                                         .size($scope.panel.size)
                                         .order($scope.panel.order)
@@ -526,12 +497,9 @@ define([
                                                                 sourceNode
                                                             )
                                                         ),
-                                                        $scope.ejs.QueryFilter(
-                                                            $scope.ejs.TermQuery(
-                                                                'Timestamp',
-                                                                day
-                                                            )
-                                                        )
+                                                        $scope.ejs.RangeFilter('Timestamp')
+                                                            .from(range.from)
+                                                            .to(range.to)
                                                     ]
                                                 )
                                             )
@@ -540,7 +508,7 @@ define([
                                 axis3Labels.forEach(function (sourceNode) {
                                     request = request
                                     .facet(
-                                        $scope.ejs.TermsFacet(day + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + $scope.panel.axis1Label + '~/-#--#-/~' + sourceNode)
+                                        $scope.ejs.TermsFacet(range.label + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + $scope.panel.axis1Label + '~/-#--#-/~' + sourceNode)
                                         .field($scope.panel.axis1Label)
                                         .size($scope.panel.size)
                                         .order($scope.panel.order)
@@ -560,12 +528,9 @@ define([
                                                                 sourceNode
                                                             )
                                                         ),
-                                                        $scope.ejs.QueryFilter(
-                                                            $scope.ejs.TermQuery(
-                                                                'Timestamp',
-                                                                day
-                                                            )
-                                                        )
+                                                        $scope.ejs.RangeFilter('Timestamp')
+                                                            .from(range.from)
+                                                            .to(range.to)
                                                     ]
                                                 )
                                             )
@@ -582,6 +547,10 @@ define([
                             $scope.panelMeta.loading = false;
                             $scope.hits = results.hits.total;
 
+
+                            $scope.axis1Labels = axis1Labels;
+                            $scope.axis2Labels = axis2Labels;
+                            $scope.axis3Labels = axis3Labels;
                             $scope.results = results;
                             $scope.$emit('render'); //dispatches the event upwards through the scope hierarchy of controllers.
                         });                        
@@ -589,6 +558,38 @@ define([
                 }
             };
 
+            $scope.getIntervals = function () {
+                var intervalNumber = $scope.panel.interval.slice(0, $scope.panel.interval.length - 1);
+                var intervalName = $scope.panel.interval.slice($scope.panel.interval.length - 1, $scope.panel.interval.length);
+                switch (intervalName.toLowerCase()) {
+                    case 'y': intervalName = 'year'; break;
+                    case 'q': intervalName = 'quarter'; break;
+                    case 'w': intervalName = 'week'; break;
+                    case 'd': intervalName = 'day'; break;
+                    case 'h': intervalName = 'hour'; break;
+                    case 'm': intervalName = 'minute'; break;
+                    case 's': intervalName = 'second'; break;
+                    default: intervalName = undefined; break;
+                }
+
+                var ranges = [];
+                var k = parseInt(intervalNumber);
+                while ($scope.dateAdd($scope.panel.endDate, intervalName, -k) >= $scope.dateAdd($scope.panel.startDate, intervalName, 0)) {
+                    var _from = $scope.dateAdd($scope.dateAdd($scope.panel.endDate, intervalName, -k),'second', 0.001),
+                        _to = $scope.dateAdd($scope.panel.endDate, intervalName, -(k - (parseInt(intervalNumber))));
+
+                    var object = {
+                        label: "Between " + _from + " and " + _to,
+                        from: _from,
+                        to: _to
+                    }
+                    ranges.push(object);
+                    k = k + (parseInt(intervalNumber));
+                }
+                return (ranges);
+                //return [$scope.dateAdd($scope.panel.endDate, 'day', 0), $scope.dateAdd($scope.panel.endDate, 'day', -1), $scope.dateAdd($scope.panel.endDate, 'day', -2), $scope.dateAdd($scope.panel.endDate, 'day', -3)];
+            }
+            
             $scope.build_search = function (axisName, nodeName) {
                 //This function filters the result. If you click on a node just the Connections to and from this node are shown
                 var queryterm = "";
@@ -618,6 +619,40 @@ define([
                 $scope.refresh = false;
                 $scope.$emit('render');
             };
+
+            $scope.dateAdd = function (date, interval, units) {
+                var ret = new Date(date); //don't change original date
+                switch (interval.toLowerCase()) {
+                    case 'year': ret.setFullYear(ret.getFullYear() + units); break;
+                    case 'quarter': ret.setMonth(ret.getMonth() + 3 * units); break;
+                    case 'month': ret.setMonth(ret.getMonth() + units); break;
+                    case 'week': ret.setDate(ret.getDate() + 7 * units); break;
+                    case 'day': ret.setDate(ret.getDate() + units); break;
+                    case 'hour': ret.setTime(ret.getTime() + units * 3600000); break;
+                    case 'minute': ret.setTime(ret.getTime() + units * 60000); break;
+                    case 'second': ret.setTime(ret.getTime() + units * 1000); break;
+                    default: ret = undefined; break;
+                }
+                return ret;
+            };
+
+
+
+            $scope.getDateAsString = function (date) {
+                var year = date.getFullYear();
+                var month = '0' + (date.getMonth() + 1);
+                month = month.slice(-2, (month.length - 2) + 3);
+                var day = '0' + date.getDate();
+                day = day.slice(-2, (day.length - 2) + 3);
+                var hour = '0' + date.getHours();
+                hour = hour.slice(-2, (hour.length - 2) + 3);
+                var minute = '0' + date.getMinutes();
+                minute = minute.slice(-2, (minute.length - 2) + 3);
+                var second = '0' + date.getSeconds();
+                second = second.slice(-2, (second.length - 2) + 3);
+
+                return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second;
+            }
         });
 
         module.directive('hiveplotChart', function (querySrv) {
@@ -636,11 +671,7 @@ define([
                         build_results();
                         // IE doesn't work without this
                         elem.css({ height: scope.panel.height || scope.row.height });
-                        // Make a clone we can operate on and save it in 'chartData'.
-                        //scope.data.forEach(function (d) {
-                        //    var obj = _.clone(d);
-                        //    chartData.push(obj);
-                        //});
+
                         createHivePlot(scope, scope.data, elem);
                     }
 
@@ -650,85 +681,62 @@ define([
                         //the result data (the data how we need them to draw the network diagram are now saved in the array 'scope.data'
                         scope.data = [];
 
-                        if (false) {
+                        if (scope.panel.interval === '') {
                             /*
                             Implementation of building the results for case one 
                             (One hiveplot for all data in a certain range of time, for example, all data between 1st January and 25th May. 
                             Or one hiveplot for all data in the database (no start and end date is given).)
                             */
-                            if (typeof scope.results.facets !== 'object') {
-                                /*
-                                Because of some filtering of the data before sending the request, it can happen, that the results.facet is not created. In that case no data should be stored in scope.data
-                                */
-                            }
-                            else {
-                                Object.keys(scope.results.facets).forEach(function (sourceNode) {
-                                    _.each(scope.results.facets[sourceNode].terms, function (v) {
-                                        var slice;
-                                        slice = {
-                                            axis1: sourceNode.split('~/-#--#-/~')[0],
-                                            source: sourceNode.split('~/-#--#-/~')[2].toString(),
-                                            axis2: sourceNode.split('~/-#--#-/~')[1],
-                                            target: v.term.toString(),
-                                            data: v.count,
-                                            color: querySrv.colors[k]
-                                        };
+                            Object.keys(scope.results.facets).forEach(function (sourceNode) {
+                                _.each(scope.results.facets[sourceNode].terms, function (v) {
+                                    var slice;
+                                    slice = {
+                                        axis1: sourceNode.split('~/-#--#-/~')[0],
+                                        source: sourceNode.split('~/-#--#-/~')[2].toString(),
+                                        axis2: sourceNode.split('~/-#--#-/~')[1],
+                                        target: v.term.toString(),
+                                        data: v.count,
+                                        color: querySrv.colors[k]
+                                    };
 
-                                        scope.data.push(slice);
-                                        k = k + 1;
-                                    });
+                                    scope.data.push(slice);
+                                    k = k + 1;
                                 });
-                            }
+                            });
                         }
                         else {
                             /*
                             Implementation of building the results for case two 
                             (Severall hiveplots where each plot only shows the data from a smaller range of time. The data are shown from subcategories. For example, per day, per week, per year, etc.)
                             */
-                            if (typeof scope.results.facets !== 'object') {
-                                /*
-                                Because of some filtering of the data before sending the request, it can happen, that the results.facet is not created. In that case no data should be stored in scope.data
-                                */
-                            }
-                            else {
-                                scope.daysOfInterest.forEach(function (day) {
-                                    var dataPerDay = [];
-                                    scope.data[day] = [];
+                            scope.rangesOfInterest.forEach(function (range) {
+                                var dataPerDay = [];
+                                scope.data[range.label] = [];
 
-                                    Object.keys(scope.results.facets).filter(function (object) { return object.indexOf(day) > -1 }).forEach(function (sourceNode) {
-                                        _.each(scope.results.facets[sourceNode].terms, function (v) {
-                                            var slice;
-                                            slice = {
-                                                axis1: sourceNode.split('~/-#--#-/~')[1],
-                                                source: sourceNode.split('~/-#--#-/~')[3].toString(),
-                                                axis2: sourceNode.split('~/-#--#-/~')[2],
-                                                target: v.term.toString(),
-                                                data: v.count,
-                                                color: querySrv.colors[k]
-                                            };
-                                            dataPerDay.push(slice);
-                                            k = k + 1;
-                                        });
+                                Object.keys(scope.results.facets).filter(function (object) { return object.indexOf(range.label) > -1 }).forEach(function (sourceNode) {
+                                    _.each(scope.results.facets[sourceNode].terms, function (v) {
+                                        var slice;
+                                        slice = {
+                                            axis1: sourceNode.split('~/-#--#-/~')[1],
+                                            source: sourceNode.split('~/-#--#-/~')[3].toString(),
+                                            axis2: sourceNode.split('~/-#--#-/~')[2],
+                                            target: v.term.toString(),
+                                            data: v.count,
+                                            color: querySrv.colors[k]
+                                        };
+                                        dataPerDay.push(slice);
+                                        k = k + 1;
                                     });
-                                    scope.data[day].push(dataPerDay);
                                 });
-                            }
+                                scope.data[range.label].push(dataPerDay);
+                            });
                         }
                     }
                 }
             };
 
             function createHivePlot(scope, dataset, elem) {
-                $(elem[0]).empty();  //removes all elements from the current element
-                //d3.select(elem[0]).append('div')
-                    //.attr("height", $(elem[0]).height())
-                    //.attr("width", $(elem[0]).width())
-                    //.attr("class", "hiveplot-panel")
-                    //.attr("id", "hiveplotpanel-" + elem[0].id);
-                //console.log($(elem[0]).width());
-                //console.log($('#hiveplotpanel-' + elem[0].id).width());
-
-                
+                $(elem[0]).empty();  //removes all elements from the current element                
                 
                 var axisConfig = [
                     { 'axis': scope.panel.axis1Label, 'sort': scope.panel.axis1Sorting, 'order': scope.panel.axis1Order },      //possible values for sort [label, value, numberOfLinks]
@@ -736,10 +744,8 @@ define([
                     { 'axis': scope.panel.axis3Label, 'sort': scope.panel.axis3Sorting, 'order': scope.panel.axis3Order }
                 ];
 
-                if (false) {
+                if (scope.panel.interval === '') {
                     d3.select(elem[0]).append('div')
-                        //.attr("height", $(elem[0]).height())
-                        //.attr("width", $(elem[0]).width())
                         .attr("class", "hiveplot-panel")
                         .attr("id", "hiveplotpanel-" + elem[0].id);
                     var data = prepareData(dataset);
@@ -775,18 +781,49 @@ define([
 
                 }
                 else {
-                    for (var count = 0; count < scope.daysOfInterest.length; count++) {
+                    console.log(scope.axis1Labels);
+                    console.log(scope.axis2Labels);
+                    console.log(scope.axis3Labels);
+                    /*As all panels should be comparable, all nodes should be displayed on each hiveplot at the same spot. for that reason we pass a list of nodes to the library*/
+                    var nodes = [];
+                    scope.axis1Labels.forEach(function (node) {
+                        var object = {
+                            axis: scope.panel.axis1Label,
+                            label: scope.panel.axis1Label===scope.panel.timeField ? scope.getDateAsString(new Date(parseInt(node))) : node
+                        }
+                        nodes.push(object);
+                    });
+                    if (scope.panel.numberOfAxis >= 3) {
+                        scope.axis2Labels.forEach(function (node) {
+                            var object = {
+                                axis: scope.panel.axis2Label,
+                                label: scope.panel.axis2Label === scope.panel.timeField ? scope.getDateAsString(new Date(parseInt(node))) : node
+                            }
+                            nodes.push(object);
+                        });
+                        scope.axis3Labels.forEach(function (node) {
+                            var object = {
+                                axis: scope.panel.axis3Label,
+                                label: scope.panel.axis2Label === scope.panel.timeField ? scope.getDateAsString(new Date(parseInt(node))) : node
+                            }
+                            nodes.push(object);
+                        });
+                    }
+
+                    console.log(nodes);
+                    
+                    for (var count = 0; count < scope.rangesOfInterest.length; count++) {
                         d3.select(elem[0]).append('div')
-                        //.attr("height", $(elem[0]).height())
-                        //.attr("width", $(elem[0]).width())
-                        .attr("class", "hiveplot-panel")
-                        .attr("id", "hiveplotpanel-" + count + '' + elem[0].id);
-                        var data = prepareData(dataset[scope.daysOfInterest[count]][0]);
+                            .attr("class", "hiveplot-innerpanels")
+                            .attr("id", "hiveplotpanel-" + count + '' + elem[0].id);
+                        var data = prepareData(dataset[scope.rangesOfInterest[count].label][0]);
+
                         new Hiveplot.Chart({
                             //Mandatory
                             "elem": "hiveplotpanel-" + count + '' + elem[0].id,     //id of the just created div
                             "data": data,
                             //Optional
+                            "nodes": nodes,
                             "colorcode": scope.panel.colorcode,                         //possible values: ['black-white', 'colored']
                             "colors": null,
                             "axisConfig": axisConfig,
@@ -812,9 +849,7 @@ define([
                         });
                     }
                     
-                }
-
-                
+                }                
                                 
                 function prepareData(dataset) {
                     //var data = [
@@ -836,9 +871,9 @@ define([
                     dataset.forEach(function (link) {
                         var object = {
                             axis1: link.axis1,
-                            axis1NodeLabel: link.axis1 === 'Timestamp' ? getDateAsString(new Date(parseInt(link.source))) : link.source.toString(),
+                            axis1NodeLabel: link.axis1 === 'Timestamp' ? scope.getDateAsString(new Date(parseInt(link.source))) : link.source.toString(),
                             axis2: link.axis2,
-                            axis2NodeLabel: link.axis2 === 'Timestamp' ? getDateAsString(new Date(parseInt(link.target))) : link.target.toString(),
+                            axis2NodeLabel: link.axis2 === 'Timestamp' ? scope.getDateAsString(new Date(parseInt(link.target))) : link.target.toString(),
                             value: link.data
                         }
                         data.push(object);
@@ -846,17 +881,6 @@ define([
                     return data;
                 }
             }
-
-            function getDateAsString(date) {
-                var year = date.getFullYear();
-                var month = '0' + (date.getMonth() + 1);
-                month = month.slice(-2, (month.length - 2) + 3);
-                var day = '0' + date.getDate();
-                day = day.slice(-2, (day.length - 2) + 3);
-
-                return year + '-' + month + '-' + day;
-            }
-
         });
     }
 );

@@ -42,6 +42,17 @@
                 height: 100%;
                 width: 100%;
             }
+
+            .hiveplot-panels-wrapper {
+                height: 100%;
+                width: 100%;
+                overflow:hidden;
+            }
+            .hiveplot-innerpanels {
+                width: 15%;
+                height: 100%;
+                float: left;
+            }
     </style>
 
     <div class="hiveplot-wrapper">
@@ -70,7 +81,7 @@
         </div>
 
         <!-- CHART -->
-        <div id="{{$id}}-hivePlot" ng-show="true" hiveplot-chart params="{{panel}}" style="position: relative; text-align: center;" class="pointer hiveplot-chart">
+        <div id="{{$id}}-hivePlot" ng-show="true" hiveplot-chart params="{{panel}}" style="position: relative; text-align: center; overflow:hidden;" class="pointer hiveplot-chart">
 
         </div>
 
