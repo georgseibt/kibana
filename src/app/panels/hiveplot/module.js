@@ -245,7 +245,6 @@ define([
                 /*Implementation for case one*/
                 if (!$scope.panel.multipanelSetting) {
                     var aggregateBy = $scope.panel.interval;
-                    console.log(aggregateBy);
                     switch (aggregateBy) {
                         case '': aggregateBy = 'second'; break;
                         case '15m': aggregateBy = 'hour'; break;
@@ -258,7 +257,6 @@ define([
                         case '1y': aggregateBy = 'year'; break;
                         default: aggregateBy = 'second'; break;
                     }
-                    console.log(aggregateBy);
                     
                     var intervals = [];
                     var request1 = $scope.ejs.Request().indices(dashboard.indices);
@@ -312,10 +310,8 @@ define([
                         _.each(results1.facets.dates.entries, function (v) {
                             dates.push(v.time);
                         });
-                        console.log(dates);
 
                         intervals = $scope.getIntervals2(dates, $scope.panel.interval);
-                        console.log(intervals);
 
                         var axis1Labels = [];
                         var axis2Labels = [];
@@ -356,6 +352,32 @@ define([
                         }
                         else if ($scope.panel.axis2Label === $scope.panel.timeField) {
                             /*If the time should be displayed on axis 2*/
+                            console.log(intervals);
+                            intervals.forEach(function (date) {
+                                request = request
+                                .facet(
+                                    $scope.ejs.TermsFacet($scope.panel.axis2Label + '~/-#--#-/~' + $scope.panel.axis1Label + '~/-#--#-/~' + date.startDate)
+                                    .field($scope.panel.axis1Label)
+                                    .size($scope.panel.size)
+                                    .order($scope.panel.order)
+                                    .exclude($scope.panel.exclude)
+                                    .facetFilter(
+                                        $scope.ejs.AndFilter(
+                                            [
+                                                $scope.ejs.QueryFilter(
+                                                    $scope.ejs.FilteredQuery(
+                                                        boolQuery,
+                                                        filterSrv.getBoolFilter(filterSrv.ids())
+                                                    )
+                                                ),
+                                                $scope.ejs.RangeFilter($scope.panel.timeField)
+                                                    .from(new Date(parseInt(date.startDate)))
+                                                    .to(new Date(parseInt(date.endDate)))
+                                            ]
+                                        )
+                                    )
+                                )
+                            });
                         }
                         else {
                             /*If no axis displays the time*/
@@ -389,38 +411,6 @@ define([
                             });
                         }
                         
-                        //axis1Labels.forEach(function (sourceNode) {
-                        //    request = request
-                        //    .facet(
-                        //        $scope.ejs.TermsFacet($scope.panel.axis1Label + '~/-#--#-/~' + $scope.panel.axis2Label + '~/-#--#-/~' + sourceNode)
-                        //        .field($scope.panel.axis2Label)
-                        //        .size($scope.panel.size)
-                        //        .order($scope.panel.order)
-                        //        .exclude($scope.panel.exclude)
-                        //        .facetFilter(
-                        //            $scope.ejs.AndFilter(
-                        //                [
-                        //                    $scope.ejs.QueryFilter(
-                        //                        $scope.ejs.FilteredQuery(
-                        //                            boolQuery,
-                        //                            filterSrv.getBoolFilter(filterSrv.ids())
-                        //                        )
-                        //                    ),
-                        //                    $scope.ejs.QueryFilter(
-                        //                        $scope.ejs.TermQuery(
-                        //                            $scope.panel.axis1Label,
-                        //                            sourceNode
-                        //                        )
-                        //                    ),
-                        //                    $scope.ejs.RangeFilter('Timestamp')
-                        //                        .from(intervals[2].startDate)
-                        //                        .to(intervals[2].endDate)
-                        //                ]
-                        //            )
-                        //        )
-                        //    );
-                        //});
-
                         if ($scope.panel.numberOfAxis >= 3) {
                             _.each(results1.facets[$scope.panel.axis2Label].terms, function (v) {
                                 axis2Labels.push(v.term);
@@ -834,9 +824,7 @@ define([
                 }
                 return ret;
             };
-
-
-
+            
             $scope.getDateAsString = function (date) {
                 var year = date.getFullYear();
                 var month = '0' + (date.getMonth() + 1);
@@ -903,6 +891,7 @@ define([
                                     k = k + 1;
                                 });
                             });
+                            console.log(scope.data);
                         }
                         else {
                             /*
