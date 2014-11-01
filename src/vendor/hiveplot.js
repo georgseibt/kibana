@@ -99,11 +99,19 @@
             data = prepareData(_config.data),
             nodes = data.nodes,
             links = data.links,
-            angleDomain = data.axis,
-            linkMin = data.linkMin,
+            angleDomain = [];
+        if (typeof _config.axisConfig === 'undefined' || _config.axisConfig === null) {
+            angleDomain = data.axis;
+        }
+        else {
+            _config.axisConfig.forEach(function (axis) {
+                angleDomain.push(axis.axis);
+            })
+        }
+        var linkMin = data.linkMin,
             linkMax = data.linkMax,
             angleRange = [];
-                
+
         for (var i = 0; i < angleDomain.length; i++) {
             if (angleDomain.length === 2) {
                 angleRange[0] = 0;
