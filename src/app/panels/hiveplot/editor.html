@@ -17,7 +17,7 @@
         <input type="text" class="input-small" bs-typeahead="fields.list" ng-model="panel.timeField" ng-change="set_refresh(true)">
     </div>
     <div class="editor-option">
-        <label class="small">Multipanel</label><input type="checkbox" ng-model="panel.multipanelSetting" ng-checked="panel.multipanelSetting">
+        <label class="small">Multipanel</label><input type="checkbox" ng-model="panel.multipanelSetting" ng-change="set_refresh(true)" ng-checked="panel.multipanelSetting">
     </div>
     <div class="editor-option">
         <label class="small" ng-show="panel.multipanelSetting">Panel by</label>

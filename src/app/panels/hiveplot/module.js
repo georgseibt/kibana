@@ -229,23 +229,6 @@ define([
                     Case2b: Three axes for the hiveplot
                 */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                 /*Implementation for case one*/
                 if (!$scope.panel.multipanelSetting) {
                     var aggregateBy = $scope.panel.interval;
@@ -320,7 +303,6 @@ define([
                         var axis1Labels = [];
                         var axis2Labels = [];
                         var axis3Labels = [];
-
                         _.each(results1.facets[$scope.panel.axis1Label].terms, function (v) {
                             axis1Labels.push(v.term);
                         });
@@ -667,10 +649,34 @@ define([
 
                     });
                 }
-                /*Implementation for case two*/
-                else {
-                    $scope.rangesOfInterest = $scope.getIntervals();
 
+                /*Implementation for case two*/
+                else if ($scope.panel.multipanelSetting) {
+                    /*Defining how the data between each hiveplot should be aggregated*/
+                    var aggregatePanelBy = $scope.panel.panelInterval;
+                    switch (aggregatePanelBy) {
+                        case '1d': aggregatePanelBy = 'day'; break;
+                        case '1w': aggregatePanelBy = 'week'; break;
+                        case '1M': aggregatePanelBy = 'month'; break;
+                        case '1y': aggregatePanelBy = 'year'; break;
+                        default: aggregatePanelBy = 'second'; break;
+                    }
+                    /*Defining how the data within each hiveplot should be aggregated*/
+                    var aggregatePlotBy = $scope.panel.interval;
+                    switch (aggregatePlotBy) {
+                        case '': aggregatePlotBy = 'second'; break;
+                        case '15m': aggregatePlotBy = 'hour'; break;
+                        case '30m': aggregatePlotBy = 'hour'; break;
+                        case '1h': aggregatePlotBy = 'hour'; break;
+                        case '12h': aggregatePlotBy = 'day'; break;
+                        case '1d': aggregatePlotBy = 'day'; break;
+                        case '1w': aggregatePlotBy = 'week'; break;
+                        case '1M': aggregatePlotBy = 'month'; break;
+                        case '1y': aggregatePlotBy = 'year'; break;
+                        default: aggregatePlotBy = 'second'; break;
+                    }
+
+                    var intervals = [];
                     var request1 = $scope.ejs.Request().indices(dashboard.indices);
                     request1 = request1
                         .facet(
@@ -679,6 +685,42 @@ define([
                             .size($scope.panel.size)
                             .order($scope.panel.order)
                             .exclude($scope.panel.exclude)
+                        )
+                        /*create request for the intervals to create the panels*/
+                        .facet(
+                            $scope.ejs.DateHistogramFacet('panelIntervals')
+                                .field($scope.panel.timeField)
+                                .interval(aggregatePanelBy)
+                                .facetFilter(
+                                    $scope.ejs.AndFilter(
+                                        [
+                                            $scope.ejs.QueryFilter(
+                                                $scope.ejs.FilteredQuery(
+                                                    boolQuery,
+                                                    filterSrv.getBoolFilter(filterSrv.ids())
+                                                )
+                                            )
+                                        ]
+                                    )
+                                )
+                        )
+                        /*create request for the intervals to create the plots*/
+                        .facet(
+                            $scope.ejs.DateHistogramFacet('plotIntervals')
+                                .field($scope.panel.timeField)
+                                .interval(aggregatePlotBy)
+                                .facetFilter(
+                                    $scope.ejs.AndFilter(
+                                        [
+                                            $scope.ejs.QueryFilter(
+                                                $scope.ejs.FilteredQuery(
+                                                    boolQuery,
+                                                    filterSrv.getBoolFilter(filterSrv.ids())
+                                                )
+                                            )
+                                        ]
+                                    )
+                                )
                         );
 
                     if ($scope.panel.numberOfAxis >= 3) {
@@ -700,6 +742,19 @@ define([
                     }
 
                     var results1 = request1.doSearch().then(function (results1) {
+                        /*Defining the start and end date. These dates are required to calculate the correct intervals*/
+                        var dates = [];
+                        _.each(results1.facets.plotIntervals.entries, function (v) {
+                            dates.push(v.time);
+                        });
+                        var dates2 = [];
+                        _.each(results1.facets.panelIntervals.entries, function (v) {
+                            dates2.push(v.time);
+                        });
+
+                        intervals = $scope.getIntervals2(dates, $scope.panel.interval);
+                        $scope.panelIntervals = $scope.getIntervals2(dates2, $scope.panel.panelInterval);
+
                         var axis1Labels = [];
                         var axis2Labels = [];
                         var axis3Labels = [];
@@ -708,16 +763,87 @@ define([
                             axis1Labels.push(v.term);
                         });
 
-                        $scope.rangesOfInterest.forEach(function (range) {
-                            axis1Labels.forEach(function (sourceNode) {
-                                request = request
-                                .facet(
-                                    $scope.ejs.TermsFacet(range.label + '~/-#--#-/~' + $scope.panel.axis1Label + '~/-#--#-/~' + $scope.panel.axis2Label + '~/-#--#-/~' + sourceNode)
-                                    .field($scope.panel.axis2Label)
-                                    .size($scope.panel.size)
-                                    .order($scope.panel.order)
-                                    .exclude($scope.panel.exclude)
-                                    .facetFilter(
+
+                        if ($scope.panel.axis1Label === $scope.panel.timeField) {
+                            /*Depending on */
+                            /*If the time should be displayed on axis 1*/
+                            $scope.panelIntervals.forEach(function (panelPointOfTime) {
+                                intervals.forEach(function (date) {
+                                    request = request
+                                    .facet(
+                                        $scope.ejs.TermsFacet(panelPointOfTime.startDate + '~/-#--#-/~' + $scope.panel.axis1Label + '~/-#--#-/~' + $scope.panel.axis2Label + '~/-#--#-/~' + date.startDate)
+                                        .field($scope.panel.axis2Label)
+                                        .size($scope.panel.size)
+                                        .order($scope.panel.order)
+                                        .exclude($scope.panel.exclude)
+                                        .facetFilter(
+                                            $scope.ejs.AndFilter(
+                                                [
+                                                    $scope.ejs.QueryFilter(
+                                                        $scope.ejs.FilteredQuery(
+                                                            boolQuery,
+                                                            filterSrv.getBoolFilter(filterSrv.ids())
+                                                        )
+                                                    ),
+                                                    $scope.ejs.RangeFilter($scope.panel.timeField)
+                                                        .from(new Date(parseInt(date.startDate)))
+                                                        .to(new Date(parseInt(date.endDate))),
+                                                    $scope.ejs.RangeFilter($scope.panel.timeField)
+                                                        .from(new Date(parseInt(panelPointOfTime.startDate)))
+                                                        .to(new Date(parseInt(panelPointOfTime.endDate)))
+                                                ]
+                                            )
+                                        )
+                                    )
+                                });
+                            })
+
+                        }
+                        else if ($scope.panel.axis2Label === $scope.panel.timeField) {
+                            /*If the time should be displayed on axis 2*/
+                            $scope.panelIntervals.forEach(function (panelPointOfTime) {
+                                intervals.forEach(function (date) {
+                                    request = request
+                                    .facet(
+                                        $scope.ejs.TermsFacet(panelPointOfTime.startDate + '~/-#--#-/~' + $scope.panel.axis2Label + '~/-#--#-/~' + $scope.panel.axis1Label + '~/-#--#-/~' + date.startDate)
+                                        .field($scope.panel.axis1Label)
+                                        .size($scope.panel.size)
+                                        .order($scope.panel.order)
+                                        .exclude($scope.panel.exclude)
+                                        .facetFilter(
+                                            $scope.ejs.AndFilter(
+                                                [
+                                                    $scope.ejs.QueryFilter(
+                                                        $scope.ejs.FilteredQuery(
+                                                            boolQuery,
+                                                            filterSrv.getBoolFilter(filterSrv.ids())
+                                                        )
+                                                    ),
+                                                    $scope.ejs.RangeFilter($scope.panel.timeField)
+                                                        .from(new Date(parseInt(date.startDate)))
+                                                        .to(new Date(parseInt(date.endDate))),
+                                                    $scope.ejs.RangeFilter($scope.panel.timeField)
+                                                        .from(new Date(parseInt(panelPointOfTime.startDate)))
+                                                        .to(new Date(parseInt(panelPointOfTime.endDate)))
+                                                ]
+                                            )
+                                        )
+                                    )
+                                });
+                            });
+                        }
+                        else {
+                            /*If no axis displays the time*/
+                            $scope.panelIntervals.forEach(function (panelPointOfTime) {
+                                axis1Labels.forEach(function (sourceNode) {
+                                    request = request
+                                    .facet(
+                                        $scope.ejs.TermsFacet(panelPointOfTime.startDate + '~/-#--#-/~' + $scope.panel.axis1Label + '~/-#--#-/~' + $scope.panel.axis2Label + '~/-#--#-/~' + sourceNode)
+                                        .field($scope.panel.axis2Label)
+                                        .size($scope.panel.size)
+                                        .order($scope.panel.order)
+                                        .exclude($scope.panel.exclude)
+                                        .facetFilter(
                                             $scope.ejs.AndFilter(
                                                 [
                                                     $scope.ejs.QueryFilter(
@@ -732,33 +858,67 @@ define([
                                                             sourceNode
                                                         )
                                                     ),
-                                                    $scope.ejs.RangeFilter('Timestamp')
-                                                        .from(range.from)
-                                                        .to(range.to)
+                                                    $scope.ejs.RangeFilter($scope.panel.timeField)
+                                                        .from(new Date(parseInt(panelPointOfTime.startDate)))
+                                                        .to(new Date(parseInt(panelPointOfTime.endDate)))
                                                 ]
                                             )
                                         )
                                     );
+                                });
+                            });
+                        }
+
+                        if ($scope.panel.numberOfAxis >= 3) {
+                            /*if the numberOfAxis is 3. We also have to define the links between axis1-axis3 and axis2-axis3*/
+                            _.each(results1.facets[$scope.panel.axis2Label].terms, function (v) {
+                                axis2Labels.push(v.term);
+                            });
+                            _.each(results1.facets[$scope.panel.axis3Label].terms, function (v) {
+                                axis3Labels.push(v.term);
                             });
 
-                            if ($scope.panel.numberOfAxis >= 3) {
-                                axis2Labels.length = 0;
-                                axis3Labels.length = 0;
-                                _.each(results1.facets[$scope.panel.axis2Label].terms, function (v) {
-                                    axis2Labels.push(v.term);
-                                });
-                                _.each(results1.facets[$scope.panel.axis3Label].terms, function (v) {
-                                    axis3Labels.push(v.term);
-                                });
-                                axis2Labels.forEach(function (sourceNode) {
-                                    request = request
-                                    .facet(
-                                        $scope.ejs.TermsFacet(range.label + '~/-#--#-/~' + $scope.panel.axis2Label + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + sourceNode)
-                                        .field($scope.panel.axis3Label)
-                                        .size($scope.panel.size)
-                                        .order($scope.panel.order)
-                                        .exclude($scope.panel.exclude)
-                                        .facetFilter(
+                            if ($scope.panel.axis1Label === $scope.panel.timeField) {
+                                /*Create links between axis1-axis3 (axis1 is the time-axis)*/
+                                $scope.panelIntervals.forEach(function (panelPointOfTime) {
+                                    intervals.forEach(function (date) {
+                                        request = request
+                                        .facet(
+                                            $scope.ejs.TermsFacet(panelPointOfTime.startDate + '~/-#--#-/~' + $scope.panel.axis1Label + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + date.startDate)
+                                            .field($scope.panel.axis3Label)
+                                            .size($scope.panel.size)
+                                            .order($scope.panel.order)
+                                            .exclude($scope.panel.exclude)
+                                            .facetFilter(
+                                                $scope.ejs.AndFilter(
+                                                    [
+                                                        $scope.ejs.QueryFilter(
+                                                            $scope.ejs.FilteredQuery(
+                                                                boolQuery,
+                                                                filterSrv.getBoolFilter(filterSrv.ids())
+                                                            )
+                                                        ),
+                                                        $scope.ejs.RangeFilter($scope.panel.timeField)
+                                                            .from(new Date(parseInt(date.startDate)))
+                                                            .to(new Date(parseInt(date.endDate))),
+                                                        $scope.ejs.RangeFilter($scope.panel.timeField)
+                                                            .from(new Date(parseInt(panelPointOfTime.startDate)))
+                                                            .to(new Date(parseInt(panelPointOfTime.endDate)))
+                                                    ]
+                                                )
+                                            )
+                                        )
+                                    });
+                                    /*Create links between axis2-axis3*/
+                                    axis2Labels.forEach(function (sourceNode) {
+                                        request = request
+                                        .facet(
+                                            $scope.ejs.TermsFacet(panelPointOfTime.startDate + '~/-#--#-/~' + $scope.panel.axis2Label + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + sourceNode)
+                                            .field($scope.panel.axis3Label)
+                                            .size($scope.panel.size)
+                                            .order($scope.panel.order)
+                                            .exclude($scope.panel.exclude)
+                                            .facetFilter(
                                                 $scope.ejs.AndFilter(
                                                     [
                                                         $scope.ejs.QueryFilter(
@@ -773,23 +933,186 @@ define([
                                                                 sourceNode
                                                             )
                                                         ),
-                                                        $scope.ejs.RangeFilter('Timestamp')
-                                                            .from(range.from)
-                                                            .to(range.to)
+                                                        $scope.ejs.RangeFilter($scope.panel.timeField)
+                                                            .from(new Date(parseInt(panelPointOfTime.startDate)))
+                                                            .to(new Date(parseInt(panelPointOfTime.endDate)))
                                                     ]
                                                 )
                                             )
                                         );
+                                    });
                                 });
-                                axis3Labels.forEach(function (sourceNode) {
-                                    request = request
-                                    .facet(
-                                        $scope.ejs.TermsFacet(range.label + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + $scope.panel.axis1Label + '~/-#--#-/~' + sourceNode)
-                                        .field($scope.panel.axis1Label)
-                                        .size($scope.panel.size)
-                                        .order($scope.panel.order)
-                                        .exclude($scope.panel.exclude)
-                                        .facetFilter(
+                            }
+                            else if ($scope.panel.axis2Label === $scope.panel.timeField) {
+                                /*Create links between axis2-axis3 (axis2 is the time-axis)*/
+                                $scope.panelIntervals.forEach(function (panelPointOfTime) {
+                                    intervals.forEach(function (date) {
+                                        request = request
+                                        .facet(
+                                            $scope.ejs.TermsFacet(panelPointOfTime.startDate + '~/-#--#-/~' + $scope.panel.axis2Label + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + date.startDate)
+                                            .field($scope.panel.axis3Label)
+                                            .size($scope.panel.size)
+                                            .order($scope.panel.order)
+                                            .exclude($scope.panel.exclude)
+                                            .facetFilter(
+                                                $scope.ejs.AndFilter(
+                                                    [
+                                                        $scope.ejs.QueryFilter(
+                                                            $scope.ejs.FilteredQuery(
+                                                                boolQuery,
+                                                                filterSrv.getBoolFilter(filterSrv.ids())
+                                                            )
+                                                        ),
+                                                        $scope.ejs.RangeFilter($scope.panel.timeField)
+                                                            .from(new Date(parseInt(date.startDate)))
+                                                            .to(new Date(parseInt(date.endDate))),
+                                                        $scope.ejs.RangeFilter($scope.panel.timeField)
+                                                            .from(new Date(parseInt(panelPointOfTime.startDate)))
+                                                            .to(new Date(parseInt(panelPointOfTime.endDate)))
+                                                    ]
+                                                )
+                                            )
+                                        )
+                                    });
+                                    /*Create links between axis1-axis3*/
+                                    axis1Labels.forEach(function (sourceNode) {
+                                        request = request
+                                        .facet(
+                                            $scope.ejs.TermsFacet(panelPointOfTime.startDate + '~/-#--#-/~' + $scope.panel.axis1Label + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + sourceNode)
+                                            .field($scope.panel.axis3Label)
+                                            .size($scope.panel.size)
+                                            .order($scope.panel.order)
+                                            .exclude($scope.panel.exclude)
+                                            .facetFilter(
+                                                $scope.ejs.AndFilter(
+                                                    [
+                                                        $scope.ejs.QueryFilter(
+                                                            $scope.ejs.FilteredQuery(
+                                                                boolQuery,
+                                                                filterSrv.getBoolFilter(filterSrv.ids())
+                                                            )
+                                                        ),
+                                                        $scope.ejs.QueryFilter(
+                                                            $scope.ejs.TermQuery(
+                                                                $scope.panel.axis1Label,
+                                                                sourceNode
+                                                            )
+                                                        ),
+                                                        $scope.ejs.RangeFilter($scope.panel.timeField)
+                                                            .from(new Date(parseInt(panelPointOfTime.startDate)))
+                                                            .to(new Date(parseInt(panelPointOfTime.endDate)))
+                                                    ]
+                                                )
+                                            )
+                                        );
+                                    });
+                                });
+                            }
+                            else if ($scope.panel.axis3Label === $scope.panel.timeField) {
+                                /*Create links between axis3-axis1 (axis3 is the time-axis)*/
+                                $scope.panelIntervals.forEach(function (panelPointOfTime) {
+                                    intervals.forEach(function (date) {
+                                        request = request
+                                        .facet(
+                                            $scope.ejs.TermsFacet(panelPointOfTime.startDate + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + $scope.panel.axis1Label + '~/-#--#-/~' + date.startDate)
+                                            .field($scope.panel.axis1Label)
+                                            .size($scope.panel.size)
+                                            .order($scope.panel.order)
+                                            .exclude($scope.panel.exclude)
+                                            .facetFilter(
+                                                $scope.ejs.AndFilter(
+                                                    [
+                                                        $scope.ejs.QueryFilter(
+                                                            $scope.ejs.FilteredQuery(
+                                                                boolQuery,
+                                                                filterSrv.getBoolFilter(filterSrv.ids())
+                                                            )
+                                                        ),
+                                                        $scope.ejs.RangeFilter($scope.panel.timeField)
+                                                            .from(new Date(parseInt(date.startDate)))
+                                                            .to(new Date(parseInt(date.endDate))),
+                                                        $scope.ejs.RangeFilter($scope.panel.timeField)
+                                                            .from(new Date(parseInt(panelPointOfTime.startDate)))
+                                                            .to(new Date(parseInt(panelPointOfTime.endDate)))
+                                                    ]
+                                                )
+                                            )
+                                        )
+                                    });
+                                    /*Create links between axis3-axis2 (axis3 is the time-axis)*/
+                                    intervals.forEach(function (date) {
+                                        request = request
+                                        .facet(
+                                            $scope.ejs.TermsFacet(panelPointOfTime.startDate + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + $scope.panel.axis2Label + '~/-#--#-/~' + date.startDate)
+                                            .field($scope.panel.axis2Label)
+                                            .size($scope.panel.size)
+                                            .order($scope.panel.order)
+                                            .exclude($scope.panel.exclude)
+                                            .facetFilter(
+                                                $scope.ejs.AndFilter(
+                                                    [
+                                                        $scope.ejs.QueryFilter(
+                                                            $scope.ejs.FilteredQuery(
+                                                                boolQuery,
+                                                                filterSrv.getBoolFilter(filterSrv.ids())
+                                                            )
+                                                        ),
+                                                        $scope.ejs.RangeFilter($scope.panel.timeField)
+                                                            .from(new Date(parseInt(date.startDate)))
+                                                            .to(new Date(parseInt(date.endDate))),
+                                                        $scope.ejs.RangeFilter($scope.panel.timeField)
+                                                            .from(new Date(parseInt(panelPointOfTime.startDate)))
+                                                            .to(new Date(parseInt(panelPointOfTime.endDate)))
+                                                    ]
+                                                )
+                                            )
+                                        )
+                                    });
+                                });
+                            }
+                            else {
+                                /*If no axis displays the time*/
+                                $scope.panelIntervals.forEach(function (panelPointOfTime) {
+                                    axis2Labels.forEach(function (sourceNode) {
+                                        request = request
+                                        .facet(
+                                            $scope.ejs.TermsFacet(panelPointOfTime.startDate + '~/-#--#-/~' + $scope.panel.axis2Label + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + sourceNode)
+                                            .field($scope.panel.axis3Label)
+                                            .size($scope.panel.size)
+                                            .order($scope.panel.order)
+                                            .exclude($scope.panel.exclude)
+                                            .facetFilter(
+                                                $scope.ejs.AndFilter(
+                                                    [
+                                                        $scope.ejs.QueryFilter(
+                                                            $scope.ejs.FilteredQuery(
+                                                                boolQuery,
+                                                                filterSrv.getBoolFilter(filterSrv.ids())
+                                                            )
+                                                        ),
+                                                        $scope.ejs.QueryFilter(
+                                                            $scope.ejs.TermQuery(
+                                                                $scope.panel.axis2Label,
+                                                                sourceNode
+                                                            )
+                                                        ),
+                                                        $scope.ejs.RangeFilter($scope.panel.timeField)
+                                                            .from(new Date(parseInt(panelPointOfTime.startDate)))
+                                                            .to(new Date(parseInt(panelPointOfTime.endDate)))
+                                                    ]
+                                                )
+                                            )
+                                        );
+                                    });
+                                    axis3Labels.forEach(function (sourceNode) {
+                                        request = request
+                                        .facet(
+                                            $scope.ejs.TermsFacet(panelPointOfTime.startDate + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + $scope.panel.axis1Label + '~/-#--#-/~' + sourceNode)
+                                            .field($scope.panel.axis1Label)
+                                            .size($scope.panel.size)
+                                            .order($scope.panel.order)
+                                            .exclude($scope.panel.exclude)
+                                            .facetFilter(
                                                 $scope.ejs.AndFilter(
                                                     [
                                                         $scope.ejs.QueryFilter(
@@ -804,16 +1127,17 @@ define([
                                                                 sourceNode
                                                             )
                                                         ),
-                                                        $scope.ejs.RangeFilter('Timestamp')
-                                                            .from(range.from)
-                                                            .to(range.to)
+                                                        $scope.ejs.RangeFilter($scope.panel.timeField)
+                                                            .from(new Date(parseInt(panelPointOfTime.startDate)))
+                                                            .to(new Date(parseInt(panelPointOfTime.endDate)))
                                                     ]
                                                 )
                                             )
                                         );
+                                    });
                                 });
                             }
-                        });
+                        }
 
                         // Populate the inspector panel; The current request will be shown in the inspector panel
                         $scope.inspector = angular.toJson(JSON.parse(request.toString()), true);
@@ -823,20 +1147,20 @@ define([
                             $scope.panelMeta.loading = false;
                             $scope.hits = results.hits.total;
 
-
                             $scope.axis1Labels = axis1Labels;
                             $scope.axis2Labels = axis2Labels;
                             $scope.axis3Labels = axis3Labels;
                             $scope.results = results;
                             $scope.$emit('render'); //dispatches the event upwards through the scope hierarchy of controllers.
-                        });                        
+                        });
+
                     });
                 }
             };
 
             $scope.getIntervals2 = function (listOfDates, interval) {
-                var intervalNumber = interval.slice(0, $scope.panel.interval.length - 1);
-                var aggregateBy = interval.slice($scope.panel.interval.length - 1, $scope.panel.interval.length);
+                var intervalNumber = interval.slice(0, interval.length - 1);
+                var aggregateBy = interval.slice(interval.length - 1, interval.length);
                 switch (aggregateBy) {
                     case 'y': aggregateBy = 'year'; break;
                     case 'q': aggregateBy = 'quarter'; break;
@@ -922,39 +1246,7 @@ define([
                 }
                 return (ranges);
             }
-            
-            $scope.getIntervals = function () {
-                var intervalNumber = $scope.panel.interval.slice(0, $scope.panel.interval.length - 1);
-                var aggregateBy = $scope.panel.interval.slice($scope.panel.interval.length - 1, $scope.panel.interval.length);
-                switch (aggregateBy.toLowerCase()) {
-                    case 'y': aggregateBy = 'year'; break;
-                    case 'q': aggregateBy = 'quarter'; break;
-                    case 'w': aggregateBy = 'week'; break;
-                    case 'd': aggregateBy = 'day'; break;
-                    case 'h': aggregateBy = 'hour'; break;
-                    case 'm': aggregateBy = 'minute'; break;
-                    case 's': aggregateBy = 'second'; break;
-                    default: aggregateBy = undefined; break;
-                }
-
-                var ranges = [];
-                var k = parseInt(intervalNumber);
-                while ($scope.dateAdd($scope.panel.endDate, aggregateBy, -k) >= $scope.dateAdd($scope.panel.startDate, aggregateBy, 0)) {
-                    var _from = $scope.dateAdd($scope.dateAdd($scope.panel.endDate, aggregateBy, -k),'second', 0.001),
-                        _to = $scope.dateAdd($scope.panel.endDate, aggregateBy, -(k - (parseInt(intervalNumber))));
-
-                    var object = {
-                        label: "Between " + _from + " and " + _to,
-                        from: _from,
-                        to: _to
-                    }
-                    ranges.push(object);
-                    k = k + (parseInt(intervalNumber));
-                }
-                return (ranges);
-                //return [$scope.dateAdd($scope.panel.endDate, 'day', 0), $scope.dateAdd($scope.panel.endDate, 'day', -1), $scope.dateAdd($scope.panel.endDate, 'day', -2), $scope.dateAdd($scope.panel.endDate, 'day', -3)];
-            }
-            
+       
             $scope.build_search = function (axisName, nodeName) {
                 //This function filters the result. If you click on a node just the Connections to and from this node are shown
                 var queryterm = "";
@@ -1068,16 +1360,16 @@ define([
                                 });
                             });
                         }
-                        else {
+                        else if (scope.panel.multipanelSetting) {
                             /*
                             Implementation of building the results for case two 
                             (Severall hiveplots where each plot only shows the data from a smaller range of time. The data are shown from subcategories. For example, per day, per week, per year, etc.)
                             */
-                            scope.rangesOfInterest.forEach(function (range) {
+                            scope.panelIntervals.forEach(function (range) {
                                 var dataPerDay = [];
-                                scope.data[range.label] = [];
+                                scope.data[range.startDate] = [];
 
-                                Object.keys(scope.results.facets).filter(function (object) { return object.indexOf(range.label) > -1 }).forEach(function (sourceNode) {
+                                Object.keys(scope.results.facets).filter(function (object) { return object.indexOf(range.startDate) > -1 }).forEach(function (sourceNode) {
                                     _.each(scope.results.facets[sourceNode].terms, function (v) {
                                         var slice;
                                         slice = {
@@ -1092,7 +1384,7 @@ define([
                                         k = k + 1;
                                     });
                                 });
-                                scope.data[range.label].push(dataPerDay);
+                                scope.data[range.startDate].push(dataPerDay);
                             });
                         }
                     }
@@ -1104,9 +1396,11 @@ define([
                 
                 var axisConfig = [
                     { 'axis': scope.panel.axis1Label, 'sort': scope.panel.axis1Sorting, 'order': scope.panel.axis1Order },      //possible values for sort [label, value, numberOfLinks]
-                    { 'axis': scope.panel.axis2Label, 'sort': scope.panel.axis2Sorting, 'order': scope.panel.axis2Order },      //possible values for order [true, false] true means ascending, false means descending
-                    { 'axis': scope.panel.axis3Label, 'sort': scope.panel.axis3Sorting, 'order': scope.panel.axis3Order }
+                    { 'axis': scope.panel.axis2Label, 'sort': scope.panel.axis2Sorting, 'order': scope.panel.axis2Order }
                 ];
+                if (scope.panel.numberOfAxis >= 3) {
+                    axisConfig.push({ 'axis': scope.panel.axis3Label, 'sort': scope.panel.axis3Sorting, 'order': scope.panel.axis3Order });
+                }
 
                 if (!scope.panel.multipanelSetting) {
                     d3.select(elem[0]).append('div')
@@ -1145,44 +1439,18 @@ define([
 
                 }
                 else {
-                    /*As all panels should be comparable, all nodes should be displayed on each hiveplot at the same spot. for that reason we pass a list of nodes to the library*/
-                    var nodes = [];
-                    scope.axis1Labels.forEach(function (node) {
-                        var object = {
-                            axis: scope.panel.axis1Label,
-                            label: scope.panel.axis1Label===scope.panel.timeField ? scope.getDateAsString(new Date(parseInt(node))) : node
-                        }
-                        nodes.push(object);
-                    });
-                    if (scope.panel.numberOfAxis >= 3) {
-                        scope.axis2Labels.forEach(function (node) {
-                            var object = {
-                                axis: scope.panel.axis2Label,
-                                label: scope.panel.axis2Label === scope.panel.timeField ? scope.getDateAsString(new Date(parseInt(node))) : node
-                            }
-                            nodes.push(object);
-                        });
-                        scope.axis3Labels.forEach(function (node) {
-                            var object = {
-                                axis: scope.panel.axis3Label,
-                                label: scope.panel.axis2Label === scope.panel.timeField ? scope.getDateAsString(new Date(parseInt(node))) : node
-                            }
-                            nodes.push(object);
-                        });
-                    }
-                                        
-                    for (var count = 0; count < scope.rangesOfInterest.length; count++) {
+                                                            
+                    for (var count = 0; count < scope.panelIntervals.length; count++) {
                         d3.select(elem[0]).append('div')
                             .attr("class", "hiveplot-innerpanels")
                             .attr("id", "hiveplotpanel-" + count + '' + elem[0].id);
-                        var data = prepareData(dataset[scope.rangesOfInterest[count].label][0]);
+                        var data = prepareData(dataset[scope.panelIntervals[count].startDate][0]);
 
                         new Hiveplot.Chart({
                             //Mandatory
                             "elem": "hiveplotpanel-" + count + '' + elem[0].id,     //id of the just created div
                             "data": data,
                             //Optional
-                            "nodes": nodes,
                             "colorcode": scope.panel.colorcode,                         //possible values: ['black-white', 'colored']
                             "colors": null,
                             "axisConfig": axisConfig,
