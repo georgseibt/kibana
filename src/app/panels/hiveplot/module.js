@@ -1254,16 +1254,29 @@ define([
             $scope.build_search = function (axisName, nodeName) {
                 //This function filters the result. If you click on a node just the Connections to and from this node are shown
                 var queryterm = "";
-                if (queryterm === "") {
-                    queryterm = queryterm + '' + axisName + ':\"' + nodeName + '\"';
+                if (axisName === $scope.panel.timeField) {
+                    var date = [];
+                    date.push(nodeName);
+                    date = ($scope.getIntervals2(date, $scope.panel.interval)[0]);
+                    filterSrv.set({
+                        type: 'time',
+                        from: new Date(date.startDate),
+                        to: new Date(date.endDate),
+                        field: axisName
+                    });
                 }
                 else {
-                    queryterm = queryterm + ' OR ' + axisName + ':\"' + nodeName + '\"';
+                    if (queryterm === "") {
+                        queryterm = queryterm + '' + axisName + ':\"' + nodeName + '\"';
+                    }
+                    else {
+                        queryterm = queryterm + ' OR ' + axisName + ':\"' + nodeName + '\"';
+                    }
+                    filterSrv.set({
+                        type: 'querystring', query: queryterm,
+                        mandate: 'must'
+                    });
                 }
-                filterSrv.set({
-                    type: 'querystring', query: queryterm,
-                    mandate: 'must'
-                });
             };
 
             $scope.set_refresh = function (state) {
@@ -1429,7 +1442,10 @@ define([
                                 clicks on a node in the HivePlot.
                                 In our case this function should filter the data.
                             */
-                            scope.build_search(node.axis, node.label);
+                            //console.log(node.axis);
+                            console.log(node.axis === scope.panel.timeField ? new Date(node.label.replace(" ", "T")).getTime() : node.label);
+                            //console.log((new Date(parseInt(node.label))));
+                            scope.build_search(node.axis, node.axis === scope.panel.timeField ? new Date(node.label.replace(" ", "T")).getTime() : node.label);
                         },
                         "onClickLink": function (link) {
                             /*
@@ -1540,7 +1556,7 @@ define([
                                     clicks on a node in the HivePlot.
                                     In our case this function should filter the data.
                                 */
-                                scope.build_search(node.axis, node.label);
+                                scope.build_search(node.axis, node.axis === scope.panel.timeField ? new Date(node.label.replace(" ", "T")).getTime() : node.label);
                             },
                             "onClickLink": function (link) {
                                 /*
