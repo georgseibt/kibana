@@ -177,7 +177,13 @@
             .attr("class", "hiveplot-link")
             .attr("fill", "none")
             .attr("stroke", function (d) {
-                return colorscale[Math.ceil((d.value - linkMin) / ((linkMax - linkMin) / colorscale.length))-1];
+                if (linkMin === linkMax) {
+                    return colorscale[0];
+                }
+                else {
+                    return colorscale[Math.ceil(d.value * (((colorscale.length - 1) - 0) / (linkMax - linkMin)) + ((0 * linkMax - (colorscale.length - 1) * linkMin) / (linkMax - linkMin)))];
+
+                }                
             })
             .attr("stroke-width", function (d) { return d.value })
             .on("mouseover", function (d) {
@@ -337,6 +343,7 @@
                 histCurrent = [],
                 arrHelp = [],
                 k = 0,
+                values = [];
                 linkMax = 0,
                 linkMin = 0;    //assigning one random value from the data as the minimum
 
@@ -347,13 +354,14 @@
                 Moreover the loop defines the maximum and minimum value of the links.
             */
             data.forEach(function (d) {
-                linkMax = Math.max(linkMax, d.value);
-                linkMin = Math.min(linkMin, d.value);
+                values.push(d.value);
                 uniqueAxis.push(d.axis1);
                 uniqueAxis.push(d.axis2);
                 nodes.push({ axis: d.axis1, y: 0, label: d.axis1NodeLabel, color: 'black', value: d.value, numberOfLinks: 1 });
                 nodes.push({ axis: d.axis2, y: 0, label: d.axis2NodeLabel, color: 'black', value: d.value, numberOfLinks: 1 });
             });
+            linkMin = Math.min.apply(Math, values);
+            linkMax = Math.max.apply(Math, values);
             uniqueAxis = (uniqueAxis.filter(function onlyUnique(value, index, self) { return self.indexOf(value) === index; }));
 
             /*
@@ -419,9 +427,8 @@
                     node.color = colors[count++];
                     uniqueNodes.push(node);
                 })
-            })
-
-            if (typeof _config.nodes !== 'undefined') {
+            });
+            if (!(typeof _config.nodes === 'undefined' || _config.nodes === null)) {
                 /*
                     If a list of nodes was passed, the nodes should remain sorted as given. Also potential additional nodes should be shown on the axis
                 */

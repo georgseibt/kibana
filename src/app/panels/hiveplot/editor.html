@@ -17,11 +17,16 @@
         <input type="text" class="input-small" bs-typeahead="fields.list" ng-model="panel.timeField" ng-change="set_refresh(true)">
     </div>
     <div class="editor-option">
-        <label class="small">Multipanel</label><input type="checkbox" ng-model="panel.multipanelSetting" ng-change="set_refresh(true)" ng-checked="panel.multipanelSetting">
+        <label class="small">Multipanel<tip>Show several panels next to each other</tip></label>
+        <input type="checkbox" ng-model="panel.multipanelSetting" ng-change="set_refresh(true)" ng-checked="panel.multipanelSetting">
     </div>
     <div class="editor-option">
         <label class="small" ng-show="panel.multipanelSetting">Panel by</label>
         <select class="input-medium" ng-model="panel.panelInterval" ng-options="f for f in ['1d','1w','1M','1y']" ng-change="set_refresh(true)" ng-show="panel.multipanelSetting"></select>
+    </div>
+    <div class="editor-option">
+        <label class="small" ng-show="panel.multipanelSetting">Compare mode<tip>Shows the same nodes on the axes in each panel, except the time axis</tip></label>
+        <input type="checkbox" ng-model="panel.comparemodeSetting" ng-change="set_refresh(true)" ng-show="panel.multipanelSetting" ng-checked="panel.comparemodeSetting">
     </div>
     <div class="editor-option">
         <label class="small">Length</label>

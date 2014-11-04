@@ -70,6 +70,10 @@ define([
                 */
                 panelInterval: '1d',
                 /** @scratch /panels/hiveplot/5
+                * comparemodeSetting:: if true, panels show the same nodes on the axes in each panel, except the time axis
+                */
+                comparemodeSetting: false,
+                /** @scratch /panels/hiveplot/5
                 * === Parameters
                 *
                 * timeField:: The field with the time details
@@ -1401,7 +1405,7 @@ define([
                 if (scope.panel.numberOfAxis >= 3) {
                     axisConfig.push({ 'axis': scope.panel.axis3Label, 'sort': scope.panel.axis3Sorting, 'order': scope.panel.axis3Order });
                 }
-
+                                                
                 if (!scope.panel.multipanelSetting) {
                     d3.select(elem[0]).append('div')
                         .attr("class", "hiveplot-panel")
@@ -1439,18 +1443,91 @@ define([
 
                 }
                 else {
+                    var number = scope.panelIntervals.length; //number of plots
+                    var width = $(elem[0]).width();
+                    var height = $(elem[0]).height();
+                    var elementArea = parseInt(height * width / number);
+
+                    // Calculate side length if there is no "spill":
+                    var sideLength = parseInt(Math.sqrt(elementArea));
+
+                    // We now need to fit the squares. Let's reduce the square size so an integer number fits the width.
+                    var numX = Math.ceil(width / sideLength);
+                    sideLength = width / numX;
+                    while (numX <= number) {
+                        // With a bit of luck, we are done.
+                        if (Math.floor(height / sideLength) * numX >= number) {
+                            // They all fit! We are done!
+                            break;
+                        }
+                        // They don't fit. Make room for one more square in each row.
+                        numX++;
+                        sideLength = width / numX;
+                    }
                                                             
                     for (var count = 0; count < scope.panelIntervals.length; count++) {
                         d3.select(elem[0]).append('div')
+                            .style("width", function () { return sideLength / width * 100 + "%"; })
+                            .style("height", function () { return sideLength / height * 100 + "%"; })
                             .attr("class", "hiveplot-innerpanels")
                             .attr("id", "hiveplotpanel-" + count + '' + elem[0].id);
                         var data = prepareData(dataset[scope.panelIntervals[count].startDate][0]);
+
+                        var nodes = [];
+                        if (scope.panel.comparemodeSetting) {
+                            if (scope.panel.axis1Label === scope.panel.timeField) { }
+                            else {
+                                scope.axis1Labels.forEach(function (d) {
+                                    var object = {
+                                        axis: scope.panel.axis1Label,
+                                        label: d.toString(),
+                                    }
+                                    nodes.push(object);
+                                })
+                            }
+                            if (scope.panel.axis2Label === scope.panel.timeField) { }
+                            else {
+                                scope.axis2Labels.forEach(function (d) {
+                                    var object = {
+                                        axis: scope.panel.axis2Label,
+                                        label: d.toString(),
+                                    }
+                                    nodes.push(object);
+                                })
+                            }
+                            if (scope.panel.axis3Label === scope.panel.timeField) { }
+                            else {
+                                scope.axis3Labels.forEach(function (d) {
+                                    var object = {
+                                        axis: scope.panel.axis3Label,
+                                        label: d.toString(),
+                                    }
+                                    nodes.push(object);
+                                })
+                            }
+                            var help = [];
+                            data.filter(function (object) { return object.axis1 === scope.panel.timeField }).forEach(function (d) {
+                                help.push(d.axis1NodeLabel);
+                            });
+                            help = help.filter(function onlyUnique(value, index, self) { return self.indexOf(value) === index; });
+                            help.forEach(function (d) {
+                                var object = {
+                                    axis: scope.panel.timeField,
+                                    label: d
+                                }
+                                nodes.push(object);
+                            });
+                        }
+                        else {
+                            nodes = null;
+                        }
 
                         new Hiveplot.Chart({
                             //Mandatory
                             "elem": "hiveplotpanel-" + count + '' + elem[0].id,     //id of the just created div
                             "data": data,
                             //Optional
+                            "nodes": nodes,
                             "colorcode": scope.panel.colorcode,                         //possible values: ['black-white', 'colored']
                             "colors": null,
                             "axisConfig": axisConfig,
@@ -1479,21 +1556,6 @@ define([
                 }                
                                 
                 function prepareData(dataset) {
-                    //var data = [
-                    //    { axis1: "from", axis1NodeLabel: "Augsburg", axis2: "to", axis2NodeLabel: "Bremen", value: 5 },
-                    //    { axis1: "from", axis1NodeLabel: "Augsburg", axis2: "to", axis2NodeLabel: "Chemnitz", value: 6 },
-                    //    { axis1: "from", axis1NodeLabel: "Bremen", axis2: "to", axis2NodeLabel: "Augsburg", value: 2 },
-                    //    { axis1: "from", axis1NodeLabel: "Bremen", axis2: "to", axis2NodeLabel: "Hamburg", value: 1 },
-                    //    { axis1: "from", axis1NodeLabel: "Chemnitz", axis2: "to", axis2NodeLabel: "Bremen", value: 1 },
-                    //    { axis1: "from", axis1NodeLabel: "München", axis2: "to", axis2NodeLabel: "Augsburg", value: 1 },
-                    //    { axis1: "to", axis1NodeLabel: "Augsburg", axis2: "Timestamp", axis2NodeLabel: "1395878400000", value: 1 },
-                    //    { axis1: "to", axis1NodeLabel: "München", axis2: "Timestamp", axis2NodeLabel: "1395878400000", value: 5 },
-                    //    { axis1: "to", axis1NodeLabel: "Hamburg", axis2: "Timestamp", axis2NodeLabel: "1394236800000", value: 1 },
-                    //    { axis1: "to", axis1NodeLabel: "Hamburg", axis2: "Timestamp", axis2NodeLabel: "1394409600000", value: 1 },
-                    //    { axis1: "from", axis1NodeLabel: "Augsburg", axis2: "Timestamp", axis2NodeLabel: "1394236800000", value: 3 },
-                    //    { axis1: "Timestamp", axis1NodeLabel: "1394582400000", axis2: "from", axis2NodeLabel: "Hamburg", value: 3 }
-                    //];
-
                     var data = [];
                     dataset.forEach(function (link) {
                         var object = {
