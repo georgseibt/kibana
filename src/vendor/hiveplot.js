@@ -452,7 +452,6 @@
                     }
                     node.color = colors[count++];
                 });
-
                 var nodesByAxis = {};
                 _config.nodes.forEach(function (node) {
                     if (nodesByAxis[node.axis] === undefined) {

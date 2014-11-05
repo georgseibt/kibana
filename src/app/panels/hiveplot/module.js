@@ -310,7 +310,6 @@ define([
                         _.each(results1.facets[$scope.panel.axis1Label].terms, function (v) {
                             axis1Labels.push(v.term);
                         });
-                        
 
                         if ($scope.panel.axis1Label === $scope.panel.timeField) {
                             /*Depending on */
@@ -725,17 +724,17 @@ define([
                                         ]
                                     )
                                 )
-                        );
-
-                    if ($scope.panel.numberOfAxis >= 3) {
-                        request1 = request1
-                            .facet(
+                        )
+                        .facet(
                                 $scope.ejs.TermsFacet($scope.panel.axis2Label)
                                 .field($scope.panel.axis2Label)
                                 .size($scope.panel.size)
                                 .order($scope.panel.order)
                                 .exclude($scope.panel.exclude)
-                            )
+                            );
+
+                    if ($scope.panel.numberOfAxis >= 3) {
+                        request1 = request1
                             .facet(
                                 $scope.ejs.TermsFacet($scope.panel.axis3Label)
                                 .field($scope.panel.axis3Label)
@@ -766,7 +765,9 @@ define([
                         _.each(results1.facets[$scope.panel.axis1Label].terms, function (v) {
                             axis1Labels.push(v.term);
                         });
-
+                        _.each(results1.facets[$scope.panel.axis2Label].terms, function (v) {
+                            axis2Labels.push(v.term);
+                        });
 
                         if ($scope.panel.axis1Label === $scope.panel.timeField) {
                             /*Depending on */
@@ -875,9 +876,9 @@ define([
 
                         if ($scope.panel.numberOfAxis >= 3) {
                             /*if the numberOfAxis is 3. We also have to define the links between axis1-axis3 and axis2-axis3*/
-                            _.each(results1.facets[$scope.panel.axis2Label].terms, function (v) {
-                                axis2Labels.push(v.term);
-                            });
+                            //_.each(results1.facets[$scope.panel.axis2Label].terms, function (v) {
+                            //    axis2Labels.push(v.term);
+                            //});
                             _.each(results1.facets[$scope.panel.axis3Label].terms, function (v) {
                                 axis3Labels.push(v.term);
                             });
@@ -1442,9 +1443,6 @@ define([
                                 clicks on a node in the HivePlot.
                                 In our case this function should filter the data.
                             */
-                            //console.log(node.axis);
-                            console.log(node.axis === scope.panel.timeField ? new Date(node.label.replace(" ", "T")).getTime() : node.label);
-                            //console.log((new Date(parseInt(node.label))));
                             scope.build_search(node.axis, node.axis === scope.panel.timeField ? new Date(node.label.replace(" ", "T")).getTime() : node.label);
                         },
                         "onClickLink": function (link) {
