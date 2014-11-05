@@ -100,6 +100,7 @@
             nodes = data.nodes,
             links = data.links,
             angleDomain = [];
+
         if (typeof _config.axisConfig === 'undefined' || _config.axisConfig === null) {
             angleDomain = data.axis;
         }
@@ -395,7 +396,7 @@
                 else {
                     uN[d.axis].push(d);
                 }
-            })
+            });
 
             /*
                 Counting how many nodes are on each axis and sorting the nodes by a certain criteria for each axis. 
@@ -432,27 +433,55 @@
                 /*
                     If a list of nodes was passed, the nodes should remain sorted as given. Also potential additional nodes should be shown on the axis
                 */
-                uniqueAxis.forEach(function (d) {
-                    hist[d] = 0;
-                    histCurrent[d] = 1
+                uniqueAxis.forEach(function (axisName) {
+                    hist[axisName] = 0;
+                    histCurrent[axisName] = 1
                 })
 
                 var count = 0;
                 _config.nodes.forEach(function (node) {
-                    hist[node.axis]++;
+                    //hist[node.axis]++;  //counts how many nodes are on the axis
                     var nodeOld = uniqueNodes.filter(function (object) { return object.axis === node.axis && object.label === node.label })[0];
                     try {
                         node.value = nodeOld.value;
                         node.numberOfLinks = nodeOld.numberOfLinks;
                     }
-                    catch (err) { }
+                    catch (err) {
+                        node.value = 0;
+                        node.numberOfLinks = 0;
+                    }
                     node.color = colors[count++];
                 });
+
+                var nodesByAxis = {};
                 _config.nodes.forEach(function (node) {
-                    node.y = (histCurrent[node.axis] / hist[node.axis]);
-                    histCurrent[node.axis]++;
+                    if (nodesByAxis[node.axis] === undefined) {
+                        nodesByAxis[node.axis] = [node];
+                    }
+                    else {
+                        nodesByAxis[node.axis].push(node);
+                    }
                 });
-                uniqueNodes = _config.nodes;
+                var listOfNodes = [];
+                uniqueAxis.forEach(function (axis) {
+                    hist[axis] = nodesByAxis[axis].length; //counts how many nodes are on the axis
+                    try {
+                        var axisConfig = _config.axisConfig.filter(function (object) { return object.axis === axis })[0];
+                        nodesByAxis[axis] = sortBy(nodesByAxis[axis], axisConfig.sort, !axisConfig.order);
+                    }
+                    catch (err) {
+                        nodesByAxis[axis] = sortBy(nodesByAxis[axis], 'label', false);
+
+                    }
+
+                    nodesByAxis[axis].forEach(function (node) {
+                        node.y = (histCurrent[node.axis] / hist[node.axis]);
+                        histCurrent[node.axis]++;
+                        listOfNodes.push(node);
+                    });
+                });
+
+                uniqueNodes = listOfNodes;
             }
 
             /*
@@ -563,7 +592,7 @@
             ].join(';') + '"></div>';
         }
         function sortBy(array, property, reverse) {
-            if (property === null) {
+            if (property === null || property === '') {
                 return array;
             }
             else {

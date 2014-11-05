@@ -96,17 +96,17 @@
             </td>
             <td>
                 <div class="editor-option">
-                    <select class="input-medium" ng-model="panel.axis1Sorting" ng-options="f for f in ['label','value','numberOfLinks']" ng-change="set_refresh(true)" ng-show="true"></select>
+                    <select class="input-medium" ng-model="panel.axis1Sorting" ng-options="f for f in ['','label','value','numberOfLinks']" ng-change="set_refresh(true)" ng-show="true"></select>
                 </div>
             </td>
             <td>
                 <div class="editor-option">
-                    <select class="input-medium" ng-model="panel.axis2Sorting" ng-options="f for f in ['label','value','numberOfLinks']" ng-change="set_refresh(true)" ng-show="true"></select>
+                    <select class="input-medium" ng-model="panel.axis2Sorting" ng-options="f for f in ['','label','value','numberOfLinks']" ng-change="set_refresh(true)" ng-show="true"></select>
                 </div>
             </td>
             <td>
                 <div class="editor-option" ng-show="panel.numberOfAxis>=3">
-                    <select class="input-medium" ng-model="panel.axis3Sorting" ng-options="f for f in ['label','value','numberOfLinks']" ng-change="set_refresh(true)" ng-show="true"></select>
+                    <select class="input-medium" ng-model="panel.axis3Sorting" ng-options="f for f in ['','label','value','numberOfLinks']" ng-change="set_refresh(true)" ng-show="true"></select>
                 </div>
             </td>
         </tr>
