@@ -84,20 +84,6 @@ define([
                 */
                 exclude : [],
                 /** @scratch /panels/hiveplot/5
-                * size:: Show this many terms
-                */
-                size: 10,
-                /** @scratch /panels/hiveplot/5
-                * === Parameters
-                *
-                * seperator:: The character which divides the column for the connections
-                */
-                seperator: '-',
-                /** @scratch /panels/hiveplot/5
-                * order:: How the terms are sorted: count, term, reverse_count or reverse_term,
-                */
-                order   : 'count',
-                /** @scratch /panels/hiveplot/5
                 * arrangement:: Arrangement of the legend: horizontal or vertical
                 */
                 arrangement : 'horizontal',
@@ -161,6 +147,18 @@ define([
                 * axis3Order:: defines how the nodes on axis3 are ordered
                 */
                 axis3Order: true,
+                /** @scratch /panels/hiveplot/5
+                * axis1Length:: Show this many terms
+                */
+                axis1Length: 10,
+                /** @scratch /panels/hiveplot/5
+                * axis2Length:: Show this many terms
+                */
+                axis2Length: 10,
+                /** @scratch /panels/hiveplot/5
+                * axis3Length:: Show this many terms
+                */
+                axis3Length: 10,
                 /** @scratch /panels/hiveplot/5
                 * spyable:: Set spyable to false to disable the inspect button
                 */
@@ -248,15 +246,23 @@ define([
                         case '1y': aggregateBy = 'year'; break;
                         default: aggregateBy = 'second'; break;
                     }
-                    
+
                     var intervals = [];
                     var request1 = $scope.ejs.Request().indices(dashboard.indices);
+                    /*Case 1a: just two axes*/                    
                     request1 = request1
                         .facet(
                             $scope.ejs.TermsFacet($scope.panel.axis1Label)
                             .field($scope.panel.axis1Label)
-                            .size($scope.panel.size)
-                            .order($scope.panel.order)
+                            .size($scope.panel.axis1Length)
+                            .order('count')
+                            .exclude($scope.panel.exclude)
+                        )
+                        .facet(
+                            $scope.ejs.TermsFacet($scope.panel.axis2Label)
+                            .field($scope.panel.axis2Label)
+                            .size($scope.panel.axis2Length)
+                            .order('count')
                             .exclude($scope.panel.exclude)
                         )
                         .facet(
@@ -275,24 +281,19 @@ define([
                                         ]
                                     )
                                 )
-                        );
+                        )
+                        .size(0);
 
                     if ($scope.panel.numberOfAxis >= 3) {
                         request1 = request1
                             .facet(
-                                $scope.ejs.TermsFacet($scope.panel.axis2Label)
-                                .field($scope.panel.axis2Label)
-                                .size($scope.panel.size)
-                                .order($scope.panel.order)
-                                .exclude($scope.panel.exclude)
-                            )
-                            .facet(
                                 $scope.ejs.TermsFacet($scope.panel.axis3Label)
                                 .field($scope.panel.axis3Label)
-                                .size($scope.panel.size)
-                                .order($scope.panel.order)
+                                .size($scope.panel.axis3Length)
+                                .order('count')
                                 .exclude($scope.panel.exclude)
-                            );
+                            )
+                            .size(0);
                     }
 
                     var results1 = request1.doSearch().then(function (results1) {
@@ -319,8 +320,8 @@ define([
                                 .facet(
                                     $scope.ejs.TermsFacet($scope.panel.axis1Label + '~/-#--#-/~' + $scope.panel.axis2Label + '~/-#--#-/~' + date.startDate)
                                     .field($scope.panel.axis2Label)
-                                    .size($scope.panel.size)
-                                    .order($scope.panel.order)
+                                    .size($scope.panel.axis2Length)
+                                    .order('count')
                                     .exclude($scope.panel.exclude)
                                     .facetFilter(
                                         $scope.ejs.AndFilter(
@@ -338,17 +339,19 @@ define([
                                         )
                                     )
                                 )
+                                .size(0)
                             });
                         }
                         else if ($scope.panel.axis2Label === $scope.panel.timeField) {
                             /*If the time should be displayed on axis 2*/
+                            
                             intervals.forEach(function (date) {
                                 request = request
                                 .facet(
                                     $scope.ejs.TermsFacet($scope.panel.axis2Label + '~/-#--#-/~' + $scope.panel.axis1Label + '~/-#--#-/~' + date.startDate)
                                     .field($scope.panel.axis1Label)
-                                    .size($scope.panel.size)
-                                    .order($scope.panel.order)
+                                    .size($scope.panel.axis1Length)
+                                    .order('count')
                                     .exclude($scope.panel.exclude)
                                     .facetFilter(
                                         $scope.ejs.AndFilter(
@@ -366,6 +369,7 @@ define([
                                         )
                                     )
                                 )
+                                .size(0)
                             });
                         }
                         else {
@@ -375,8 +379,8 @@ define([
                                 .facet(
                                     $scope.ejs.TermsFacet($scope.panel.axis1Label + '~/-#--#-/~' + $scope.panel.axis2Label + '~/-#--#-/~' + sourceNode)
                                     .field($scope.panel.axis2Label)
-                                    .size($scope.panel.size)
-                                    .order($scope.panel.order)
+                                    .size($scope.panel.axis2Length)
+                                    .order('count')
                                     .exclude($scope.panel.exclude)
                                     .facetFilter(
                                         $scope.ejs.AndFilter(
@@ -396,10 +400,11 @@ define([
                                             ]
                                         )
                                     )
-                                );
+                                )
+                                .size(0);
                             });
                         }
-                        
+
                         if ($scope.panel.numberOfAxis >= 3) {
                             /*if the numberOfAxis is 3. We also have to define the links between axis1-axis3 and axis2-axis3*/
                             _.each(results1.facets[$scope.panel.axis2Label].terms, function (v) {
@@ -416,8 +421,8 @@ define([
                                     .facet(
                                         $scope.ejs.TermsFacet($scope.panel.axis1Label + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + date.startDate)
                                         .field($scope.panel.axis3Label)
-                                        .size($scope.panel.size)
-                                        .order($scope.panel.order)
+                                        .size($scope.panel.axis3Length)
+                                        .order('count')
                                         .exclude($scope.panel.exclude)
                                         .facetFilter(
                                             $scope.ejs.AndFilter(
@@ -435,6 +440,7 @@ define([
                                             )
                                         )
                                     )
+                                    .size(0)
                                 });
                                 /*Create links between axis2-axis3*/
                                 axis2Labels.forEach(function (sourceNode) {
@@ -442,8 +448,8 @@ define([
                                     .facet(
                                         $scope.ejs.TermsFacet($scope.panel.axis2Label + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + sourceNode)
                                         .field($scope.panel.axis3Label)
-                                        .size($scope.panel.size)
-                                        .order($scope.panel.order)
+                                        .size($scope.panel.axis3Length)
+                                        .order('count')
                                         .exclude($scope.panel.exclude)
                                         .facetFilter(
                                             $scope.ejs.AndFilter(
@@ -463,7 +469,8 @@ define([
                                                 ]
                                             )
                                         )
-                                    );
+                                    )
+                                    .size(0);
                                 });
                             }
                             else if ($scope.panel.axis2Label === $scope.panel.timeField) {
@@ -473,8 +480,8 @@ define([
                                     .facet(
                                         $scope.ejs.TermsFacet($scope.panel.axis2Label + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + date.startDate)
                                         .field($scope.panel.axis3Label)
-                                        .size($scope.panel.size)
-                                        .order($scope.panel.order)
+                                        .size($scope.panel.axis3Length)
+                                        .order('count')
                                         .exclude($scope.panel.exclude)
                                         .facetFilter(
                                             $scope.ejs.AndFilter(
@@ -492,6 +499,7 @@ define([
                                             )
                                         )
                                     )
+                                    .size(0)
                                 });
                                 /*Create links between axis1-axis3*/
                                 axis1Labels.forEach(function (sourceNode) {
@@ -499,8 +507,8 @@ define([
                                     .facet(
                                         $scope.ejs.TermsFacet($scope.panel.axis1Label + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + sourceNode)
                                         .field($scope.panel.axis3Label)
-                                        .size($scope.panel.size)
-                                        .order($scope.panel.order)
+                                        .size($scope.panel.axis3Length)
+                                        .order('count')
                                         .exclude($scope.panel.exclude)
                                         .facetFilter(
                                             $scope.ejs.AndFilter(
@@ -520,7 +528,8 @@ define([
                                                 ]
                                             )
                                         )
-                                    );
+                                    )
+                                    .size(0);
                                 });
                             }
                             else if ($scope.panel.axis3Label === $scope.panel.timeField) {
@@ -530,8 +539,8 @@ define([
                                     .facet(
                                         $scope.ejs.TermsFacet($scope.panel.axis3Label + '~/-#--#-/~' + $scope.panel.axis1Label + '~/-#--#-/~' + date.startDate)
                                         .field($scope.panel.axis1Label)
-                                        .size($scope.panel.size)
-                                        .order($scope.panel.order)
+                                        .size($scope.panel.axis1Length)
+                                        .order('count')
                                         .exclude($scope.panel.exclude)
                                         .facetFilter(
                                             $scope.ejs.AndFilter(
@@ -549,6 +558,7 @@ define([
                                             )
                                         )
                                     )
+                                    .size(0)
                                 });
                                 /*Create links between axis3-axis2 (axis3 is the time-axis)*/
                                 intervals.forEach(function (date) {
@@ -556,8 +566,8 @@ define([
                                     .facet(
                                         $scope.ejs.TermsFacet($scope.panel.axis3Label + '~/-#--#-/~' + $scope.panel.axis2Label + '~/-#--#-/~' + date.startDate)
                                         .field($scope.panel.axis2Label)
-                                        .size($scope.panel.size)
-                                        .order($scope.panel.order)
+                                        .size($scope.panel.axis2Length)
+                                        .order('count')
                                         .exclude($scope.panel.exclude)
                                         .facetFilter(
                                             $scope.ejs.AndFilter(
@@ -575,6 +585,7 @@ define([
                                             )
                                         )
                                     )
+                                    .size(0)
                                 });
                             }
                             else {
@@ -584,8 +595,8 @@ define([
                                     .facet(
                                         $scope.ejs.TermsFacet($scope.panel.axis2Label + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + sourceNode)
                                         .field($scope.panel.axis3Label)
-                                        .size($scope.panel.size)
-                                        .order($scope.panel.order)
+                                        .size($scope.panel.axis3Length)
+                                        .order('count')
                                         .exclude($scope.panel.exclude)
                                         .facetFilter(
                                             $scope.ejs.AndFilter(
@@ -605,15 +616,16 @@ define([
                                                 ]
                                             )
                                         )
-                                    );
+                                    )
+                                    .size(0);
                                 });
                                 axis3Labels.forEach(function (sourceNode) {
                                     request = request
                                     .facet(
                                         $scope.ejs.TermsFacet($scope.panel.axis3Label + '~/-#--#-/~' + $scope.panel.axis1Label + '~/-#--#-/~' + sourceNode)
                                         .field($scope.panel.axis1Label)
-                                        .size($scope.panel.size)
-                                        .order($scope.panel.order)
+                                        .size($scope.panel.axis1Length)
+                                        .order('count')
                                         .exclude($scope.panel.exclude)
                                         .facetFilter(
                                             $scope.ejs.AndFilter(
@@ -633,7 +645,8 @@ define([
                                                 ]
                                             )
                                         )
-                                    );
+                                    )
+                                    .size(0);
                                 });
                             }
                         }
@@ -653,7 +666,7 @@ define([
                     });
                 }
 
-                /*Implementation for case two*/
+                    /*Implementation for case two*/
                 else if ($scope.panel.multipanelSetting) {
                     /*Defining how the data between each hiveplot should be aggregated*/
                     var aggregatePanelBy = $scope.panel.panelInterval;
@@ -686,7 +699,7 @@ define([
                             $scope.ejs.TermsFacet($scope.panel.axis1Label)
                             .field($scope.panel.axis1Label)
                             .size($scope.panel.size)
-                            .order($scope.panel.order)
+                            .order('count')
                             .exclude($scope.panel.exclude)
                         )
                         /*create request for the intervals to create the panels*/
@@ -729,9 +742,10 @@ define([
                                 $scope.ejs.TermsFacet($scope.panel.axis2Label)
                                 .field($scope.panel.axis2Label)
                                 .size($scope.panel.size)
-                                .order($scope.panel.order)
+                                .order('count')
                                 .exclude($scope.panel.exclude)
-                            );
+                            )
+                        .size(0);
 
                     if ($scope.panel.numberOfAxis >= 3) {
                         request1 = request1
@@ -739,9 +753,10 @@ define([
                                 $scope.ejs.TermsFacet($scope.panel.axis3Label)
                                 .field($scope.panel.axis3Label)
                                 .size($scope.panel.size)
-                                .order($scope.panel.order)
+                                .order('count')
                                 .exclude($scope.panel.exclude)
-                            );
+                            )
+                            .size(0);
                     }
 
                     var results1 = request1.doSearch().then(function (results1) {
@@ -779,7 +794,7 @@ define([
                                         $scope.ejs.TermsFacet(panelPointOfTime.startDate + '~/-#--#-/~' + $scope.panel.axis1Label + '~/-#--#-/~' + $scope.panel.axis2Label + '~/-#--#-/~' + date.startDate)
                                         .field($scope.panel.axis2Label)
                                         .size($scope.panel.size)
-                                        .order($scope.panel.order)
+                                        .order('count')
                                         .exclude($scope.panel.exclude)
                                         .facetFilter(
                                             $scope.ejs.AndFilter(
@@ -800,6 +815,7 @@ define([
                                             )
                                         )
                                     )
+                                    .size(0)
                                 });
                             })
 
@@ -813,7 +829,7 @@ define([
                                         $scope.ejs.TermsFacet(panelPointOfTime.startDate + '~/-#--#-/~' + $scope.panel.axis2Label + '~/-#--#-/~' + $scope.panel.axis1Label + '~/-#--#-/~' + date.startDate)
                                         .field($scope.panel.axis1Label)
                                         .size($scope.panel.size)
-                                        .order($scope.panel.order)
+                                        .order('count')
                                         .exclude($scope.panel.exclude)
                                         .facetFilter(
                                             $scope.ejs.AndFilter(
@@ -834,6 +850,7 @@ define([
                                             )
                                         )
                                     )
+                                    .size(0)
                                 });
                             });
                         }
@@ -846,7 +863,7 @@ define([
                                         $scope.ejs.TermsFacet(panelPointOfTime.startDate + '~/-#--#-/~' + $scope.panel.axis1Label + '~/-#--#-/~' + $scope.panel.axis2Label + '~/-#--#-/~' + sourceNode)
                                         .field($scope.panel.axis2Label)
                                         .size($scope.panel.size)
-                                        .order($scope.panel.order)
+                                        .order('count')
                                         .exclude($scope.panel.exclude)
                                         .facetFilter(
                                             $scope.ejs.AndFilter(
@@ -869,7 +886,8 @@ define([
                                                 ]
                                             )
                                         )
-                                    );
+                                    )
+                                    .size(0);
                                 });
                             });
                         }
@@ -892,7 +910,7 @@ define([
                                             $scope.ejs.TermsFacet(panelPointOfTime.startDate + '~/-#--#-/~' + $scope.panel.axis1Label + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + date.startDate)
                                             .field($scope.panel.axis3Label)
                                             .size($scope.panel.size)
-                                            .order($scope.panel.order)
+                                            .order('count')
                                             .exclude($scope.panel.exclude)
                                             .facetFilter(
                                                 $scope.ejs.AndFilter(
@@ -913,6 +931,7 @@ define([
                                                 )
                                             )
                                         )
+                                        .size(0)
                                     });
                                     /*Create links between axis2-axis3*/
                                     axis2Labels.forEach(function (sourceNode) {
@@ -921,7 +940,7 @@ define([
                                             $scope.ejs.TermsFacet(panelPointOfTime.startDate + '~/-#--#-/~' + $scope.panel.axis2Label + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + sourceNode)
                                             .field($scope.panel.axis3Label)
                                             .size($scope.panel.size)
-                                            .order($scope.panel.order)
+                                            .order('count')
                                             .exclude($scope.panel.exclude)
                                             .facetFilter(
                                                 $scope.ejs.AndFilter(
@@ -944,7 +963,8 @@ define([
                                                     ]
                                                 )
                                             )
-                                        );
+                                        )
+                                        .size(0);
                                     });
                                 });
                             }
@@ -957,7 +977,7 @@ define([
                                             $scope.ejs.TermsFacet(panelPointOfTime.startDate + '~/-#--#-/~' + $scope.panel.axis2Label + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + date.startDate)
                                             .field($scope.panel.axis3Label)
                                             .size($scope.panel.size)
-                                            .order($scope.panel.order)
+                                            .order('count')
                                             .exclude($scope.panel.exclude)
                                             .facetFilter(
                                                 $scope.ejs.AndFilter(
@@ -978,6 +998,7 @@ define([
                                                 )
                                             )
                                         )
+                                        .size(0)
                                     });
                                     /*Create links between axis1-axis3*/
                                     axis1Labels.forEach(function (sourceNode) {
@@ -986,7 +1007,7 @@ define([
                                             $scope.ejs.TermsFacet(panelPointOfTime.startDate + '~/-#--#-/~' + $scope.panel.axis1Label + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + sourceNode)
                                             .field($scope.panel.axis3Label)
                                             .size($scope.panel.size)
-                                            .order($scope.panel.order)
+                                            .order('count')
                                             .exclude($scope.panel.exclude)
                                             .facetFilter(
                                                 $scope.ejs.AndFilter(
@@ -1009,7 +1030,8 @@ define([
                                                     ]
                                                 )
                                             )
-                                        );
+                                        )
+                                        .size(0);
                                     });
                                 });
                             }
@@ -1022,7 +1044,7 @@ define([
                                             $scope.ejs.TermsFacet(panelPointOfTime.startDate + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + $scope.panel.axis1Label + '~/-#--#-/~' + date.startDate)
                                             .field($scope.panel.axis1Label)
                                             .size($scope.panel.size)
-                                            .order($scope.panel.order)
+                                            .order('count')
                                             .exclude($scope.panel.exclude)
                                             .facetFilter(
                                                 $scope.ejs.AndFilter(
@@ -1043,6 +1065,7 @@ define([
                                                 )
                                             )
                                         )
+                                        .size(0)
                                     });
                                     /*Create links between axis3-axis2 (axis3 is the time-axis)*/
                                     intervals.forEach(function (date) {
@@ -1051,7 +1074,7 @@ define([
                                             $scope.ejs.TermsFacet(panelPointOfTime.startDate + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + $scope.panel.axis2Label + '~/-#--#-/~' + date.startDate)
                                             .field($scope.panel.axis2Label)
                                             .size($scope.panel.size)
-                                            .order($scope.panel.order)
+                                            .order('count')
                                             .exclude($scope.panel.exclude)
                                             .facetFilter(
                                                 $scope.ejs.AndFilter(
@@ -1072,6 +1095,7 @@ define([
                                                 )
                                             )
                                         )
+                                        .size(0)
                                     });
                                 });
                             }
@@ -1084,7 +1108,7 @@ define([
                                             $scope.ejs.TermsFacet(panelPointOfTime.startDate + '~/-#--#-/~' + $scope.panel.axis2Label + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + sourceNode)
                                             .field($scope.panel.axis3Label)
                                             .size($scope.panel.size)
-                                            .order($scope.panel.order)
+                                            .order('count')
                                             .exclude($scope.panel.exclude)
                                             .facetFilter(
                                                 $scope.ejs.AndFilter(
@@ -1107,7 +1131,7 @@ define([
                                                     ]
                                                 )
                                             )
-                                        );
+                                        ).size(0);
                                     });
                                     axis3Labels.forEach(function (sourceNode) {
                                         request = request
@@ -1115,7 +1139,7 @@ define([
                                             $scope.ejs.TermsFacet(panelPointOfTime.startDate + '~/-#--#-/~' + $scope.panel.axis3Label + '~/-#--#-/~' + $scope.panel.axis1Label + '~/-#--#-/~' + sourceNode)
                                             .field($scope.panel.axis1Label)
                                             .size($scope.panel.size)
-                                            .order($scope.panel.order)
+                                            .order('count')
                                             .exclude($scope.panel.exclude)
                                             .facetFilter(
                                                 $scope.ejs.AndFilter(
@@ -1138,7 +1162,8 @@ define([
                                                     ]
                                                 )
                                             )
-                                        );
+                                        )
+                                        .size(0);
                                     });
                                 });
                             }
@@ -1155,12 +1180,14 @@ define([
                             $scope.axis1Labels = axis1Labels;
                             $scope.axis2Labels = axis2Labels;
                             $scope.axis3Labels = axis3Labels;
+                            $scope.intervals = intervals;
                             $scope.results = results;
                             $scope.$emit('render'); //dispatches the event upwards through the scope hierarchy of controllers.
                         });
 
                     });
                 }
+
             };
 
             $scope.getIntervals2 = function (listOfDates, interval) {
@@ -1410,8 +1437,8 @@ define([
             };
 
             function createHivePlot(scope, dataset, elem) {
-                $(elem[0]).empty();  //removes all elements from the current element                
-                
+                $(elem[0]).empty();  //removes all elements from the current element  
+
                 var axisConfig = [
                     { 'axis': scope.panel.axis1Label, 'sort': scope.panel.axis1Sorting, 'order': scope.panel.axis1Order },      //possible values for sort [label, value, numberOfLinks]
                     { 'axis': scope.panel.axis2Label, 'sort': scope.panel.axis2Sorting, 'order': scope.panel.axis2Order }
@@ -1489,7 +1516,15 @@ define([
 
                         var nodes = [];
                         if (scope.panel.comparemodeSetting) {
-                            if (scope.panel.axis1Label === scope.panel.timeField) { }
+                            if (scope.panel.axis1Label === scope.panel.timeField) {
+                                scope.intervals.forEach(function (d) {
+                                    var object = {
+                                        axis: scope.panel.axis1Label,
+                                        label: scope.getDateAsString(new Date(parseInt(d.startDate))),
+                                    }
+                                    nodes.push(object);
+                                })
+                            }
                             else {
                                 scope.axis1Labels.forEach(function (d) {
                                     var object = {
@@ -1499,7 +1534,15 @@ define([
                                     nodes.push(object);
                                 })
                             }
-                            if (scope.panel.axis2Label === scope.panel.timeField) { }
+                            if (scope.panel.axis2Label === scope.panel.timeField) {
+                                scope.intervals.forEach(function (d) {
+                                    var object = {
+                                        axis: scope.panel.axis2Label,
+                                        label: scope.getDateAsString(new Date(parseInt(d.startDate))),
+                                    }
+                                    nodes.push(object);
+                                })
+                            }
                             else {
                                 scope.axis2Labels.forEach(function (d) {
                                     var object = {
@@ -1509,7 +1552,15 @@ define([
                                     nodes.push(object);
                                 })
                             }
-                            if (scope.panel.axis3Label === scope.panel.timeField) { }
+                            if (scope.panel.axis3Label === scope.panel.timeField) {
+                                scope.intervals.forEach(function (d) {
+                                    var object = {
+                                        axis: scope.panel.axis3Label,
+                                        label: scope.getDateAsString(new Date(parseInt(d.startDate))),
+                                    }
+                                    nodes.push(object);
+                                })
+                            }
                             else {
                                 scope.axis3Labels.forEach(function (d) {
                                     var object = {
@@ -1519,18 +1570,6 @@ define([
                                     nodes.push(object);
                                 })
                             }
-                            var help = [];
-                            data.filter(function (object) { return object.axis1 === scope.panel.timeField }).forEach(function (d) {
-                                help.push(d.axis1NodeLabel);
-                            });
-                            help = help.filter(function onlyUnique(value, index, self) { return self.indexOf(value) === index; });
-                            help.forEach(function (d) {
-                                var object = {
-                                    axis: scope.panel.timeField,
-                                    label: d
-                                }
-                                nodes.push(object);
-                            });
                         }
                         else {
                             nodes = null;

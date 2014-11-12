@@ -1,21 +1,19 @@
 <div class="section">
     <h5>Parameters</h5>
-    <!--<div class="editor-option">
-        <label class="small">Start Date</label>
-        <input type="date" class="input-small" ng-model="panel.startDate" ng-change="set_refresh(true)">
-    </div>
     <div class="editor-option">
-        <label class="small">End Date</label>
-        <input type="date" class="input-small" ng-model="panel.endDate" ng-change="set_refresh(true)">
-    </div>-->
+        <label class="small">Time Field</label>
+        <input type="text" class="input-small" bs-typeahead="fields.list" ng-model="panel.timeField" ng-change="set_refresh(true)">
+    </div><br/>
     <div class="editor-option">
         <label class="small">Aggregate by</label>
         <select class="input-medium" ng-model="panel.interval" ng-options="f for f in ['','15m','30m','1h','12h','1d','1w','1M','1y']" ng-change="set_refresh(true)" ng-show="true"></select>
     </div>
-    <div class="editor-option">
-        <label class="small">Time Field</label>
-        <input type="text" class="input-small" bs-typeahead="fields.list" ng-model="panel.timeField" ng-change="set_refresh(true)">
+    <div class="editor-option" ng-show="true">
+        <label class="small">Exclude Terms(s) (comma separated)</label>
+        <input array-join type="text" ng-model='panel.exclude'></input>
     </div>
+    <hr/>
+    <h5>Multipanel Settings</h5>
     <div class="editor-option">
         <label class="small">Multipanel<tip>Show several panels next to each other</tip></label>
         <input type="checkbox" ng-model="panel.multipanelSetting" ng-change="set_refresh(true)" ng-checked="panel.multipanelSetting">
@@ -31,18 +29,6 @@
     <div class="editor-option">
         <label class="small">Length</label>
         <input class="input-small" type="number" ng-model="panel.size" ng-change="set_refresh(true)">
-    </div>
-    <div class="editor-option">
-        <label class="small">Order</label>
-        <select class="input-medium" ng-model="panel.order" ng-options="f for f in ['count','term','reverse_count','reverse_term']" ng-change="set_refresh(true)"  ng-show="true"></select>
-    </div>
-    <div class="editor-option" ng-show="true">
-        <label class="small">Exclude Terms(s) (comma separated)</label>
-        <input array-join type="text" ng-model='panel.exclude'></input>
-    </div>
-    <div class="editor-option" ng-show="true">
-        <label class="small">Seperator</label>
-        <input type="text" class="input-small" bs-typeahead="fields.list" ng-model="panel.seperator" ng-change="set_refresh(true)">
     </div>
 </div>
 <div class="section">
@@ -130,6 +116,26 @@
                 </div>
             </td>
         </tr>
+        <tr>
+            <td>
+                <label>Axis Length</label>
+            </td>
+            <td>
+                <div class="editor-option">
+                    <input class="input-small" type="number" ng-model="panel.axis1Length" ng-change="set_refresh(true)">
+                </div>
+            </td>
+            <td>
+                <div class="editor-option">
+                    <input class="input-small" type="number" ng-model="panel.axis2Length" ng-change="set_refresh(true)">
+                </div>
+            </td>
+            <td>
+                <div class="editor-option" ng-show="panel.numberOfAxis>=3">
+                    <input class="input-small" type="number" ng-model="panel.axis3Length" ng-change="set_refresh(true)">
+                </div>
+            </td>
+        </tr>
     </table>
 </div>
 <div class="editor-row">
@@ -151,7 +157,7 @@
         </div>
         <div class="editor-option" ng-show="true">
             <label class="small">Sorting Tooltip by</label>
-            <select class="input-small" ng-model="panel.sortingTooltip" ng-options="f.value as f.text for f in [{'value': 'source', 'text':'Alphabetically by source'},{'value': 'target', 'text':'Alphabetically by target'},{'value':'data', 'text':'Data'}]" ng-change="set_refresh(true)"></select></span>
+            <select class="input-small" ng-model="panel.sortingTooltip" ng-options="f.value as f.text for f in [{'value': 'label', 'text':'Alphabetically'},{'value':'data', 'text':'Data'}]" ng-change="set_refresh(true)"></select></span>
         </div>
         <div class="editor-option" ng-show="true">
             <label class="small">Order Tooltip</label>

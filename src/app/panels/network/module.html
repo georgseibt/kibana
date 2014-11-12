@@ -51,7 +51,7 @@
             <table class="small" ng-show="panel.arrangement == 'vertical'">
                 <tr ng-repeat="term in data">
                     <td><i class="icon-circle" ng-style="{color:term.color}"></i></td>
-                    <td class="network-legend-term" style="padding-right:10px;padding-left:10px;">{{term.label}}</td>
+                    <td class="network-legend-term" style="padding-right:10px;padding-left:10px;">{{term.source}}-{{term.target}}</td>
                     <td>{{term.data}}</td>
                 </tr>
             </table>
@@ -60,7 +60,7 @@
             <span class="small" ng-show="panel.arrangement == 'horizontal'" ng-repeat="term in data" style="float:left;padding-left: 10px;">
                 <span>
                     <i class="icon-circle" ng-style="{color:term.color}"></i>
-                    <span class="network-legend-term">{{term.label}}</span> ({{term.data}})
+                    <span class="network-legend-term">{{term.source}}-{{term.target}}</span> ({{term.data}})
                 </span>
             </span>
         </div>
@@ -80,7 +80,7 @@
             <table class="small" ng-show="panel.arrangement == 'vertical'">
                 <tr ng-repeat="term in data">
                     <td><i class="icon-circle" ng-style="{color:term.color}"></i></i></td>
-                    <td class="network-legend-term" style="padding-right:10px;padding-left:10px;">{{term.label}}</td>
+                    <td class="network-legend-term" style="padding-right:10px;padding-left:10px;">{{term.source}}-{{term.target}}</td>
                     <td>{{term.data}}</td>
                 </tr>
             </table>
@@ -89,7 +89,7 @@
             <span class="small" ng-show="panel.arrangement == 'horizontal'" ng-repeat="term in data" style="float:left;padding-left: 10px;">
                 <span>
                     <i class="icon-circle" ng-style="{color:term.color}"></i>
-                    <span class="network-legend-term">{{term.label}}</span> ({{term.data}})
+                    <span class="network-legend-term">{{term.source}}-{{term.target}}</span> ({{term.data}})
                 </span>
             </span>
             <div style="clear:both"></div>

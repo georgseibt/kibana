@@ -193,7 +193,8 @@ define([
                                     ]
                                 )
                             )
-                        );
+                        )
+                    .size(0);
                 var results1 = request1.doSearch().then(function (results1) {
                     var singleNodes = [];
 
@@ -222,7 +223,8 @@ define([
                                         ]
                                     )
                                 )
-                            );
+                            )
+                        .size(0);
                     }
                     else {
                         /* creating the request*/
@@ -252,7 +254,8 @@ define([
                                             ]
                                         )
                                     )
-                                );
+                                )
+                            .size(0);
                         });
                     }
                     

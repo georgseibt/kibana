@@ -47,7 +47,7 @@
                                     possible values: any list of object with the above described structure
             sortingTooltip          defines by which criteria the connections in the tooltip should be sorted
                                     default: 'source'
-                                    possible values: ['source', 'target', 'data']
+                                    possible values: ['label', 'data']
             sortingOrderTooltip     defines if the nodes should be ordered ascending or descending
                                     default: true
                                     possible values [true, false] true means ascending, false means descending
@@ -452,6 +452,7 @@
                     }
                     node.color = colors[count++];
                 });
+
                 var nodesByAxis = {};
                 _config.nodes.forEach(function (node) {
                     if (nodesByAxis[node.axis] === undefined) {
@@ -461,6 +462,7 @@
                         nodesByAxis[node.axis].push(node);
                     }
                 });
+
                 var listOfNodes = [];
                 uniqueAxis.forEach(function (axis) {
                     hist[axis] = nodesByAxis[axis].length; //counts how many nodes are on the axis
@@ -527,28 +529,52 @@
                 The tooltip says the source node, the target node and the value of each connection.
                 The links to and from this node are also highlighted.
             */
+
             if (tooltipSetting) {
                 var detailstext = '<h4 class=hiveplot-h4>' + d.label + ' (' + d.value + ')</h4>';
                 var data = links.filter(function (obj) {
                     return (obj.source === d || obj.target === d)
                 });
 
-                var details = [];
-                data.forEach(function (link) {
-                    var object = {
-                        "sourceColor": link.source.color,
-                        "source": link.source.label,
-                        "targetColor": link.target.color,
-                        "target": link.target.label,
-                        "data": link.value
-                    }
-                    details.push(object);
+                var uniqueAxis = [];
+                data.forEach(function (d) {
+                    uniqueAxis.push(d.source.axis);
+                    uniqueAxis.push(d.target.axis);
                 });
-                details = sortBy(details, sortingTooltip, !sortingOrderTooltip);
+                uniqueAxis = (uniqueAxis.filter(function onlyUnique(value, index, self) { return self.indexOf(value) === index; }));
+                uniqueAxis = uniqueAxis.filter(function (obj) {
+                    return (obj !== d.axis);
+                });
 
-                details.forEach(function (d) {
-                    detailstext = detailstext + '' + (queryColorDot(d.sourceColor, 15) + ' ' + queryColorDot(d.targetColor, 15) + ' ' + d.source + '-' + d.target + ' (' + d.data + ') <br/>');
+                uniqueAxis.forEach(function (axis) {
+                    var details = [];
+                    data.forEach(function (datapoint) {
+                        if (datapoint.source.axis === axis) {
+                            var object = {
+                                "axis": datapoint.source.axis,
+                                "color": datapoint.source.color,
+                                "label": datapoint.source.label,
+                                "data": datapoint.value
+                            }
+                            details.push(object);
+                        }
+                        else if (datapoint.target.axis === axis) {
+                            var object = {
+                                "axis": datapoint.target.axis,
+                                "color": datapoint.target.color,
+                                "label": datapoint.target.label,
+                                "data": datapoint.value
+                            }
+                            details.push(object);
+                        }
+                    });
+                    details = sortBy(details, sortingTooltip, !sortingOrderTooltip);
+                    detailstext = detailstext + '<h5 class=hiveplot-h5>' + axis + '</h5>';
+                    details.forEach(function (d) {
+                        detailstext = detailstext + '' + (queryColorDot(d.color, 15) + ' '  + d.label  + ' (' + d.data + ') <br/>');
+                    })
                 });
+
                 showTooltip(100, 0.9, detailstext, d3.event.pageX + 15, d3.event.pageY);
             }
 
