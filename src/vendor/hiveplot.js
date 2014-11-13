@@ -436,11 +436,9 @@
                 uniqueAxis.forEach(function (axisName) {
                     hist[axisName] = 0;
                     histCurrent[axisName] = 1
-                })
-
+                });
                 var count = 0;
                 _config.nodes.forEach(function (node) {
-                    //hist[node.axis]++;  //counts how many nodes are on the axis
                     var nodeOld = uniqueNodes.filter(function (object) { return object.axis === node.axis && object.label === node.label })[0];
                     try {
                         node.value = nodeOld.value;
@@ -482,9 +480,8 @@
                     });
                 });
 
-                uniqueNodes = listOfNodes;
+                uniqueNodes = JSON.parse(JSON.stringify(listOfNodes));  //create a clone of the array. Just by that we can continue working with the array. Without the clone the old values would be still there.
             }
-
             /*
                 Assignment of the links to a new array. In this array the links are saved as objects, where the source and targets are references to the nodes. 
             */
@@ -593,7 +590,6 @@
             svg.selectAll(".hiveplot-link").classed("hiveplot-active", false);
             svg.selectAll(".hiveplot-link").classed("hiveplot-inactive", false);
         }
-
         function showTooltip(duration, opacity, text, posLeft, posTop) {
             var tooltip = d3.select("body").append("div")
                 .attr("id", "tooltip")
