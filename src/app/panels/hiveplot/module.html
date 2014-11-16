@@ -56,56 +56,9 @@
     </style>
 
     <div class="hiveplot-wrapper">
-        <!-- LEGEND -->
-        <div class="hiveplot-legend" ng-show="panel.counter_pos == 'above'" id='{{$id}}-legend'>
-            <!-- vertical legend above -->
-            <table class="small" ng-show="panel.arrangement == 'vertical'">
-                <tr ng-repeat="term in data">
-                    <td><i class="icon-circle" ng-style="{color:term.color}"></i></td>
-                    <td class="hiveplot-legend-term" style="padding-right:10px;padding-left:10px;">{{term.label}}</td>
-                    <td>{{term.data}}</td>
-                </tr>
-            </table>
-
-            <!-- horizontal legend above -->
-            <span class="small" ng-show="panel.arrangement == 'horizontal'" ng-repeat="term in data" style="float:left;padding-left: 10px;">
-                <span>
-                    <i class="icon-circle" ng-style="{color:term.color}"></i>
-                    <span class="hiveplot-legend-term">{{term.label}}</span> ({{term.data}})
-                </span>
-            </span>
-        </div>
-        <!-- keep legend from over lapping -->
-        <div style="clear:both">
-
-        </div>
-
         <!-- CHART -->
         <div id="{{$id}}-hivePlot" ng-show="true" hiveplot-chart params="{{panel}}" style="position: relative; text-align: center; overflow:hidden;" class="pointer hiveplot-chart">
-            <!--<div class="hiveplot-innerpanels" style="border:solid; border-color:green">hup</div>
-            <div class="hiveplot-innerpanels" style="border:solid; border-color:green">jk</div>
-            <div class="hiveplot-innerpanels" style="border:solid; border-color:green">salsc</div>-->
-        </div>
-
-        <!-- LEGEND -->
-        <div class="hiveplot-legend" ng-show="panel.counter_pos == 'below'" id='{{$id}}-legend'>
-            <!-- vertical legend below -->
-            <table class="small" ng-show="panel.arrangement == 'vertical'">
-                <tr ng-repeat="term in data">
-                    <td><i class="icon-circle" ng-style="{color:term.color}"></i></i></td>
-                    <td class="hiveplot-legend-term" style="padding-right:10px;padding-left:10px;">{{term.label}}</td>
-                    <td>{{term.data}}</td>
-                </tr>
-            </table>
-
-            <!-- horizontal legend below -->
-            <span class="small" ng-show="panel.arrangement == 'horizontal'" ng-repeat="term in data" style="float:left;padding-left: 10px;">
-                <span>
-                    <i class="icon-circle" ng-style="{color:term.color}"></i>
-                    <span class="hiveplot-legend-term">{{term.label}}</span> ({{term.data}})
-                </span>
-            </span>
-            <div style="clear:both"></div>
+            
         </div>
     </div>
     
