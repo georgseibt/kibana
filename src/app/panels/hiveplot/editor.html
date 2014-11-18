@@ -150,7 +150,8 @@
             <select class="input-small" ng-model="panel.sortingOrderTooltip" ng-options="f.value as f.text for f in [{'value': true, 'text':'Ascending'},{'value': false, 'text':'Descending'}]" ng-change="set_refresh(true)"></select></span>
         </div>
         <div class="editor-option">
-            <label class="small">Tooltips</label><input type="checkbox" ng-model="panel.tooltipSetting" ng-checked="panel.tooltipSetting">
+            <label class="small">Tooltips</label>
+            <select class="input-medium" ng-model="panel.tooltipSetting" ng-options="f.value as f.text for f in [{'value': 'none', 'text':'None'},{'value': 'movable', 'text':'Movable'},{'value': 'static', 'text':'Right Side'}]" ng-change="set_refresh(true)" ng-show="true"></select>
         </div>
     </div>
 </div>

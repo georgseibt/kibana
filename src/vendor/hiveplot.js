@@ -15,7 +15,7 @@
                                     value:          strength of the link
                                 }
                             possible values: any in the above described format
-            elem            is the id of a <div> in which the hive plot should be drawn
+            plotElem        is the id of a <div> in which the hive plot should be drawn
                             possible values: any valid id of a <div>
 
             Optional attributes
@@ -52,8 +52,8 @@
                                     default: true
                                     possible values [true, false] true means ascending, false means descending
             tooltipSetting          defines if tooltips should be shown in case of a mouseoverevent
-                                    default: true
-                                    possible values: [true, false]
+                                    default: static
+                                    possible values: ['none', 'movable', 'static']
             onClickNode             defines a function which should be executed on a click event on a node
                                     default: null
                                     possible values: any function
@@ -80,14 +80,15 @@
         var default_colorcode = 'black-white',
             default_sortingTooltip = 'source',
             default_sortingOrderTooltip = true,   //true means ascending, false means descending;
-            default_tooltipSetting = true;
+            default_tooltipSetting = "movable";
 
         /*
             Initializing the attributes
         */
-        var DOMelem = (_config.elem),
-            plotWidth = $("#" + DOMelem).width(),
-            plotHeight = $("#" + DOMelem).height(),
+        var plotElem = (_config.plotElem),
+            tooltipElem = ((typeof _config.tooltipElem === 'undefined' || _config.tooltipElem === null) ? null : _config.tooltipElem),
+            plotWidth = $("#" + plotElem).width(),
+            plotHeight = $("#" + plotElem).height(),
             sortingTooltip = ((typeof _config.sortingTooltip === 'undefined' || _config.sortingTooltip === null) ? default_sortingTooltip : _config.sortingTooltip),
             sortingOrderTooltip = ((typeof _config.sortingOrderTooltip === 'undefined' || _config.sortingOrderTooltip === null) ? default_sortingOrderTooltip : _config.sortingOrderTooltip),
             tooltipSetting = ((typeof _config.tooltipSetting === 'undefined' || _config.tooltipSetting === null) ? default_tooltipSetting : _config.tooltipSetting),
@@ -101,6 +102,8 @@
             links = data.links,
             angleDomain = [];
 
+        console.log(nodes);
+
         if (typeof _config.axisConfig === 'undefined' || _config.axisConfig === null) {
             angleDomain = data.axis;
         }
@@ -109,8 +112,8 @@
                 angleDomain.push(axis.axis);
             })
         }
-        var linkMin = data.linkMin,
-            linkMax = data.linkMax,
+        var linkMin = ((typeof _config.linkMin === 'undefined' || _config.linkMin === null) ? data.linkMin : _config.linkMin),
+            linkMax = ((typeof _config.linkMax === 'undefined' || _config.linkMax=== null) ? data.linkMax : _config.linkMax),
             angleRange = [];
 
         for (var i = 0; i < angleDomain.length; i++) {
@@ -133,10 +136,10 @@
         var formatNumber = d3.format(",d"),
             defaultInfo;
 
-        var svg = d3.select('#'+DOMelem).append("div")
+        var svg = d3.select('#'+plotElem).append("div")
             .attr("width", plotWidth)
             .attr("height", plotHeight)
-            .attr("id", DOMelem + '-Panel')
+            .attr("id", plotElem + '-Panel')
             .append("svg")
             .attr("width", plotWidth)
             .attr("height", plotHeight)
@@ -207,12 +210,12 @@
             .data(nodes)
             .enter().append("circle")
             .attr("class", "hiveplot-node")
-            .style("stroke", function (d) { if (colorcode === "black-white") { return "black"; } else { return d.color; } })
+            .style("stroke", function (d) { if (colorcode === "black-white") { return "white"; } else { return d.color; } })
             .attr("stroke-width", "1.5px")
             .attr("transform", function (d) { return "rotate(" + degrees(angle(d.axis)) + ")"; })
             .attr("cx", function (d) { return radius(d.y); })
             .attr("r", 5)
-            .style("fill", function (d) { if (colorcode === "black-white") { return ""; } else { return d.color; } })
+            .style("fill", function (d) { if (colorcode === "black-white") { return "black"; } else { return d.color; } })
             .on("mouseover", function (d) {
                 nodeMouseover(d);
             })
@@ -502,7 +505,7 @@
                 The tooltip says the source node, the target node and the value of the connection. 
                 The link is also highlighted.
             */
-            if (tooltipSetting) {
+            if (tooltipSetting !== 'none') {
                 var detailstext = '';
                 var data = links.filter(function (obj) {
                     return obj === d;
@@ -527,7 +530,7 @@
                 The links to and from this node are also highlighted.
             */
 
-            if (tooltipSetting) {
+            if (tooltipSetting !== 'none') {
                 var detailstext = '<h4 class=hiveplot-h4>' + d.label + ' (' + d.value + ')</h4>';
                 var data = links.filter(function (obj) {
                     return (obj.source === d || obj.target === d)
@@ -545,6 +548,7 @@
 
                 uniqueAxis.forEach(function (axis) {
                     var details = [];
+                    var countData = 0;
                     data.forEach(function (datapoint) {
                         if (datapoint.source.axis === axis) {
                             var object = {
@@ -553,6 +557,7 @@
                                 "label": datapoint.source.label,
                                 "data": datapoint.value
                             }
+                            countData = countData + datapoint.value;
                             details.push(object);
                         }
                         else if (datapoint.target.axis === axis) {
@@ -562,13 +567,14 @@
                                 "label": datapoint.target.label,
                                 "data": datapoint.value
                             }
+                            countData = countData + datapoint.value;
                             details.push(object);
                         }
                     });
                     details = sortBy(details, sortingTooltip, !sortingOrderTooltip);
-                    detailstext = detailstext + '<h5 class=hiveplot-h5>' + axis + '</h5>';
+                    detailstext = detailstext + '<h5 class=hiveplot-h5>' + axis + ' (' + countData + ')' + '</h5>';
                     details.forEach(function (d) {
-                        detailstext = detailstext + '' + (queryColorDot(d.color, 15) + ' '  + d.label  + ' (' + d.data + ') <br/>');
+                        detailstext = detailstext + '' + (queryColorDot(d.color, 15) + ' '  + d.label  + ' (' + d.data + '), ');
                     })
                 });
 
@@ -591,15 +597,26 @@
             svg.selectAll(".hiveplot-link").classed("hiveplot-inactive", false);
         }
         function showTooltip(duration, opacity, text, posLeft, posTop) {
-            var tooltip = d3.select("body").append("div")
-                .attr("id", "tooltip")
-                .attr("class", "hiveplot-tooltip");
-            tooltip.transition()
-                .duration(duration)
-                .style("opacity", opacity);
-            tooltip.html(text)
-                .style("left", posLeft + "px")
-                .style("top", posTop + "px");
+            if (tooltipSetting === 'movable') {
+                var tooltip = d3.select("body").append("div")
+                    .attr("id", "tooltip")
+                    .attr("class", "hiveplot-tooltip");
+                tooltip.transition()
+                    .duration(duration)
+                    .style("opacity", opacity);
+                tooltip.html(text)
+                    .style("left", posLeft + "px")
+                    .style("top", posTop + "px");
+            }
+            else {
+                var tooltip = d3.select("#" + tooltipElem).append("div")
+                    .attr("id", "tooltip")
+                    .attr("class", "hiveplot-tooltip-fix");
+                tooltip.transition()
+                    .duration(duration)
+                    .style("opacity", opacity);
+                tooltip.html(text);
+            }
         }
         function queryColorDot(color, diameter) {
             return '<div style="' + [

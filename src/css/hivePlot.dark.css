@@ -49,3 +49,16 @@ div.hiveplot-tooltip {
     border-radius: 8px;
     pointer-events: none;
 }
+
+div.hiveplot-tooltip-fix{
+    position: absolute;
+    /*width: 100%;*/
+    text-align: left;
+    padding: 10px;
+    font: 12px sans-serif;
+    background: none;
+    border: 2px solid;
+    border-color: white;
+    border-radius: 8px;
+    pointer-events: none;
+}

@@ -1845,24 +1845,37 @@ define([
                 if (scope.panel.numberOfAxis >= 3) {
                     axisConfig.push({ 'axis': scope.panel.axis3Label, 'sort': scope.panel.axis3Sorting, 'order': scope.panel.axis3Order });
                 }
+
+
+                /*Creating one div where the panel will be drawn*/
+                d3.select(elem[0]).append('div')
+                    .style("width", function () { return (scope.panel.tooltipSetting === "static" ? 80 : 100) + "%"; })
+                    .style("height", function () { return 100 + "%"; })
+                    .attr("class", "hiveplot-innerpanels")
+                    .attr("id", "hiveplotpanel-" + elem[0].id);
+                /*And creating a different div where the tooltips will be shown*/
+                d3.select(elem[0]).append('div')
+                    .style("width", function () { return (scope.panel.tooltipSetting === "static" ? 19 : 0) + "%"; })
+                    .style("height", function () { return 100 + "%"; })
+                    .attr("class", "hiveplot-innerpanels")
+                    .attr("id", "tooltip-" + elem[0].id);
                                                 
                 if (!scope.panel.multipanelSetting) {
-                    d3.select(elem[0]).append('div')
-                        .attr("class", "hiveplot-panel")
-                        .attr("id", "hiveplotpanel-" + elem[0].id);
+
                     var data = prepareData(dataset);
 
                     new Hiveplot.Chart({
                         //Mandatory
-                        "elem": "hiveplotpanel-" + elem[0].id,     //id of the just created div
+                        "plotElem": "hiveplotpanel-" + elem[0].id,     //id of the just created div
                         "data": data,
                         //Optional
+                        "tooltipElem": "tooltip-" + elem[0].id,
                         "colorcode": scope.panel.colorcode,                         //possible values: ['black-white', 'colored']
                         "colors": null,
                         "axisConfig": axisConfig,
                         "sortingTooltip": scope.panel.sortingTooltip,               //possible values: ['source', 'target', 'data']
                         "sortingOrderTooltip": scope.panel.sortingOrderTooltip,     //possible values: [true, false] true means ascending, false means descending
-                        "tooltipSetting": scope.panel.tooltipSetting,               //possible values: [true, false]
+                        "tooltipSetting": scope.panel.tooltipSetting,               //possible values: ['none', 'movable', 'static']
                         "onClickNode": function (node) {
                             /*
                                 Here the user can define a function what happens if the user
@@ -1882,9 +1895,15 @@ define([
                     });
                 }
                 else if (scope.panel.multipanelSetting) {
+                    var linkValues = [];
+                    for (var item in scope.data) {
+                        scope.data[item][0].forEach(function (datapoint) {
+                            linkValues.push(datapoint.data);
+                        });
+                    }
                     var number = scope.panelIntervals.length; //number of plots
-                    var width = $(elem[0]).width();
-                    var height = $(elem[0]).height();
+                    var width = $("#hiveplotpanel-" + elem[0].id).width();
+                    var height = $("#hiveplotpanel-" + elem[0].id).height();
                     var elementArea = parseInt(height * width / number);
 
                     // Calculate side length if there is no "spill":
@@ -1928,9 +1947,10 @@ define([
                     else {
                         nodes = null;
                     }
-                                                            
+                                     
+
                     for (var count = 0; count < scope.panelIntervals.length; count++) {
-                        d3.select(elem[0]).append('div')
+                        d3.select("#hiveplotpanel-" + elem[0].id).append('div')
                             .style("width", function () { return sideLength / width * 100 - 1 + "%"; })
                             .style("height", function () { return sideLength / height * 100 - 1 + "%"; })
                             //.style("border","1px solid green")
@@ -1951,16 +1971,19 @@ define([
                         
                         new Hiveplot.Chart({
                             //Mandatory
-                            "elem": "hiveplotpanel-low-" + count + '' + elem[0].id,     //id of the just created div
+                            "plotElem": "hiveplotpanel-low-" + count + '' + elem[0].id,     //id of the just created div
                             "data": data,
                             //Optional
+                            "tooltipElem": "tooltip-" + elem[0].id,
+                            "linkMin": Math.min.apply(Math, linkValues),
+                            "linkMax": Math.max.apply(Math, linkValues),
                             "nodes": nodes,
                             "colorcode": scope.panel.colorcode,                         //possible values: ['black-white', 'colored']
                             "colors": null,
                             "axisConfig": axisConfig,
                             "sortingTooltip": scope.panel.sortingTooltip,               //possible values: ['source', 'target', 'data']
                             "sortingOrderTooltip": scope.panel.sortingOrderTooltip,     //possible values: [true, false] true means ascending, false means descending
-                            "tooltipSetting": scope.panel.tooltipSetting,               //possible values: [true, false]
+                            "tooltipSetting": scope.panel.tooltipSetting,               //possible values: ['none', 'movable', 'static']
                             "onClickNode": function (node) {
                                 /*
                                     Here the user can define a function what happens if the user
