@@ -101,9 +101,7 @@
             nodes = data.nodes,
             links = data.links,
             angleDomain = [];
-
-        console.log(nodes);
-
+        
         if (typeof _config.axisConfig === 'undefined' || _config.axisConfig === null) {
             angleDomain = data.axis;
         }
@@ -426,6 +424,7 @@
                     /*
                         Defining the position of the node and combining all nodes in one array ('uniqueNodes')
                     */
+                    colors.push(colors[count]);
                     node.y = (histCurrent[node.axis] / hist[node.axis]);
                     histCurrent[node.axis]++;
                     node.color = colors[count++];
@@ -442,6 +441,7 @@
                 });
                 var count = 0;
                 _config.nodes.forEach(function (node) {
+                    colors.push(colors[count]);
                     var nodeOld = uniqueNodes.filter(function (object) { return object.axis === node.axis && object.label === node.label })[0];
                     try {
                         node.value = nodeOld.value;

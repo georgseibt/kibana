@@ -986,7 +986,7 @@ define([
                                     .facet(
                                         $scope.ejs.TermsFacet($scope.panel.axis3Label)
                                         .field($scope.panel.axis3Label)
-                                        .size($scope.panel.size)
+                                        .size($scope.panel.axis3Length)
                                         .order('count')
                                         .exclude($scope.panel.exclude)
                                         .facetFilter(
@@ -1959,6 +1959,7 @@ define([
 
                         d3.select("#hiveplotpanel-" + count + '' + elem[0].id).append('div')
                             .style("height", function () { return 15 + "%"; })
+                            .style("font-size","100%")
                             //.style("border", "1px solid yellow")
                             .html(scope.getDateAsString(new Date(parseInt(scope.panelIntervals[count].startDate))));
                         d3.select("#hiveplotpanel-" + count + '' + elem[0].id).append('div')
