@@ -15,6 +15,7 @@
 path.hiveplot-link {
     fill: none;
     stroke-width: 1.5px;
+    stroke-opacity: 0.4;
 }
 
 .hiveplot-linklabel {
@@ -23,14 +24,14 @@ path.hiveplot-link {
 }
 
 .hiveplot-link.hiveplot-active {
-    stroke: #DC143C;
+    stroke: *#DC143C;
     stroke-width: 4px;
-    stroke-opacity: 0.8;
+    stroke-opacity: 1;
 }
 
 
 .hiveplot-link.hiveplot-inactive {
-    stroke-opacity: 0.1;
+    stroke-opacity: 0.05;
 }
 
 .hiveplot-h5 {

@@ -49,18 +49,10 @@ define([
 
             // Set and populate defaults
             var _d = {
-                ///** @scratch /panels/hiveplot/5
-                //* startDate:: satrtdate for the results
-                //*/
-                //startDate: '_startdate',
-                ///** @scratch /panels/hiveplot/5
-                //* endDate:: enddate for the results
-                //*/
-                //endDate : '_enddate',
                 /** @scratch /panels/hiveplot/5
                 * interval:: use this as the interval to calculate aggregations
                 */
-                interval: '',
+                interval: '1d',
                 /** @scratch /panels/hiveplot/5
                 * multipanelSetting:: indicates if just one (false) or several (true) panels should be shown
                 */
@@ -84,33 +76,29 @@ define([
                 */
                 exclude : [],
                 /** @scratch /panels/hiveplot/5
-                * arrangement:: Arrangement of the legend: horizontal or vertical
-                */
-                arrangement : 'horizontal',
-                /** @scratch /panels/hiveplot/5
-                * counter_pos:: The location of the legend in respect to the diagram: above, below, or none.
-                */
-                counter_pos: 'above',
-                /** @scratch /panels/hiveplot/5
                 * colorcode:: Indicates if the nodes should be coloured or black-white
                 */
                 colorcode: 'colored',
                 /** @scratch /panels/hiveplot/5
                 * sortingTooltip:: defines by which criteria the connections in the tooltip should be sorted
                 */
-                sortingTooltip: 'source',
+                sortingTooltip: 'label',
                 /** @scratch /panels/hiveplot/5
                 * sortingOrderTooltip:: defines if the nodes should be ordered ascending or descending
                 */
                 sortingOrderTooltip: true,
                 /** @scratch /panels/hiveplot/5
-                * tooltipSetting:: Indicates if tooltips should be shown if the user hovers over a segment or chord
+                * tooltipSetting:: Indicates if tooltips should be shown if the user hovers over a segment or chord and where the tooltip should be shown
                 */
-                tooltipSetting: true,
+                tooltipSetting: 'movable',
+                /** @scratch /panels/hiveplot/5
+                * tooltipOrientation:: Indicates if the text in the tooltip should be horizontal or vertical
+                */
+                tooltipOrientation: 'horizontal',
                 /** @scratch /panels/hiveplot/5
                 * numberOfAxis:: defines how many axis should be drawn in the hiveplot
                 */
-                numberOfAxis: 3,
+                numberOfAxis: 2,
                 /** @scratch /panels/hiveplot/5
                 * axis1Label:: defines the label for axis1 and which nodes should be displayed on this axis
                 */
@@ -208,13 +196,7 @@ define([
                 _.each(queries, function (q) {
                     boolQuery = boolQuery.should(querySrv.toEjsObj(q));
                 });
-
-                /*
-                Different parts of the request are sticked together: from where the data should be,
-                different filters and queries, etc.
-                This is saved in the variable 'request'
-                */
-
+                
                 /*
                 There are two options how the hiveplot should be created.
                 1. One hiveplot for all data in a certain range of time, for example, all data between 1st January and 25th May. Or one hiveplot for all data in the database (no start and end date is given).
@@ -289,24 +271,28 @@ define([
                                 )
                             )
                         )
-                        .facet(
-                            $scope.ejs.DateHistogramFacet('dates')
-                                .field($scope.panel.timeField)
-                                .interval(aggregateBy)
-                                .facetFilter(
-                                    $scope.ejs.AndFilter(
-                                        [
-                                            $scope.ejs.QueryFilter(
-                                                $scope.ejs.FilteredQuery(
-                                                    boolQuery,
-                                                    filterSrv.getBoolFilter(filterSrv.ids())
-                                                )
-                                            )
-                                        ]
-                                    )
-                                )
-                        )
                         .size(0);
+                    if ($scope.panel.timeField !== "") {
+                        request1 = request1
+                            .facet(
+                                $scope.ejs.DateHistogramFacet('dates')
+                                    .field($scope.panel.timeField)
+                                    .interval(aggregateBy)
+                                    .facetFilter(
+                                        $scope.ejs.AndFilter(
+                                            [
+                                                $scope.ejs.QueryFilter(
+                                                    $scope.ejs.FilteredQuery(
+                                                        boolQuery,
+                                                        filterSrv.getBoolFilter(filterSrv.ids())
+                                                    )
+                                                )
+                                            ]
+                                        )
+                                    )
+                            )
+                            .size(0);
+                    }
 
                     if ($scope.panel.numberOfAxis >= 3) {
                         request1 = request1
@@ -335,11 +321,14 @@ define([
                     var results1 = request1.doSearch().then(function (results1) {
                         /*Defining the start and end date. These dates are required to calculate the correct intervals*/
                         var dates = [];
-                        _.each(results1.facets.dates.entries, function (v) {
-                            dates.push(v.time);
-                        });
-
-                        intervals = $scope.getIntervals2(dates, $scope.panel.interval);
+                        try{
+                            _.each(results1.facets.dates.entries, function (v) {
+                                dates.push(v.time);
+                            });
+                        
+                            intervals = $scope.getIntervals2(dates, $scope.panel.interval);
+                        }
+                        catch (error){}
 
                         var axis1Labels = [];
                         var axis2Labels = [];
@@ -352,7 +341,6 @@ define([
                         });
 
                         if ($scope.panel.axis1Label === $scope.panel.timeField) {
-                            /*Depending on */
                             /*If the time should be displayed on axis 1*/
                             intervals.forEach(function (date) {
                                 request = request
@@ -382,8 +370,7 @@ define([
                             });
                         }
                         else if ($scope.panel.axis2Label === $scope.panel.timeField) {
-                            /*If the time should be displayed on axis 2*/
-                            
+                            /*If the time should be displayed on axis 2*/                            
                             intervals.forEach(function (date) {
                                 request = request
                                 .facet(
@@ -874,25 +861,30 @@ define([
                     }
 
                     var requestPanelStartDates = $scope.ejs.Request().indices(dashboard.indices);
-                    requestPanelStartDates = requestPanelStartDates
-                        .facet(
-                            $scope.ejs.DateHistogramFacet('panelStartDates')
-                                .field($scope.panel.timeField)
-                                .interval(aggregatePanelBy)
-                                .facetFilter(
-                                    $scope.ejs.AndFilter(
-                                        [
-                                            $scope.ejs.QueryFilter(
-                                                $scope.ejs.FilteredQuery(
-                                                    boolQuery,
-                                                    filterSrv.getBoolFilter(filterSrv.ids())
+                    if ($scope.panel.timeField !== "") {
+                        requestPanelStartDates = requestPanelStartDates
+                            .facet(
+                                $scope.ejs.DateHistogramFacet('panelStartDates')
+                                    .field($scope.panel.timeField)
+                                    .interval(aggregatePanelBy)
+                                    .facetFilter(
+                                        $scope.ejs.AndFilter(
+                                            [
+                                                $scope.ejs.QueryFilter(
+                                                    $scope.ejs.FilteredQuery(
+                                                        boolQuery,
+                                                        filterSrv.getBoolFilter(filterSrv.ids())
+                                                    )
                                                 )
-                                            )
-                                        ]
+                                            ]
+                                        )
                                     )
-                                )
-                        )
-                        .size(0);
+                            )
+                            .size(0);
+                    }
+                    else {
+                        alert("Please enter a valid value for the time field in the configurations.");
+                    }
 
                     $scope.panelStartDates = [];
                     $scope.panelIntervals = [];
@@ -900,11 +892,13 @@ define([
                         /*Defining the start and end date. These dates are required to calculate the correct intervals*/
                         
                         $scope.resultsPanelStartDates = resultsPanelStartDates;
+                        try{
+                            _.each(resultsPanelStartDates.facets.panelStartDates.entries, function (v) {
+                                $scope.panelStartDates.push(v.time);
 
-                        _.each(resultsPanelStartDates.facets.panelStartDates.entries, function (v) {
-                            $scope.panelStartDates.push(v.time);
-
-                        });
+                            });
+                        }
+                        catch(er){}
                         $scope.panelIntervals = $scope.getIntervals2($scope.panelStartDates, $scope.panel.panelInterval);
                         $scope.panelIntervals.forEach(function (panelPointOfTime) {
 
@@ -1595,6 +1589,17 @@ define([
             };
 
             $scope.getIntervals2 = function (listOfDates, interval) {
+                /*
+                    Format of the passed variable:
+                        listOfDates: is an array with different dates. Each date represents the beginning of a  new period
+                        interval: is value of the following possibilities : 15m, 30m, 1h, 12h, 1d, 1w, 1M, 1y
+
+                    Task of the function:
+                        This function calculates periods of time. For each value in listOfDates a period of time is calculated. The interval indicates how long the period should be
+
+                    Format of the return value:
+                        The function returns an array of several periods of time. Each period is an object with a startDate and an endDate
+                */
                 var intervalNumber = interval.slice(0, interval.length - 1);
                 var aggregateBy = interval.slice(interval.length - 1, interval.length);
                 switch (aggregateBy) {
@@ -1615,7 +1620,7 @@ define([
                     /*Easy case, as the intervals are complete hours, days, weeks or similar*/
                     listOfDates.forEach(function (date) {
                         var _start = date;
-                        var _end = $scope.dateAdd($scope.dateAdd(date, aggregateBy, k), 'second', -0.001);
+                        var _end = $scope.dateAdd($scope.dateAdd(date, aggregateBy, k), 'second', -0.001);  //the endDate is always the startDate + the interval - 1millisecond. The millisecond is subtracted so there is no overlap between the periods of time
 
                         var object = {
                             startDate: _start,
@@ -1624,8 +1629,12 @@ define([
                         ranges.push(object);
                     });
                 }
-                else{
+                else {
+                    /*
+                        If the interval is not a complete hour, day etc, multiple periods have to be calculated
+                    */
                     if (interval === '15m') {
+                        //In this case 4 intervals have to be calculated within the same hour
                         listOfDates.forEach(function (date) {
                             for (var count = 1; count <= 4; count++) {
                                 var _start = $scope.dateAdd(date, aggregateBy, (count-1) * k);
@@ -1640,6 +1649,7 @@ define([
                         });
                     }
                     if (interval === '30m') {
+                        //In this case 2 intervals have to be calculated within the same hour
                         listOfDates.forEach(function (date) {
                             for (var count = 1; count <= 2; count++) {
                                 var _start = $scope.dateAdd(date, aggregateBy, (count - 1) * k);
@@ -1654,6 +1664,7 @@ define([
                         });
                     }
                     if (interval === '12h') {
+                        //In this case 2 intervals have to be calculated within the same day
                         listOfDates.forEach(function (date) {
                             for (var count = 1; count <= 2; count++) {
                                 var _start = $scope.dateAdd(date, aggregateBy, (count - 1) * k);
@@ -1723,6 +1734,18 @@ define([
                 $scope.$emit('render');
             };
             $scope.dateAdd = function (date, interval, units) {
+                /*
+                    Format of the passed variable:
+                        date: is a date in milliseconds
+                        interval: is value of the following possibilities : second, minute, hour, day, week, month, quarter, year
+                        units: any number
+
+                    Task of the function:
+                        This function adds a specific amount of time, for example 15 minutes, 0.01 seconds etc., to a date
+
+                    Format of the return value:
+                        The function returns a time in miliseconds
+                */
                 var ret = new Date(date); //don't change original date
                 switch (interval.toLowerCase()) {
                     case 'year': ret.setFullYear(ret.getFullYear() + units); break;
@@ -1738,6 +1761,16 @@ define([
                 return ret;
             };
             $scope.getDateAsString = function (date) {
+                /*
+                    Format of the passed variable:
+                        date: is a date in date format
+
+                    Task of the function:
+                        This function transforms a date to the format YYYY-MM-dd hh:mm:ss
+
+                    Format of the return value:
+                        The function returns a time as a string in the format YYYY-MM-dd hh:mm:ss
+                */
                 var year = date.getFullYear();
                 var month = '0' + (date.getMonth() + 1);
                 month = month.slice(-2, (month.length - 2) + 3);
@@ -1876,6 +1909,7 @@ define([
                         "sortingTooltip": scope.panel.sortingTooltip,               //possible values: ['source', 'target', 'data']
                         "sortingOrderTooltip": scope.panel.sortingOrderTooltip,     //possible values: [true, false] true means ascending, false means descending
                         "tooltipSetting": scope.panel.tooltipSetting,               //possible values: ['none', 'movable', 'static']
+                        "tooltipOrientation": scope.panel.tooltipOrientation,       //possible values: ['horizontal', 'vertical']
                         "onClickNode": function (node) {
                             /*
                                 Here the user can define a function what happens if the user
@@ -1930,12 +1964,12 @@ define([
                             dataset[element][0].forEach(function (d) {
                                 var object = {
                                     axis: d.axis1,
-                                    label: d.axis1 === 'Timestamp' ? scope.getDateAsString(new Date(parseInt(d.source))) : d.source.toString(),//d.source
+                                    label: d.axis1 === scope.panel.timeField ? scope.getDateAsString(new Date(parseInt(d.source))) : d.source.toString(),//d.source
                                 }
                                 listOfNodes[d.axis1 + '-' + d.source] = object;
                                 object = {
                                     axis: d.axis2,
-                                    label: d.axis2 === 'Timestamp' ? scope.getDateAsString(new Date(parseInt(d.target))) : d.target.toString(), //d.target
+                                    label: d.axis2 === scope.panel.timeField ? scope.getDateAsString(new Date(parseInt(d.target))) : d.target.toString(), //d.target
                                 }
                                 listOfNodes[d.axis2 + '-' + d.target] = object;
                             });
@@ -1953,19 +1987,16 @@ define([
                         d3.select("#hiveplotpanel-" + elem[0].id).append('div')
                             .style("width", function () { return sideLength / width * 100 - 1 + "%"; })
                             .style("height", function () { return sideLength / height * 100 - 1 + "%"; })
-                            //.style("border","1px solid green")
                             .attr("class", "hiveplot-innerpanels")
                             .attr("id", "hiveplotpanel-" + count + '' + elem[0].id);
 
                         d3.select("#hiveplotpanel-" + count + '' + elem[0].id).append('div')
                             .style("height", function () { return 15 + "%"; })
                             .style("font-size","100%")
-                            //.style("border", "1px solid yellow")
                             .html(scope.getDateAsString(new Date(parseInt(scope.panelIntervals[count].startDate))));
                         d3.select("#hiveplotpanel-" + count + '' + elem[0].id).append('div')
                             .style("width", function () { return 100 + "%"; })
                             .style("height", function () { return 85 + "%"; })
-                            //.style("border", "1px solid blue")
                             .attr("id", "hiveplotpanel-low-" + count + '' + elem[0].id);
 
                         var data = prepareData(dataset[scope.panelIntervals[count].startDate][0]);
@@ -1985,6 +2016,7 @@ define([
                             "sortingTooltip": scope.panel.sortingTooltip,               //possible values: ['source', 'target', 'data']
                             "sortingOrderTooltip": scope.panel.sortingOrderTooltip,     //possible values: [true, false] true means ascending, false means descending
                             "tooltipSetting": scope.panel.tooltipSetting,               //possible values: ['none', 'movable', 'static']
+                            "tooltipOrientation": scope.panel.tooltipOrientation,       //possible values: ['horizontal', 'vertical']
                             "onClickNode": function (node) {
                                 /*
                                     Here the user can define a function what happens if the user
@@ -2007,7 +2039,10 @@ define([
                 }                
                                 
                 function prepareData(dataset) {
-                    /*Removing dublicates in the array*/
+                    /*
+                        Because of the queries it can happen that the same link is twice in the dataset. Once in the form of from A to B and the otehr time from B to A.
+                        The following code removes the dublicates in the array
+                    */
                     var orderedData = [];
                     dataset.forEach(function (datapoint) {
                         if (datapoint.axis1 < datapoint.axis2) {
@@ -2036,9 +2071,9 @@ define([
                     uniqueData.forEach(function (link) {
                         var object = {
                             axis1: link.axis1,
-                            axis1NodeLabel: link.axis1 === 'Timestamp' ? scope.getDateAsString(new Date(parseInt(link.source))) : link.source.toString(),
+                            axis1NodeLabel: link.axis1 === scope.panel.timeField ? scope.getDateAsString(new Date(parseInt(link.source))) : link.source.toString(),
                             axis2: link.axis2,
-                            axis2NodeLabel: link.axis2 === 'Timestamp' ? scope.getDateAsString(new Date(parseInt(link.target))) : link.target.toString(),
+                            axis2NodeLabel: link.axis2 === scope.panel.timeField ? scope.getDateAsString(new Date(parseInt(link.target))) : link.target.toString(),
                             value: link.data
                         }
                         data.push(object);
