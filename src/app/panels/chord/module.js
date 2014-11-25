@@ -55,33 +55,33 @@ define([
                 */
                 sourceField: '_type',
                 /** @scratch /panels/chord/5
-                * targetField:: The target field on which to computer the facet
-                */
-                targetField: '_type',
-                /** @scratch /panels/chord/5
-                * exclude:: terms to exclude from the results
-                */
-                exclude: [],
-                /** @scratch /panels/chord/5
                 * size1:: Show this many terms for field 1
                 */
                 size1: 10,
+                /** @scratch /panels/chord/5
+                * targetField:: The target field on which to computer the facet
+                */
+                targetField: '_type',
                 /** @scratch /panels/chord/5
                 * size2:: Show this many terms for field 2
                 */
                 size2: 10,
                 /** @scratch /panels/chord/5
-                * order:: How the terms are sorted: count, term, reverse_count or reverse_term,
+                * order:: How the terms are sorted: count, term, reverse_count or reverse_term, before they are filtered
                 */
                 order   : 'count',
                 /** @scratch /panels/chord/5
-                * arrangement:: Arrangement of the legend: horizontal or vertical
+                * exclude:: terms to exclude from the results
                 */
-                arrangement : 'horizontal',
+                exclude: [],
                 /** @scratch /panels/chord/5
                 * counter_pos:: The location of the legend in respect to the diagram: above, below, or none.
                 */
                 counter_pos: 'above',
+                /** @scratch /panels/chord/5
+                * arrangement:: Arrangement of the legend: horizontal or vertical
+                */
+                arrangement : 'horizontal',
                 /** @scratch /panels/network/5
                 * sortingNodes:: Indicates how the nodes are sorted
                 */
@@ -103,9 +103,13 @@ define([
                 */
                 numberOfTicks: null,
                 /** @scratch /panels/network/5
-                * ticksLabel:: defines that each n th label of a tick is shown. For example a 1 indicates that every label is shown, a 4 that every 4th label is shown
+                * numberOfTicksLabel:: defines that each n th label of a tick is shown. For example a 1 indicates that every label is shown, a 4 that every 4th label is shown
                 */
-                ticksLabel: null,
+                numberOfTicksLabel: null,
+                /** @scratch /panels/network/5
+                * tooltipSetting:: Indicates if tooltips should be shown if the user hovers over a segment or chord
+                */
+                tooltipSetting: 'movable',
                 /** @scratch /panels/network/5
                 * sortingTooltip:: defines by which criteria the connections in the tooltip should be sorted
                 */
@@ -115,9 +119,9 @@ define([
                 */
                 sortingOrderTooltip: true,
                 /** @scratch /panels/network/5
-                * tooltipSetting:: Indicates if tooltips should be shown if the user hovers over a segment or chord
+                * tooltipOrientation:: defines if the nodes should be ordered ascending or descending
                 */
-                tooltipSetting: true,
+                tooltipOrientation: 'vertical',
                 /** @scratch /panels/chord/5
                 * spyable:: Set spyable to false to disable the inspect button
                 */
@@ -354,8 +358,12 @@ define([
 
             function createChordDiagram(scope, dataset, elem) {
                 $(elem[0]).empty();  //removes all elements from the current element
+
+                /*Creating one div where the panel will be drawn*/
                 d3.select(elem[0]).append('div')
-                    .attr("class", "chord-panel")
+                    .style("width", function () { return 100 + "%"; })
+                    .style("height", function () { return 100 + "%"; })
+                    .attr("class", "chord-innerpanels")
                     .attr("id", "chordpanel-" + elem[0].id);
 
                 var data = prepareData(dataset);
@@ -365,16 +373,18 @@ define([
                     "elem": "chordpanel-" + elem[0].id,     //id of the just created div
                     "data": data,
                     //Optional
+                    "tooltipElem": "tooltip-" + elem[0].id,
                     "colors": null,
                     "numberOfTicks": scope.panel.numberOfTicks,
-                    "ticksLabel": scope.panel.ticksLabel,
+                    "numberOfTicksLabel": scope.panel.numberOfTicksLabel,
                     "segmentSize": scope.panel.segmentSize,                     //possible values: [outgoing, incoming]
                     "directed": scope.panel.directed,                           //possible values: [true, false] true means directed, false means undirected
                     "sorting": scope.panel.sortingNodes,                        //possible values: [label, color, outgoingTotal, incomingTotal, total, numberOfLinks]
                     "sortingOrder": scope.panel.sortingOrderNodes,              //possible values: [true, false] true means ascending, false means descending
+                    "tooltipSetting": scope.panel.tooltipSetting,
                     "sortingTooltip": scope.panel.sortingTooltip,               //possible values: [source, target, data]
                     "sortingOrderTooltip": scope.panel.sortingOrderTooltip,     //possible values: [true, false] true means ascending, false means descending
-                    "tooltipSetting": scope.panel.tooltipSetting,
+                    "tooltipOrientation": scope.panel.tooltipOrientation,
                     "onClickNode": function (d) {
                         if (!d3.event.ctrlKey) { //node is only filtered if ctrl Key is NOT pressed
                             scope.build_search(d.label);

@@ -45,3 +45,14 @@ div.networkdiagram-tooltip {
     border-radius: 8px;
     pointer-events: none;
 }
+
+div.networkdiagram-tooltip-fix{
+    position: absolute;
+    text-align: left;
+    padding: 10px;
+    color: white;
+    font: 12px sans-serif;
+    background: black;
+    border-radius: 8px;
+    pointer-events: none;
+}

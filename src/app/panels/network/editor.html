@@ -2,20 +2,20 @@
     <h5>Parameters</h5>
     <div class="editor-option">
         <label class="small">Source Field</label>
-        <input type="text" class="input-small" bs-typeahead="fields.list" ng-model="panel.sourceField" ng-change="set_refresh(true)">
+        <input type="text" class="input-medium" bs-typeahead="fields.list" ng-model="panel.sourceField" ng-change="set_refresh(true)">
     </div>
     <div class="editor-option">
-        <label class="small">Length for Field 1</label>
-        <input class="input-small" type="number" ng-model="panel.size1" ng-change="set_refresh(true)">
-    </div>
+        <label class="small">Length for the Source Field</label>
+        <input class="input-medium" type="number" ng-model="panel.size1" ng-change="set_refresh(true)">
+    </div></br>
     <div class="editor-option">
         <label class="small">Target Field</label>
-        <input type="text" class="input-small" bs-typeahead="fields.list" ng-model="panel.targetField" ng-change="set_refresh(true)">
+        <input type="text" class="input-medium" bs-typeahead="fields.list" ng-model="panel.targetField" ng-change="set_refresh(true)">
     </div>
     <div class="editor-option">
-        <label class="small">Length for Field 2</label>
-        <input class="input-small" type="number" ng-model="panel.size2" ng-change="set_refresh(true)">
-    </div>
+        <label class="small">Length for the Target Field</label>
+        <input class="input-medium" type="number" ng-model="panel.size2" ng-change="set_refresh(true)">
+    </div></br>
     <div class="editor-option">
         <label class="small">Order</label>
         <select class="input-medium" ng-model="panel.order" ng-options="f for f in ['count','term','reverse_count','reverse_term']" ng-change="set_refresh(true)"  ng-show="true"></select>
@@ -25,7 +25,7 @@
         <input array-join type="text" ng-model='panel.exclude'></input>
     </div>
     <div class="editor-option" ng-show="true">
-        <label class="small">Charge (should be a negative value for best performance)</label>
+        <label class="small">Charge <tip>Should be a negative value for best performance</tip></label>
         <input type="text" class="input-small" bs-typeahead="fields.list" ng-model="panel.charge" ng-change="set_refresh(true)">
     </div>
 </div>
@@ -34,34 +34,39 @@
         <h5>View Options</h5>
         <div class="editor-option" ng-show="true">
             <label class="small">Legend</label>
-            <select class="input-small" ng-model="panel.counter_pos" ng-options="f for f in ['above','below','none']" ng-change="set_refresh(true)"></select></span>
+            <select class="input-medium" ng-model="panel.counter_pos" ng-options="f for f in ['above','below','none']" ng-change="set_refresh(true)"></select></span>
         </div>
         <div class="editor-option" ng-show="true">
             <label class="small">Legend Format</label>
-            <select class="input-small" ng-model="panel.arrangement" ng-options="f for f in ['horizontal','vertical']" ng-change="set_refresh(true)"></select></span>
-        </div>
+            <select class="input-medium" ng-model="panel.arrangement" ng-options="f for f in ['horizontal','vertical']" ng-change="set_refresh(true)"></select></span>
+        </div></br></br>
         <div class="editor-option" ng-show="true">
             <label class="small">Colorcode</label>
-            <select class="input-small" ng-model="panel.colorcode" ng-options="f for f in ['colored','black-white']" ng-change="set_refresh(true)"></select></span>
+            <select class="input-medium" ng-model="panel.colorcode" ng-options="f for f in ['colored','black-white']" ng-change="set_refresh(true)"></select></span>
         </div>
         <div class="editor-option" ng-show="true">
             <label class="small">Node size</label>
-            <select class="input-small" ng-model="panel.nodeSize" ng-options="f.value as f.text for f in [{'value': 'outgoing', 'text':'Outgoing'},{'value': 'incoming', 'text':'Incoming'}]" ng-change="set_refresh(true)"></select></span>
+            <select class="input-medium" ng-model="panel.nodeSize" ng-options="f.value as f.text for f in [{'value': 'outgoing', 'text':'Outgoing'},{'value': 'incoming', 'text':'Incoming'}]" ng-change="set_refresh(true)"></select></span>
         </div>
         <div class="editor-option" ng-show="true">
             <label class="small">Directed</label>
-            <select class="input-small" ng-model="panel.directed" ng-options="f.value as f.text for f in [{'value': true, 'text':'Directed'},{'value': false, 'text':'Undirected'}]" ng-change="set_refresh(true)"></select></span>
-        </div>
-        <div class="editor-option" ng-show="true">
-            <label class="small">Sorting Tooltip by</label>
-            <select class="input-small" ng-model="panel.sortingTooltip" ng-options="f.value as f.text for f in [{'value': 'source', 'text':'Alphabetically by source'},{'value': 'target', 'text':'Alphabetically by target'},{'value':'data', 'text':'Data'}]" ng-change="set_refresh(true)"></select></span>
-        </div>
-        <div class="editor-option" ng-show="true">
-            <label class="small">Order nodes by</label>
-            <select class="input-small" ng-model="panel.sortingOrderTooltip" ng-options="f.value as f.text for f in [{'value': true, 'text':'Ascending'},{'value': false, 'text':'Descending'}]" ng-change="set_refresh(true)"></select></span>
-        </div>
+            <select class="input-medium" ng-model="panel.directed" ng-options="f.value as f.text for f in [{'value': true, 'text':'Directed'},{'value': false, 'text':'Undirected'}]" ng-change="set_refresh(true)"></select></span>
+        </div></br></br>
         <div class="editor-option">
-            <label class="small">Tooltips</label><input type="checkbox" ng-model="panel.tooltipSetting" ng-checked="panel.tooltipSetting">
+            <label class="small">Tooltips</label>
+            <select class="input-medium" ng-model="panel.tooltipSetting" ng-options="f.value as f.text for f in [{'value': 'none', 'text':'None'},{'value': 'movable', 'text':'Movable'},{'value': 'static', 'text':'Right Side'}]" ng-change="set_refresh(true)" ng-show="true"></select>
+        </div>
+        <div class="editor-option" ng-show="panel.tooltipSetting!=='none'">
+            <label class="small">Sorting Tooltip by</label>
+            <select class="input-medium" ng-model="panel.sortingTooltip" ng-options="f.value as f.text for f in [{'value': 'source', 'text':'Alphabetically by source'},{'value': 'target', 'text':'Alphabetically by target'},{'value':'data', 'text':'Data'}]" ng-change="set_refresh(true)"></select></span>
+        </div>
+        <div class="editor-option" ng-show="panel.tooltipSetting!=='none'">
+            <label class="small">Order nodes by</label>
+            <select class="input-medium" ng-model="panel.sortingOrderTooltip" ng-options="f.value as f.text for f in [{'value': true, 'text':'Ascending'},{'value': false, 'text':'Descending'}]" ng-change="set_refresh(true)"></select></span>
+        </div>
+        <div class="editor-option" ng-show="panel.tooltipSetting!=='none'">
+            <label class="small">Tooltip Format</label>
+            <select class="input-medium" ng-model="panel.tooltipOrientation" ng-options="f for f in ['horizontal','vertical']"></select></span>
         </div>
     </div>
 </div>

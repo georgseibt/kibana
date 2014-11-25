@@ -1,9 +1,5 @@
 <div ng-controller='hiveplot' ng-init="init()">
     <style>
-            /*circle {
-            fill: #ccc;
-        }*/
-
             text {
                 fill: #000;
                 font: 10px sans-serif;
@@ -52,14 +48,19 @@
                 float: left;
             }
     </style>
-    <div>x: {{panel.axis1Label}}</div>
-    <div>y: {{panel.axis2Label}}</div>
-    <div ng-show="panel.numberOfAxis>=3">z: {{panel.axis3Label}}</div><br/>
 
     <div class="hiveplot-wrapper">
+        <div>x: {{panel.axis1Label}}</div>
+        <div>y: {{panel.axis2Label}}</div>
+        <div ng-show="panel.numberOfAxis>=3">z: {{panel.axis3Label}}</div><br />
+
+
+
+        <div id="tooltip-{{$id}}-hivePlot" ng-show="panel.tooltipSetting==='static'" style="float: right; width: 20%">
+        </div>
         <!-- CHART -->
-        <div id="{{$id}}-hivePlot" ng-show="true" hiveplot-chart params="{{panel}}" style="position: relative; text-align: center; overflow:hidden;" class="pointer hiveplot-chart">
-            
+        <div id="{{$id}}-hivePlot" ng-show="true" hiveplot-chart params="{{panel}}" style="position: relative; text-align: center; overflow: hidden; width: 80%" class="pointer hiveplot-chart">
+
         </div>
     </div>
     

@@ -69,9 +69,11 @@
 
         </div>
 
+        <div id="tooltip-{{$id}}-networkdiagram" ng-show="panel.tooltipSetting==='static'" style="float: right; width: 20%">
+        </div>
         <!-- CHART -->
-        <div ng-show="true" network-chart params="{{panel}}" style="position: relative; text-align: center;" class="pointer network-chart">
-            
+        <div id="{{$id}}-networkdiagram" ng-show="true" network-chart params="{{panel}}" style="position: relative; text-align: center; width: 80%" class="pointer network-chart">
+
         </div>
 
         <!-- LEGEND -->

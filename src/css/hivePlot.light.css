@@ -58,14 +58,11 @@ div.hiveplot-tooltip {
 
 div.hiveplot-tooltip-fix{
     position: absolute;
-    width: auto;
     text-align: left;
     padding: 10px;
     color: white;
     font: 12px sans-serif;
     background: black;
-    border: 2px solid;
-    border-color: black;
     border-radius: 8px;
     pointer-events: none;
 }

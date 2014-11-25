@@ -20,6 +20,9 @@
 
             Optional attributes
             ===================
+            tooltipElem             is the id of a <div> where the tooltip should appear. If the tooltip should be movable or no
+                                    tooltip should be shown, the element can remain empty
+                                    possible values: any valid id of a <div> or Null
             charge                  is a technical attribute for the settings of the network.
                                     default: -300
                                     possible values: any number
@@ -35,15 +38,18 @@
             directed                defines if the network diagram should be directed (true) or undirected (false)
                                     default: true
                                     possible values: [true, false]
+            tooltipSetting          defines if tooltips should be shown in case of a mouseoverevent
+                                    default: static
+                                    possible values: ['none', 'movable', 'static']
             sortingTooltip          defines by which criteria the connections in the tooltip should be sorted
                                     default: 'source'
                                     possible values: ['source', 'target', 'data']
             sortingOrderTooltip     defines if the nodes should be ordered ascending or descending
                                     default: true
                                     possible values: [true, false] true means ascending, false means descending
-            tooltipsetting          defines if tooltips should be shown in case of a mouseoverevent
-                                    default: true
-                                    possible values: [true, false]
+            tooltipOrientation      defines if the text in the tooltip should be horizontal or vertical
+                                    default: horizontal
+                                    possible values: ['horizontal', 'vertical']
             onClickNode             defines a function which should be executed on a click event on a node
                                     default: null
                                     possible values: any function
@@ -64,15 +70,17 @@
             default_directed = true,
             default_sortingTooltip = 'source',
             default_sortingOrderTooltip = true,
-            default_tooltipSetting = true;
+            default_tooltipSetting = true,
+            default_tooltipOrientation='vertical';
 
 
         /*
             Initializing the attributes
         */
-        var DOMelem = _config.elem,
-            plotWidth = $("#" + DOMelem).width(),
-            plotHeight = $("#" + DOMelem).height(),
+        var plotElem = _config.elem,
+            tooltipElem = ((typeof _config.tooltipElem === 'undefined' || _config.tooltipElem === null) ? null : _config.tooltipElem),
+            plotWidth = $("#" + plotElem).width(),
+            plotHeight = $("#" + plotElem).height(),
             charge = ((typeof _config.charge === 'undefined' || _config.charge === null) ? default_charge : _config.charge),
             colorcode = ((typeof _config.colorcode === 'undefined' || _config.colorcode === null) ? default_colorcode : _config.colorcode),
             colors = ((typeof _config.colors === 'undefined' || _config.colors === null) ? default_colorset : _config.colors.concat(default_colorset)),
@@ -80,7 +88,8 @@
             directed = ((typeof _config.directed === 'undefined' || _config.directed === null) ? default_directed : _config.directed),
             sortingTooltip = ((typeof _config.sortingTooltip === 'undefined' || _config.sortingTooltip === null) ? default_sortingTooltip : _config.sortingTooltip),
             sortingOrderTooltip = ((typeof _config.sortingOrderTooltip === 'undefined' || _config.sortingOrderTooltip === null) ? default_sortingOrderTooltip : _config.sortingOrderTooltip),
-            tooltipSetting = ((typeof _config.tooltipSetting === 'undefined' || _config.tooltipSetting === null) ? default_tooltipSetting : _config.tooltipSetting);
+            tooltipSetting = ((typeof _config.tooltipSetting === 'undefined' || _config.tooltipSetting === null) ? default_tooltipSetting : _config.tooltipSetting),
+            tooltipOrientation = ((typeof _config.tooltipOrientation === 'undefined' || _config.tooltipOrientation === null) ? default_tooltipOrientation : _config.tooltipOrientation);
 
         var svg,
             force,
@@ -96,7 +105,7 @@
             maxTotalOfNode = data.maxTotalOfNode;
         
         //Define the required layout
-        svg = d3.select('#' + DOMelem)
+        svg = d3.select('#' + plotElem)
             .append("svg")
             .attr("width", plotWidth)
             .attr("height", plotHeight);
@@ -235,11 +244,22 @@
         }
         function prepareData(data) {
             /*
-                The data has to have the following structure:
-                {   source:   name of the node from which the connection comes
-                    target:   name of the node to which the connection goes
-                    value:    strength of the link
-                }
+                Format of the passed variable:
+                    'data' is an array of multiple objects. Each object represents a link between two nodes.
+                    So, each object is required to have the following structure when it is passed to this function:
+                    {   source:   name of the node from which the connection comes
+                        target:   name of the node to which the connection goes
+                        value:    strength of the link
+                    }
+
+                Task of the function:
+                    The function has several tasks to do:
+                    1. Identifying unique nodes
+                    2. creating an array of objects. Each object represents a link between two nodes
+
+                Format of the return value:
+                    The function returns an object with a list of the unique nodes and a list of the links. It also returns a matrix which indicates which nodes are connected, and it returns
+                    several statistics about the data: 'maxValueOfLink', 'maxOutgoingTotalOfNode', 'maxIncomingTotalOfNode', 'maxTotalOfNode'
             */
 
             /*
@@ -249,30 +269,43 @@
             var listOfNodes = [];   //just an array with the names of the nodes
             var uniqueNodes = [];   //array of objects for each node, with the attributes: 'label', 'color', 'outgoingTotal', 'incomingTotal', 'total', 'numberOfLinks'
             data.forEach(function (d) {
-                listOfNodes.push(d.source);
-                listOfNodes.push(d.target);
+                listOfNodes.push(d.source);     //reading all the node names and storing them in the array "listOfNodes"
+                listOfNodes.push(d.target);     //reading all the node names and storing them in the array "listOfNodes"
             })
-            listOfNodes = (listOfNodes.filter(function onlyUnique(value, index, self) { return self.indexOf(value) === index; }));
+            listOfNodes = (listOfNodes.filter(function onlyUnique(value, index, self) { return self.indexOf(value) === index; }));      //filtering the listOfNodes, so no duplicates remain
+
+            if (colors.length < listOfNodes.length) {
+                /*
+                    A number of colorcodes are given at the beginning. If more colors are needed, this loop creates additional ones.
+                */
+                for (var count = 0; count < listOfNodes.length; count++) {
+                    colors.push(randomColor());
+                }
+            }
 
             var count = 0;
             listOfNodes.forEach(function (node) {
+                /*
+                    This loop creates some statistics for the nodes. The loop sums up the values of links coming into and going out of the node, and both together.
+                    It also counts the links to and from the node.
+                */
                 var outgoingTotal = 0,
                     incomingTotal = 0,
                     total = 0,
                     numberOfLinks = 0;
                 data.forEach(function (d) {
                     if (d.source === node) {
-                        outgoingTotal = outgoingTotal + d.value;
+                        outgoingTotal = outgoingTotal + d.value;        //summing up links going out of the node
                     }
                     if (d.target === node) {
-                        incomingTotal = incomingTotal + d.value;
+                        incomingTotal = incomingTotal + d.value;        //summing up links going into the node
                     }
                     if (d.source === node || d.target === node) {
-                        total = total + d.value;
-                        numberOfLinks++;
+                        total = total + d.value;                        //summing up incoming and outgoing nodes from the node
+                        numberOfLinks++;                                //Counting the number of links to and from the node
                     }
                 });
-                var object = {
+                var object = {                          //creating an object for the node with the attributes 'label' and 'color' and its statistics
                     'label': node,
                     'color': colors[count++],
                     'outgoingTotal': outgoingTotal,
@@ -348,7 +381,7 @@
             }
 
             /*
-                In the following some maximums of the data are defined: 'maxValueOfLink', 'maxOutgoingTotalOfNode', 'maxIncomingTotalOfNode', 'maxTotalOfNode'
+                In the following some statistics of the data are defined: 'maxValueOfLink', 'maxOutgoingTotalOfNode', 'maxIncomingTotalOfNode', 'maxTotalOfNode'
             */
             var maxValueOfLink = 0, maxOutgoingTotalOfNode = 0, maxIncomingTotalOfNode = 0, maxTotalOfNode = 0, linkedByIndex = {};
             links.forEach(function (link) {
@@ -375,12 +408,20 @@
 
         function nodeMouseover(node) {
             /*
-                This function creates a tooltip if the mouse is moved over a node. The tooltip includes the name of the node and the information about the links (connections).
-                The tooltip says the source node, the target node and the value of each connection.
-                All chords which are not connected with the node are hidden (fade(0.1)).
+                Format of the passed variable:
+                    'node' is the information about a node
+
+                Task of the function:
+                    This function creates a tooltip if the mouse is moved over a node. The tooltip includes the name of the node and the information about the links (connections).
+                    The tooltip says the source node, the target node and the value of each connection.
+                    All links which are not connected with the node are hidden (fade(0.1)).
+
+                Format of the return value:
+                    The function doesn't return a value but it displays a tooltip and highlights links connected to the node.
             */
+
             var nodeID = node.index;
-            if (tooltipSetting) {
+            if (tooltipSetting!=='none') {
                 var details = getDetailsOnNode(nodeID),//'details' contains a list of objects. Each object is a connection between two nodes. Each object contains the attributes 'sourceColor', 'source', 'targetColor', 'target' and 'data'. The number of objects in the array is not limited.
                     detailstext = '<h4 class=networkdiagram-h4>' + nodes[nodeID].label + '</h4>';
 
@@ -398,28 +439,43 @@
                 catch (err) { };
                 showTooltip(100, 0.9, detailstext, d3.event.pageX + 15, d3.event.pageY);
             }
-            fade(node, 0.1);
+            fade(node, 0.1);    //hiding links and nodes not connected to the node the mouse is on
         }
         function nodeMouseout(node) {
             /*
-                When the mouse leaves the node, the tooltip is removed and all hidden chords are shown again.
+                Format of the passed variable:
+                    'node' is the information about a node
+
+                Task of the function:
+                    When the mouse leaves the node, the tooltip is removed and all hidden links are shown again.
+
+                Format of the return value:
+                    The function doesn't return a value but removes the tooltip and shows links again.
             */
             var nodeID = node.index;
             try {
-                document.getElementById("tooltip").remove();
+                document.getElementById("tooltip").remove();    //removing the tooltip
             }
             catch (err) { };
-            fade(node, 1);
+            fade(node, 1);      //showing all nodes and links again which are connected to the node the mouse is on
         }
         function getDetailsOnNode(nodeID) {
             /*
-                This function returns an array with objects. Each object represents a connection to or from the selected node ('nodeID').
-                Each object has the following attributes: 'sourceColor', 'source' (name of the source node), 'targetColor', 'target' (name of the target node),
-                'data' (value of the connection).
-                At the end of the function the list of connections is ordered.
-                Required data are the '_config.data' (which is the data how it was passed to the library), 'nodes' (which is an array of objects, with each object
-                representing one node with the name, color, and other attributes)
+                Format of the passed variable:
+                    'nodeID' is the ID of a node for which information have to be passed.
+
+                Task of the function:
+                    This function returns an array with objects. Each object represents a connection to or from the selected node ('nodeID').
+                    Each object has the following attributes: 'sourceColor', 'source' (name of the source node), 'targetColor', 'target' (name of the target node),
+                    'data' (value of the connection).
+                    At the end of the function the list of connections is ordered.
+                    Required data are the '_config.data' (which is the data how it was passed to the library), 'nodes' (which is an array of objects, with each object
+                    representing one node with the name, color, and other attributes)
+                    
+                Format of the return value:
+                    The function returns a list of objects. Each object represents a link as describe above.
             */
+
             var nodeName = nodes[nodeID].label,
                 links = [];
 
@@ -436,23 +492,29 @@
                 }
             })
 
-            /*
-                Here the links are sorted. The links can be sorted by any attribute of the object. It can also be reversed.
-            */
-            links.sort(dynamicSort(sortingTooltip, !sortingOrderTooltip));
+            links.sort(dynamicSort(sortingTooltip, !sortingOrderTooltip));      //Here the links are sorted. The links can be sorted by any attribute of the object. It can also be reversed.
             return links;
         }
 
         function linkMouseover(link) {
             /*
-                This function creates a tooltip if the mouse moves over a link. The tooltip includes the information about the links (connections).
-                The tooltip says the source node, the target node and the value of the connection. If the link is 'undirected' the tooltip also 
-                aggregates the values to a total 'sum'.
+                Format of the passed variable:
+                    'link' is the information about a link
+
+                Task of the function:
+                    This function creates a tooltip if the mouse hovers over a link. The tooltip includes the information about the links (connections).
+                    The tooltip says the source node, the target node and the value of the connection. If the link is 'undirected' the tooltip also 
+                    aggregates the values to a total 'sum'.
+                    Moreover, all other links are hidden. The links are hidden, so the user can concentrate on the link where the mouse is.
+
+                Format of the return value:
+                    The function doesn't return a value but it displays a tooltip and highlights the link.
             */
+
             var sourceID = link.source.index,
                 targetID = link.target.index;
 
-            if (tooltipSetting) {
+            if (tooltipSetting!=='none') {
                 var details = getDetailsOnChord(sourceID, targetID),   //'details' contains a list of objects. Each object is a connection between two nodes. Each object contains the attributes 'sourceColor', 'source', 'targetColor', 'target' and 'data'. The length of the array is maximum 2, because a connection between two nodes can just go from A to B or B two A.
                     detailstext = "",
                     sum = 0;
@@ -481,8 +543,16 @@
         }
         function linkMouseout(link) {
             /*
-                When the mouse leaves the link,
+                Format of the passed variable:
+                    'link' is the information about a link
+
+                Task of the function:
+                    When the mouse leaves the link, the tooltip is removed.
+
+                Format of the return value:
+                    The function doesn't return a value but removes the tooltip.
             */
+
             try {
                 document.getElementById("tooltip").remove();
             }
@@ -490,14 +560,22 @@
         }
         function getDetailsOnChord(sourceID, targetID) {
             /*
-                This function returns an array with objects. Each object represents a connection of this link. As the link is between exactly two nodes, there
-                can be a maximum of two connections (A to B, or B to A)
-                Each object has the following attributes: 'sourceColor', 'source' (name of the source node), 'targetColor', 'target' (name of the target node),
-                'data' (value of the connection).
-                At the end of the function the list of connections is ordered.
-                Required data are the '_config.data' (which is the data how it was passed to the library), 'nodes' (which is an array of objects, with each object
-                representing one node with the name and the color)
+                Format of the passed variable:
+                    'sourceID' is the ID of a node where a link starts and 'targetID' is the ID of a node where a link ends
+
+                Task of the function:
+                    This function returns an array with objects. Each object represents a connection of this link. As the link is between exactly two nodes, there
+                    can be a maximum of two connections (A to B, or B to A)
+                    Each object has the following attributes: 'sourceColor', 'source' (name of the source node), 'targetColor', 'target' (name of the target node),
+                    'data' (value of the connection).
+                    At the end of the function the list of connections is ordered.
+                    Required data are the '_config.data' (which is the data how it was passed to the library), 'nodes' (which is an array of objects, with each object
+                    representing one node with the name and the color)
+                    
+                Format of the return value:
+                    The function returns a list of objects. Each object represents a link as describe above.
             */
+
             var sourceName = nodes[sourceID].label,
                 targetName = nodes[targetID].label,
                 links = [];
@@ -529,20 +607,27 @@
                     }
                 });
             }
-            /*
-                Here the links are sorted. The links can be sorted by any attribute of the object. It can also be reversed.
-            */
-            links.sort(dynamicSort(sortingTooltip, !sortingOrderTooltip));
+
+            links.sort(dynamicSort(sortingTooltip, !sortingOrderTooltip));      //Here the links are sorted. The links can be sorted by any attribute of the object. It can also be reversed.
             return links;
         }
 
         function fade(selectedNode, opacity) {
             /*
-            This function determines if two nodes are connected or not. If the user has selected a node by moving the mouse over it 
-            (variable: selected_node), the function checks which other nodes are connected to the selected node. 
-            This check is done by the function isConnected(). If the nodes are connected and the mouse is over the node, 
-            the node and the connection between the nodes stay visible. If the mouse is removed all connections and nodes are visible again.
+                Format of the passed variable:
+                    selectedNode: are information about one node in the form of an object
+                    opacity: is a numeric value, which determines the opacity of unconnected nodes
+
+                Task of the function:
+                    This function determines if two nodes are connected or not. If the user has selected a node by moving the mouse over it 
+                    (variable: selectedNode), the function checks which other nodes are connected to the selected node. 
+                    This check is done by the function isConnected(). If the nodes are connected and the mouse is over the node, 
+                    the node and the connection between the nodes stay visible. If the mouse is removed all connections and nodes are visible again.
+
+                Format of the return value:
+                    The function doesn't return anything but hides unconnected nodes.
             */
+
             node.style("stroke-opacity", function (connectedNodes) {
                 var thisOpacity = isConnected(selectedNode, connectedNodes) ? 1 : opacity;
                 this.setAttribute('fill-opacity', thisOpacity);
@@ -554,6 +639,16 @@
             });
         }
         function linkArc(d) {
+            /*
+                Format of the passed variable:
+                    'd' is the information about a link between two nodes.
+
+                Task of the function:
+                    The function calculates how to draw a link between two nodes.
+
+                Format of the return value:
+                    The function returns a string says how to draw the link between two nodes.
+            */
             if (directed) {
                 //if the the grapgh is directed, the links are drawn as curved lines
                 var sx = d.source.x,
@@ -612,19 +707,54 @@
         }
         function showTooltip(duration, opacity, text, posLeft, posTop) {
             /*
-                This function is responsible for displaying the tooltip
+                Format of the passed variable:
+                    The variables give some information about the style and content of the tooltip
+                    duration: says how long it takes until the tooltip appears
+                    opacity: defines the opacity of the background of the tooltip
+                    text: is the text shown in the tooltip
+                    posLeft, posTop: indicates where the tooltip in relation to the mouse should be shown
+
+                Task of the function:
+                    This function makes the tooltip visible. The tooltip either appears as a movable box next to the mouse or fixed to a specific position.
+
+                Format of the return value:
+                    The function doesn't return a value but it displays a tooltip
             */
-            var tooltip = d3.select("body").append("div")
-                .attr("id", "tooltip")
-                .attr("class", "networkdiagram-tooltip");
-            tooltip.transition()
-                .duration(duration)
-                .style("opacity", opacity);
-            tooltip.html(text)
-                .style("left", posLeft + "px")
-                .style("top", posTop + "px");
+            if (tooltipSetting === 'movable') {
+                //if the tooltip should be movable the <div> for the tooltip is created dynamically
+                var tooltip = d3.select("body").append("div")
+                    .attr("id", "tooltip")
+                    .attr("class", "networkdiagram-tooltip");
+                tooltip.transition()
+                    .duration(duration)
+                    .style("opacity", opacity);
+                tooltip.html(text)
+                    .style("left", posLeft + "px")
+                    .style("top", posTop + "px");
+            }
+            else {
+                //if the tooltip should appear at a fixed position the div is created in a specific position which is defined in 'tooltipElem'
+                var tooltip = d3.select("#" + tooltipElem).append("div")
+                    .attr("id", "tooltip")
+                    .attr("class", "networkdiagram-tooltip-fix");
+                tooltip.transition()
+                    .duration(duration)
+                    .style("opacity", opacity);
+                tooltip.html(text);
+            }
         }
         function queryColorDot(color, diameter) {
+            /*
+                Format of the passed variable:
+                    color: the color of the dot
+                    diameter: the size of the dot
+
+                Task of the function:
+                    This function creates a colored dot in html with a specific color and diameter
+
+                Format of the return value:
+                    The function returns html code for a colored dot
+            */
             return '<div style="' + [
                 'display:inline-block',
                 'color:' + color,

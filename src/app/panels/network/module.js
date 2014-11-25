@@ -54,37 +54,37 @@ define([
                 */
                 sourceField: '_type',
                 /** @scratch /panels/chord/5
-                * targetField:: The target field on which to computer the facet
-                */
-                targetField: '_type',
-                /** @scratch /panels/network/5
-                * exclude:: terms to exclude from the results
-                */
-                exclude: [],
-                /** @scratch /panels/chord/5
                 * size1:: Show this many terms for field 1
                 */
                 size1: 10,
+                /** @scratch /panels/chord/5
+                * targetField:: The target field on which to computer the facet
+                */
+                targetField: '_type',
                 /** @scratch /panels/chord/5
                 * size2:: Show this many terms for field 2
                 */
                 size2: 10,
                 /** @scratch /panels/network/5
-                * order:: How the terms are sorted: count, term, reverse_count or reverse_term,
+                * order:: How the terms are sorted: count, term, reverse_count or reverse_term, before they are filtered
                 */
                 order   : 'count',
                 /** @scratch /panels/network/5
-                * arrangement:: Arrangement of the legend: horizontal or vertical
+                * exclude:: terms to exclude from the results
                 */
-                arrangement : 'horizontal',
+                exclude: [],
+                /** @scratch /panels/network/5
+                * charge:: defines the charge for the forced layout network
+                */
+                charge: -300,
                 /** @scratch /panels/network/5
                 * counter_pos:: The location of the legend in respect to the diagram: above, below, or none.
                 */
                 counter_pos: 'above',
                 /** @scratch /panels/network/5
-                * charge:: defines the charge for the forced layout network
+                * arrangement:: Arrangement of the legend: horizontal or vertical
                 */
-                charge: -300,
+                arrangement : 'horizontal',
                 /** @scratch /panels/network/5
                 * colorcode:: Indicates if the nodes should be coloured or black-white
                 */
@@ -94,6 +94,14 @@ define([
                 */
                 nodeSize: 'outgoing',
                 /** @scratch /panels/network/5
+                * directed:: defines if the paths in the network should be directed (true) or undirected (false)
+                */
+                directed: true,
+                /** @scratch /panels/network/5
+                * tooltipSetting:: Indicates if tooltips should be shown if the user hovers over a segment or chord
+                */
+                tooltipSetting: 'movable',
+                /** @scratch /panels/network/5
                 * sortingTooltip:: defines by which criteria the connections in the tooltip should be sorted
                 */
                 sortingTooltip: 'source',
@@ -102,13 +110,9 @@ define([
                 */
                 sortingOrderTooltip: true,
                 /** @scratch /panels/network/5
-                * tooltipSetting:: Indicates if tooltips should be shown if the user hovers over a segment or chord
+                * tooltipOrientation:: defines if the nodes should be ordered ascending or descending
                 */
-                tooltipSetting: true,
-                /** @scratch /panels/network/5
-                * directed:: defines if the paths in the network should be directed (true) or undirected (false)
-                */
-                directed: true,
+                tooltipOrientation: 'vertical',
                 /** @scratch /panels/network/5
                 * spyable:: Set spyable to false to disable the inspect button
                 */
@@ -354,6 +358,7 @@ define([
                     "elem": "networkpanel-" + elem[0].id,     //id of the just created div
                     "data": data,
                     //Optional
+                    "tooltipElem": "tooltip-" + elem[0].id,
                     "charge": scope.panel.charge,
                     "colorcode": scope.panel.colorcode,                         //possible values: ['colored', 'black-white']
                     "colors": null,
@@ -362,6 +367,7 @@ define([
                     "sortingTooltip": scope.panel.sortingTooltip,               //possible values: [label, color, outgoingTotal, incominTotal, total, numberOfLinks]
                     "sortingOrderTooltip": scope.panel.sortingOrderTooltip,     //possible values: [true, false] true means ascending, false means descending
                     "tooltipSetting": scope.panel.tooltipSetting,
+                    "tooltipOrientation": 'vertical',
                     "onClickNode": function (d) {
                         if (!d3.event.ctrlKey) { //node is only filtered if ctrl Key is NOT pressed
                             scope.build_search(d.label);

@@ -32,6 +32,9 @@
             height: 100%;
             width: 100%;
         }
+        .chord-innerpanels {
+            float: left;
+        }
     </style>
 
     <div class="chord-wrapper">
@@ -58,9 +61,10 @@
         <div style="clear:both">
 
         </div>
-
+        <div id="tooltip-{{$id}}-chordDiagram" ng-show="panel.tooltipSetting==='static'" style="float: right; width: 20%">
+        </div>
         <!-- CHART -->
-        <div id="{{$id}}-chordDiagram" ng-show="true" chord-chart params="{{panel}}" style="position: relative; text-align:center" class="pointer chord-chart">
+        <div id="{{$id}}-chordDiagram" ng-show="true" chord-chart params="{{panel}}" style="position: relative; text-align: center; width: 80%" class="pointer chord-chart">
 
         </div>
 

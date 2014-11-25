@@ -44,3 +44,13 @@ div.chorddiagram-tooltip {
     border-radius: 8px;
     pointer-events: none;
 }
+
+div.chorddiagram-tooltip-fix{
+    position: absolute;
+    text-align: left;
+    padding: 10px;
+    font: 12px sans-serif;
+    background: none;
+    border-radius: 8px;
+    pointer-events: none;
+}

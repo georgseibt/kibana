@@ -70,7 +70,7 @@ define([
                 *
                 * timeField:: The field with the time details
                 */
-                timeField   : '_type',
+                timeField   : '',
                 /** @scratch /panels/hiveplot/5
                 * exclude:: terms to exclude from the results
                 */
@@ -1869,6 +1869,7 @@ define([
             };
 
             function createHivePlot(scope, dataset, elem) {
+                console.log(elem[0].id);
                 $(elem[0]).empty();  //removes all elements from the current element  
 
                 var axisConfig = [
@@ -1879,19 +1880,12 @@ define([
                     axisConfig.push({ 'axis': scope.panel.axis3Label, 'sort': scope.panel.axis3Sorting, 'order': scope.panel.axis3Order });
                 }
 
-
                 /*Creating one div where the panel will be drawn*/
                 d3.select(elem[0]).append('div')
-                    .style("width", function () { return (scope.panel.tooltipSetting === "static" ? 80 : 100) + "%"; })
+                    .style("width", function () { return 100 + "%"; })
                     .style("height", function () { return 100 + "%"; })
                     .attr("class", "hiveplot-innerpanels")
                     .attr("id", "hiveplotpanel-" + elem[0].id);
-                /*And creating a different div where the tooltips will be shown*/
-                d3.select(elem[0]).append('div')
-                    .style("width", function () { return (scope.panel.tooltipSetting === "static" ? 19 : 0) + "%"; })
-                    .style("height", function () { return 100 + "%"; })
-                    .attr("class", "hiveplot-innerpanels")
-                    .attr("id", "tooltip-" + elem[0].id);
                                                 
                 if (!scope.panel.multipanelSetting) {
 
@@ -1902,7 +1896,7 @@ define([
                         "plotElem": "hiveplotpanel-" + elem[0].id,     //id of the just created div
                         "data": data,
                         //Optional
-                        "tooltipElem": "tooltip-" + elem[0].id,
+                        "tooltipElem": "tooltip-"+elem[0].id,
                         "colorcode": scope.panel.colorcode,                         //possible values: ['black-white', 'colored']
                         "colors": null,
                         "axisConfig": axisConfig,

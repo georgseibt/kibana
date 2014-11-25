@@ -425,8 +425,7 @@
                 After the nodes are ordered the 'y' value and the 'color' is assigned to the nodes. Therefore the numbe rof nodes on each axis is counted and the nodes are equally spread.
             */
             var count = 0;
-            var numberOfNodes = uniqueNodes.length; //counting the total number of nodes, because we generate as many colors as we need in the next line
-            colors = randomColor({ count: numberOfNodes, hue: nodesColorSchema });  //getting an array with several different colors but with the same hue.
+            colors = randomColor({ count: uniqueNodes.length, hue: nodesColorSchema });  //getting an array with several different colors but with the same hue.
 
             uniqueNodes.length = 0; //the array uniqueNodes is emptied (setting the length to 0) so the nodes can be assigned to the array again after they were sorted before.
             uniqueAxis.forEach(function (axis) {
@@ -542,7 +541,7 @@
         function linkMouseover(d) {
             /*
                 Format of the passed variable:
-                    'd' is the onformation about a link 
+                    'd' is the information about a link 
 
                 Task of the function:
                     This function creates a tooltip if the mouse hovers over a link. The tooltip includes the information about the links (connections).
@@ -629,7 +628,7 @@
                     details = sortBy(details, sortingTooltip, !sortingOrderTooltip);    //sorting the information in the tooltip. The information can be sorted by any of its attributes: axis, color, label, data
                     detailstext = detailstext + '<h5 class=hiveplot-h5>' + axis + ' (' + countData + ')' + '</h5>';
                     details.forEach(function (d) {
-                        detailstext = detailstext + '' + (queryColorDot(d.color, 15) + ' '  + d.label  + ' (' + d.data + ')' + (tooltipOrientation==="horizontal" ? ',' : '<br/>'));
+                        detailstext = detailstext + '' + (queryColorDot(d.color, 15) + ' '  + d.label  + ' (' + d.data + ')' + (tooltipOrientation==="horizontal" ? ', ' : '<br/>'));
                     })
                 });
 
@@ -654,7 +653,7 @@
         function showTooltip(duration, opacity, text, posLeft, posTop) {
             /*
                 Format of the passed variable:
-                    The variable give some information about the style and content of the tooltip
+                    The variables give some information about the style and content of the tooltip
                     duration: says how long it takes until the tooltip appears
                     opacity: defines the opacity of the background of the tooltip
                     text: is the text shown in the tooltip
