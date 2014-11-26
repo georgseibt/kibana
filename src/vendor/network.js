@@ -23,7 +23,7 @@
             tooltipElem             is the id of a <div> where the tooltip should appear. If the tooltip should be movable or no
                                     tooltip should be shown, the element can remain empty
                                     default: null
-                                    possible values: any valid id of a <div> or Null
+                                    possible values: any valid id of a <div> or null
             charge                  is a technical attribute for the settings of the network.
                                     default: -300
                                     possible values: any number
@@ -40,7 +40,7 @@
                                     default: true
                                     possible values: [true, false]
             tooltipSetting          defines if tooltips should be shown in case of a mouseoverevent
-                                    default: static
+                                    default: 'static'
                                     possible values: ['none', 'movable', 'static']
             sortingTooltip          defines by which criteria the connections in the tooltip should be sorted
                                     default: 'source'
@@ -49,7 +49,7 @@
                                     default: true
                                     possible values: [true, false] true means ascending, false means descending
             tooltipOrientation      defines if the text in the tooltip should be horizontal or vertical
-                                    default: horizontal
+                                    default: 'horizontal'
                                     possible values: ['horizontal', 'vertical']
             onClickNode             defines a function which should be executed on a click event on a node
                                     default: null

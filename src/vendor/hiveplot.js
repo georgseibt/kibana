@@ -23,7 +23,7 @@
             tooltipElem             is the id of a <div> where the tooltip should appear. If the tooltip should be movable or no
                                     tooltip should be shown, the element can remain empty
                                     default: null
-                                    possible values: any valid id of a <div> or Null
+                                    possible values: any valid id of a <div> or null
             colorcode               defines if the nodes should be drawn in black-white or with colors
                                     default: 'black-white'
                                     possible values: ['black-white', 'colored']
@@ -52,7 +52,7 @@
                                     default: null
                                     possible values: any list of object with the above described structure
             tooltipSetting          defines if tooltips should be shown in case of a mouseoverevent
-                                    default: static
+                                    default: 'static'
                                     possible values: ['none', 'movable', 'static']
             sortingTooltip          defines by which criteria the connections in the tooltip should be sorted
                                     default: 'source'
@@ -61,7 +61,7 @@
                                     default: true
                                     possible values [true, false] true means ascending, false means descending
             tooltipOrientation      defines if the text in the tooltip should be horizontal or vertical
-                                    default: horizontal
+                                    default: 'horizontal'
                                     possible values: ['horizontal', 'vertical']
             onClickNode             defines a function which should be executed on a click event on a node
                                     default: null
