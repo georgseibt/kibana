@@ -50,9 +50,19 @@ define([
             // Set and populate defaults
             var _d = {
                 /** @scratch /panels/hiveplot/5
+                * === Parameters
+                *
+                * timeField:: The field with the time details
+                */
+                timeField   : '',
+                /** @scratch /panels/hiveplot/5
                 * interval:: use this as the interval to calculate aggregations
                 */
                 interval: '1d',
+                /** @scratch /panels/hiveplot/5
+                * exclude:: terms to exclude from the results
+                */
+                exclude : [],
                 /** @scratch /panels/hiveplot/5
                 * multipanelSetting:: indicates if just one (false) or several (true) panels should be shown
                 */
@@ -65,36 +75,6 @@ define([
                 * comparemodeSetting:: if true, panels show the same nodes on the axes in each panel, except the time axis
                 */
                 comparemodeSetting: false,
-                /** @scratch /panels/hiveplot/5
-                * === Parameters
-                *
-                * timeField:: The field with the time details
-                */
-                timeField   : '',
-                /** @scratch /panels/hiveplot/5
-                * exclude:: terms to exclude from the results
-                */
-                exclude : [],
-                /** @scratch /panels/hiveplot/5
-                * colorcode:: Indicates if the nodes should be coloured or black-white
-                */
-                colorcode: 'colored',
-                /** @scratch /panels/hiveplot/5
-                * sortingTooltip:: defines by which criteria the connections in the tooltip should be sorted
-                */
-                sortingTooltip: 'label',
-                /** @scratch /panels/hiveplot/5
-                * sortingOrderTooltip:: defines if the nodes should be ordered ascending or descending
-                */
-                sortingOrderTooltip: true,
-                /** @scratch /panels/hiveplot/5
-                * tooltipSetting:: Indicates if tooltips should be shown if the user hovers over a segment or chord and where the tooltip should be shown
-                */
-                tooltipSetting: 'movable',
-                /** @scratch /panels/hiveplot/5
-                * tooltipOrientation:: Indicates if the text in the tooltip should be horizontal or vertical
-                */
-                tooltipOrientation: 'horizontal',
                 /** @scratch /panels/hiveplot/5
                 * numberOfAxis:: defines how many axis should be drawn in the hiveplot
                 */
@@ -147,6 +127,26 @@ define([
                 * axis3Length:: Show this many terms
                 */
                 axis3Length: 10,
+                /** @scratch /panels/hiveplot/5
+                * colorcode:: Indicates if the nodes should be coloured or black-white
+                */
+                colorcode: 'colored',
+                /** @scratch /panels/hiveplot/5
+                * tooltipSetting:: Indicates if tooltips should be shown if the user hovers over a segment or chord and where the tooltip should be shown
+                */
+                tooltipSetting: 'movable',
+                /** @scratch /panels/hiveplot/5
+                * sortingTooltip:: defines by which criteria the connections in the tooltip should be sorted
+                */
+                sortingTooltip: 'label',
+                /** @scratch /panels/hiveplot/5
+                * sortingOrderTooltip:: defines if the nodes should be ordered ascending or descending
+                */
+                sortingOrderTooltip: true,
+                /** @scratch /panels/hiveplot/5
+                * tooltipOrientation:: Indicates if the text in the tooltip should be horizontal or vertical
+                */
+                tooltipOrientation: 'horizontal',
                 /** @scratch /panels/hiveplot/5
                 * spyable:: Set spyable to false to disable the inspect button
                 */
@@ -1898,7 +1898,6 @@ define([
                         //Optional
                         "tooltipElem": "tooltip-"+elem[0].id,
                         "colorcode": scope.panel.colorcode,                         //possible values: ['black-white', 'colored']
-                        "colors": null,
                         "axisConfig": axisConfig,
                         "sortingTooltip": scope.panel.sortingTooltip,               //possible values: ['source', 'target', 'data']
                         "sortingOrderTooltip": scope.panel.sortingOrderTooltip,     //possible values: [true, false] true means ascending, false means descending
@@ -2005,7 +2004,6 @@ define([
                             "linkMax": Math.max.apply(Math, linkValues),
                             "nodes": nodes,
                             "colorcode": scope.panel.colorcode,                         //possible values: ['black-white', 'colored']
-                            "colors": null,
                             "axisConfig": axisConfig,
                             "sortingTooltip": scope.panel.sortingTooltip,               //possible values: ['source', 'target', 'data']
                             "sortingOrderTooltip": scope.panel.sortingOrderTooltip,     //possible values: [true, false] true means ascending, false means descending

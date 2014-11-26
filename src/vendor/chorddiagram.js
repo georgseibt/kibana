@@ -20,6 +20,7 @@
             ===================
             tooltipElem             is the id of a <div> where the tooltip should appear. If the tooltip should be movable or no
                                     tooltip should be shown, the element can remain empty
+                                    default: null
                                     possible values: any valid id of a <div> or Null
             colors                  is an array of different colors. These colors are used for the filling of the nodes and the chords
                                     default: a number of colors in the attribute 'default_colorset'
@@ -78,7 +79,8 @@
             "#BDFCC9", "#32CD32", "#7CFC00", "#C0FF3E", "#FFFF00", "#FFF68F", "#CDAD00", "#FFB90F",
             "#FFE7BA", "#FFC1C1"
         ];
-        var default_nodesColorSchema = 'blue',
+        var default_tooltipElem = null,
+            default_nodesColorSchema = 'blue',
             default_segmentSize = 'outgoing', //defines if the size of the chord on the side of a node represents the outgoing value or incoming value
             default_directed = true,
             default_sorting = null,
@@ -93,7 +95,7 @@
             Initializing the attributes
         */
         var plotElem = _config.elem,
-            tooltipElem = ((typeof _config.tooltipElem === 'undefined' || _config.tooltipElem === null) ? null : _config.tooltipElem),
+            tooltipElem = ((typeof _config.tooltipElem === 'undefined' || _config.tooltipElem === null) ? default_tooltipElem : _config.tooltipElem),
             plotWidth = $("#" + plotElem).width(),
             plotHeight = $("#" + plotElem).height(),
             colors = ((typeof _config.colors === 'undefined' || _config.colors === null) ? default_colorset : _config.colors.concat(default_colorset)),

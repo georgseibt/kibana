@@ -22,6 +22,7 @@
             ===================
             tooltipElem             is the id of a <div> where the tooltip should appear. If the tooltip should be movable or no
                                     tooltip should be shown, the element can remain empty
+                                    default: null
                                     possible values: any valid id of a <div> or Null
             colorcode               defines if the nodes should be drawn in black-white or with colors
                                     default: 'black-white'
@@ -40,7 +41,7 @@
                                         sort:   defines according to which criteria the nodes should be sorted.
                                         order:  defines if the nodes should be ordered ascending or descending
                                     }
-                                    default: if no axisConfig is passed, all nodes on each axis are sorted by value in ascending order
+                                    default: if no axisConfig is passed, all nodes on each axis are sorted by the label in ascending order
                                     possible values:    for axis: any axis which is also listed in data 
                                                         for sort: ['label', 'value', 'numberOfLinks']
                                                         for order: [true, false] true means ascending, false means descending
@@ -50,15 +51,15 @@
                                     }
                                     default: null
                                     possible values: any list of object with the above described structure
+            tooltipSetting          defines if tooltips should be shown in case of a mouseoverevent
+                                    default: static
+                                    possible values: ['none', 'movable', 'static']
             sortingTooltip          defines by which criteria the connections in the tooltip should be sorted
                                     default: 'source'
                                     possible values: ['label', 'data']
             sortingOrderTooltip     defines if the nodes should be ordered ascending or descending
                                     default: true
                                     possible values [true, false] true means ascending, false means descending
-            tooltipSetting          defines if tooltips should be shown in case of a mouseoverevent
-                                    default: static
-                                    possible values: ['none', 'movable', 'static']
             tooltipOrientation      defines if the text in the tooltip should be horizontal or vertical
                                     default: horizontal
                                     possible values: ['horizontal', 'vertical']
@@ -73,10 +74,8 @@
         /*
             Initializing default values
         */
-
-        
-
-        var default_colorscale = generateColorGradient("#FFD700", "#FF0000", 10),
+        var default_tooltipElem = null;
+            default_colorscale = generateColorGradient("#FFD700", "#FF0000", 10),
             default_colorcode = 'black-white',
             default_nodesColorSchema = 'blue',
             default_sortingTooltip = 'source',
@@ -88,7 +87,7 @@
             Initializing the attributes
         */
         var plotElem = (_config.plotElem),
-            tooltipElem = ((typeof _config.tooltipElem === 'undefined' || _config.tooltipElem === null) ? null : _config.tooltipElem),
+            tooltipElem = ((typeof _config.tooltipElem === 'undefined' || _config.tooltipElem === null) ? default_tooltipElem : _config.tooltipElem),
             plotWidth = $("#" + plotElem).width(),
             plotHeight = $("#" + plotElem).height(),
             sortingTooltip = ((typeof _config.sortingTooltip === 'undefined' || _config.sortingTooltip === null) ? default_sortingTooltip : _config.sortingTooltip),
@@ -100,12 +99,12 @@
             colorcode = ((typeof _config.colorcode === 'undefined' || _config.colorcode === null) ? default_colorcode : _config.colorcode),
             nodesColorSchema = ((typeof _config.nodesColorSchema === 'undefined' || _config.nodesColorSchema === null) ? default_nodesColorSchema : _config.nodesColorSchema),
             colors = [],
-            linksColors = ((typeof _config.colorscale === 'undefined' || _config.colorscale === null) ? default_colorscale : generateColorGradient(_config.colorscale[0], _config.colorscale[1], _config.colorscale[2])),
+            linksColors = ((typeof _config.linksColorSchema === 'undefined' || _config.linksColorSchema === null) ? default_colorscale : generateColorGradient(_config.linksColorSchema[0], _config.linksColorSchema[1], _config.linksColorSchema[2])),
             data = prepareData(_config.data),
             nodes = data.nodes,
             links = data.links,
             angleDomain = [];
-        
+
         if (typeof _config.axisConfig === 'undefined' || _config.axisConfig === null) {
             angleDomain = data.axis;
         }

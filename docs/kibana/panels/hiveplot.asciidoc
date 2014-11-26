@@ -2,31 +2,34 @@
 == terms
 Status: *Stable*
 
-A chord diagram based on the results of an Elasticsearch terms facet.
+A hive plot based on the results of an Elasticsearch terms facet.
 
 === Parameters
 
-field:: The field on which to computer the facet
+timeField:: The field with the time details
+interval:: use this as the interval to calculate aggregations
 exclude:: terms to exclude from the results
-size:: Show this many terms
-seperator:: The character which divides the column for the connections
-order:: How the terms are sorted: count, term, reverse_count or reverse_term,
-arrangement:: Arrangement of the legend: horizontal or vertical
-counter_pos:: The location of the legend in respect to the diagram: above, below, or none.
-colorcode:: Indicates if the nodes should be coloured or black-white
-sortingTooltip:: defines by which criteria the connections in the tooltip should be sorted
-sortingOrderTooltip:: defines if the nodes should be ordered ascending or descending
-tooltipSetting:: Indicates if tooltips should be shown if the user hovers over a segment or chord
+multipanelSetting:: indicates if just one (false) or several (true) panels should be shown
+panelInterval:: indicates how the data should be filtered for each panel
+comparemodeSetting:: if true, panels show the same nodes on the axes in each panel, except the time axis
 numberOfAxis:: defines how many axis should be drawn in the hiveplot
-axis1Label:: defines the label for axis1 and which nodes should be displayed on this axis (possible values are: 'from', 'to', 'time' and 'connection')
-axis2Label:: defines the label for axis2 and which nodes should be displayed on this axis (possible values are: 'from', 'to', 'time' and 'connection')
-axis3Label:: defines the label for axis3 and which nodes should be displayed on this axis (possible values are: 'from', 'to', 'time' and 'connection')
+axis1Label:: defines the label for axis1 and which nodes should be displayed on this axis
+axis2Label:: defines the label for axis2 and which nodes should be displayed on this axis
+axis3Label:: defines the label for axis3 and which nodes should be displayed on this axis
 axis1Sorting:: defines by which criteria the nodes on axis1 are sorted
 axis2Sorting:: defines by which criteria the nodes on axis2 are sorted
 axis3Sorting:: defines by which criteria the nodes on axis3 are sorted
 axis1Order:: defines how the nodes on axis1 are ordered
 axis2Order:: defines how the nodes on axis2 are ordered
 axis3Order:: defines how the nodes on axis3 are ordered
+axis1Length:: Show this many terms
+axis2Length:: Show this many terms
+axis3Length:: Show this many terms
+colorcode:: Indicates if the nodes should be coloured or black-white
+tooltipSetting:: Indicates if tooltips should be shown if the user hovers over a segment or chord and where the tooltip should be shown
+sortingTooltip:: defines by which criteria the connections in the tooltip should be sorted
+sortingOrderTooltip:: defines if the nodes should be ordered ascending or descending
+tooltipOrientation:: Indicates if the text in the tooltip should be horizontal or vertical
 spyable:: Set spyable to false to disable the inspect button
 
 ==== Queries

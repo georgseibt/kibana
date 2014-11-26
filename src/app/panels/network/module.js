@@ -367,7 +367,7 @@ define([
                     "sortingTooltip": scope.panel.sortingTooltip,               //possible values: [label, color, outgoingTotal, incominTotal, total, numberOfLinks]
                     "sortingOrderTooltip": scope.panel.sortingOrderTooltip,     //possible values: [true, false] true means ascending, false means descending
                     "tooltipSetting": scope.panel.tooltipSetting,
-                    "tooltipOrientation": 'vertical',
+                    "tooltipOrientation": scope.panel.tooltipOrientation,
                     "onClickNode": function (d) {
                         if (!d3.event.ctrlKey) { //node is only filtered if ctrl Key is NOT pressed
                             scope.build_search(d.label);

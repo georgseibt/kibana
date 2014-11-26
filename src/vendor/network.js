@@ -22,6 +22,7 @@
             ===================
             tooltipElem             is the id of a <div> where the tooltip should appear. If the tooltip should be movable or no
                                     tooltip should be shown, the element can remain empty
+                                    default: null
                                     possible values: any valid id of a <div> or Null
             charge                  is a technical attribute for the settings of the network.
                                     default: -300
@@ -64,7 +65,8 @@
             "#BDFCC9", "#32CD32", "#7CFC00", "#C0FF3E", "#FFFF00", "#FFF68F", "#CDAD00", "#FFB90F",
             "#FFE7BA", "#FFC1C1"
         ];
-        var default_charge = -300,
+        var default_tooltipElem = null,
+            default_charge = -300,
             default_colorcode = 'black-white',
             default_nodeSize = 'outgoing',
             default_directed = true,
@@ -78,7 +80,7 @@
             Initializing the attributes
         */
         var plotElem = _config.elem,
-            tooltipElem = ((typeof _config.tooltipElem === 'undefined' || _config.tooltipElem === null) ? null : _config.tooltipElem),
+            tooltipElem = ((typeof _config.tooltipElem === 'undefined' || _config.tooltipElem === null) ? default_tooltipElem : _config.tooltipElem),
             plotWidth = $("#" + plotElem).width(),
             plotHeight = $("#" + plotElem).height(),
             charge = ((typeof _config.charge === 'undefined' || _config.charge === null) ? default_charge : _config.charge),
@@ -430,7 +432,7 @@
                         In this loop the information which are passed in the array 'details' is joined to a readable html text. 
                         This text (variable 'detailstext') will be used to generate a tooltip.
                     */
-                    detailstext = detailstext + (queryColorDot(d.sourceColor, 15) + ' ' + queryColorDot(d.targetColor, 15) + ' ' + d.source + '-' + d.target + ' (' + d.data + ')<br/>');
+                    detailstext = detailstext + (queryColorDot(d.sourceColor, 15) + ' ' + queryColorDot(d.targetColor, 15) + ' ' + d.source + '-' + d.target + ' (' + d.data + ')' + (tooltipOrientation === "horizontal" ? ', ' : '<br/>'));
                 });
                 try {
                     //before displaying the tooltip, potentially still existing tooltips are removed
