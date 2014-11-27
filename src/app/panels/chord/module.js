@@ -40,7 +40,8 @@ define([
                 ],
                 editorTabs: [
                     {
-                        title: 'Queries', src: 'app/partials/querySelect.html'
+                        title: 'Queries',
+                        src: 'app/partials/querySelect.html'
                     }
                 ],
                 status: "Stable",
@@ -159,7 +160,9 @@ define([
                 var request,
                     results,
                     boolQuery,
-                    queries;
+                    queries,
+                    request1,
+                    results1;
 
                 request = $scope.ejs.Request().indices(dashboard.indices);
 
@@ -177,15 +180,15 @@ define([
                 This is saved in the variable 'request'
                 */
 
-                var request1 = $scope.ejs.Request().indices(dashboard.indices);
+                request1 = $scope.ejs.Request().indices(dashboard.indices);
                 request1 = request1
                     .facet(
                         $scope.ejs.TermsFacet('terms')
-                        .field($scope.panel.sourceField)
-                        .size($scope.panel.size1)
-                        .order($scope.panel.order)
-                        .exclude($scope.panel.exclude)
-                        .facetFilter(
+                            .field($scope.panel.sourceField)
+                            .size($scope.panel.size1)
+                            .order($scope.panel.order)
+                            .exclude($scope.panel.exclude)
+                            .facetFilter(
                                 $scope.ejs.AndFilter(
                                     [
                                         $scope.ejs.QueryFilter(
@@ -197,9 +200,9 @@ define([
                                     ]
                                 )
                             )
-                        )
+                    )
                     .size(0);
-                var results1 = request1.doSearch().then(function (results1) {
+                results1 = request1.doSearch().then(function (results1) {
                     var singleNodes = [];
 
                     _.each(results1.facets.terms.terms, function (v) {
@@ -209,38 +212,13 @@ define([
                     if (singleNodes.length === 0) {
                         /*if no terms are in 'singleNodes' we have to make sure that the request is not empty, so we create an alibi request here*/
                         request = request
-                        .facet(
-                            $scope.ejs.TermsFacet('terms')
-                            .field($scope.panel.targetField)
-                            .size($scope.panel.size2)
-                            .order($scope.panel.order)
-                            .exclude($scope.panel.exclude)
-                            .facetFilter(
-                                    $scope.ejs.AndFilter(
-                                        [
-                                            $scope.ejs.QueryFilter(
-                                                $scope.ejs.FilteredQuery(
-                                                    boolQuery,
-                                                    filterSrv.getBoolFilter(filterSrv.ids())
-                                                )
-                                            )
-                                        ]
-                                    )
-                                )
-                            )
-                        .size(0);
-                    }
-                    else {
-                        /* creating the request*/
-                        singleNodes.forEach(function (sourceNode) {
-                            request = request
                             .facet(
-                                $scope.ejs.TermsFacet(sourceNode)
-                                .field($scope.panel.targetField)
-                                .size($scope.panel.size2)
-                                .order($scope.panel.order)
-                                .exclude($scope.panel.exclude)
-                                .facetFilter(
+                                $scope.ejs.TermsFacet('terms')
+                                    .field($scope.panel.targetField)
+                                    .size($scope.panel.size2)
+                                    .order($scope.panel.order)
+                                    .exclude($scope.panel.exclude)
+                                    .facetFilter(
                                         $scope.ejs.AndFilter(
                                             [
                                                 $scope.ejs.QueryFilter(
@@ -248,21 +226,46 @@ define([
                                                         boolQuery,
                                                         filterSrv.getBoolFilter(filterSrv.ids())
                                                     )
-                                                ),
-                                                $scope.ejs.QueryFilter(
-                                                    $scope.ejs.TermQuery(
-                                                        $scope.panel.sourceField,
-                                                        sourceNode
-                                                    )
                                                 )
                                             ]
                                         )
                                     )
-                                )
+                            )
                             .size(0);
+                    }
+                    else {
+                        /* creating the request*/
+                        singleNodes.forEach(function (sourceNode) {
+                            request = request
+                                .facet(
+                                    $scope.ejs.TermsFacet(sourceNode)
+                                        .field($scope.panel.targetField)
+                                        .size($scope.panel.size2)
+                                        .order($scope.panel.order)
+                                        .exclude($scope.panel.exclude)
+                                        .facetFilter(
+                                            $scope.ejs.AndFilter(
+                                                [
+                                                    $scope.ejs.QueryFilter(
+                                                        $scope.ejs.FilteredQuery(
+                                                            boolQuery,
+                                                            filterSrv.getBoolFilter(filterSrv.ids())
+                                                        )
+                                                    ),
+                                                    $scope.ejs.QueryFilter(
+                                                        $scope.ejs.TermQuery(
+                                                            $scope.panel.sourceField,
+                                                            sourceNode
+                                                        )
+                                                    )
+                                                ]
+                                            )
+                                        )
+                                )
+                                .size(0);
                         });
                     }
-                    
+
                     // Populate the inspector panel; The current request will be shown in the inspector panel
                     $scope.inspector = angular.toJson(JSON.parse(request.toString()), true);
 
@@ -274,7 +277,7 @@ define([
                         $scope.results = results;
                         $scope.$emit('render'); //dispatches the event upwards through the scope hierarchy of controllers.
                     });
-                });                
+                });
             };
 
             $scope.build_search = function (nodeName) {
@@ -287,7 +290,8 @@ define([
                     queryterm = queryterm + ' OR ' + $scope.panel.sourceField + ':\"' + nodeName + '\"' + ' OR ' + $scope.panel.targetField + ':\"' + nodeName + '\"';
                 }
                 filterSrv.set({
-                    type: 'querystring', query: queryterm,
+                    type: 'querystring',
+                    query: queryterm,
                     mandate: 'must'
                 });
             };
@@ -305,57 +309,10 @@ define([
                 }
                 $scope.refresh = false;
                 $scope.$emit('render');
-            };            
+            };
         });
 
         module.directive('chordChart', function (querySrv) {
-            return {
-                restrict: 'A',
-                link: function (scope, elem) {
-
-                    // Receive render events
-                    scope.$on('render', function () {
-                        render_panel(elem);
-                    });
-
-                    // Function for rendering panel
-                    function render_panel(elem) {
-                        var chartData;
-
-                        build_results();
-
-                        // IE doesn't work without this
-                        elem.css({ height: scope.panel.height || scope.row.height });
-
-                        // Make a clone we can operate on.
-                        chartData = _.clone(scope.data);
-
-                        createChordDiagram(scope, chartData,elem);
-                    }
-
-                    function build_results() {
-                        var k = 0;
-                        //the result data (the data how we need them to draw the chord diagram are now saved in the array 'scope.data'
-                        scope.data = [];
-
-                        Object.keys(scope.results.facets).forEach(function (sourceNode) {
-                            _.each(scope.results.facets[sourceNode].terms, function (v) {
-                                var slice;
-                                slice = {
-                                    source: sourceNode,
-                                    target: v.term,
-                                    data: v.count,
-                                    color: querySrv.colors[k]
-                                };
-
-                                scope.data.push(slice);
-                                k = k + 1;
-                            });
-                        });
-                    }
-                }
-            };
-
             function createChordDiagram(scope, dataset, elem) {
                 $(elem[0]).empty();  //removes all elements from the current element
 
@@ -367,7 +324,7 @@ define([
                     .attr("id", "chordpanel-" + elem[0].id);
 
                 var data = prepareData(dataset);
-                
+
                 new Chorddiagram.Chart({
                     //Mandatory
                     "elem": "chordpanel-" + elem[0].id,     //id of the just created div
@@ -394,20 +351,68 @@ define([
                 });
 
                 function prepareData(dataset) {
-                    var data = [];
+                    var newData = [];
 
                     dataset.forEach(function (link) {
                         var object = {
                             source: link.source,
                             target: link.target,
                             value: link.data
-                        }
-                        data.push(object);
+                        };
+                        newData.push(object);
                     });
 
-                    return data;
+                    return newData;
                 }
-            }            
+            }
+
+            return {
+                restrict: 'A',
+                link: function (scope, elem) {
+
+
+                    // Receive render events
+                    scope.$on('render', function () {
+                        render_panel(elem);
+                    });
+
+                    // Function for rendering panel
+                    function render_panel(elem) {
+                        var chartData;
+
+                        build_results();
+
+                        // IE doesn't work without this
+                        elem.css({ height: scope.panel.height || scope.row.height });
+
+                        // Make a clone we can operate on.
+                        chartData = _.clone(scope.data);
+
+                        createChordDiagram(scope, chartData, elem);
+                    }
+
+                    function build_results() {
+                        var k = 0;
+                        //the result data (the data how we need them to draw the chord diagram are now saved in the array 'scope.data'
+                        scope.data = [];
+
+                        Object.keys(scope.results.facets).forEach(function (sourceNode) {
+                            _.each(scope.results.facets[sourceNode].terms, function (v) {
+                                var slice;
+                                slice = {
+                                    source: sourceNode,
+                                    target: v.term,
+                                    data: v.count,
+                                    color: querySrv.colors[k]
+                                };
+
+                                scope.data.push(slice);
+                                k = k + 1;
+                            });
+                        });
+                    }
+                }
+            };
         });
     }
 );

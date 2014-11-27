@@ -1,6 +1,6 @@
 (function () {
     var Hiveplot;
-    Hiveplot = window.Hiveplot = {};    
+    Hiveplot = window.Hiveplot = {};
 
     Hiveplot.Chart = function (_config) {
         /*
@@ -74,7 +74,7 @@
         /*
             Initializing default values
         */
-        var default_tooltipElem = null;
+        var default_tooltipElem = null,
             default_colorscale = generateColorGradient("#FFD700", "#FF0000", 10),
             default_colorcode = 'black-white',
             default_nodesColorSchema = 'blue',
@@ -111,10 +111,10 @@
         else {
             _config.axisConfig.forEach(function (axis) {
                 angleDomain.push(axis.axis);
-            })
+            });
         }
         var linkMin = ((typeof _config.linkMin === 'undefined' || _config.linkMin === null) ? data.linkMin : _config.linkMin),
-            linkMax = ((typeof _config.linkMax === 'undefined' || _config.linkMax=== null) ? data.linkMax : _config.linkMax),
+            linkMax = ((typeof _config.linkMax === 'undefined' || _config.linkMax === null) ? data.linkMax : _config.linkMax),
             angleRange = [];
 
         for (var i = 0; i < angleDomain.length; i++) {
@@ -126,7 +126,7 @@
                 angleRange[i] = 2 * Math.PI / angleDomain.length * i;
             }
         }
-               
+
         var angle = d3.scale.ordinal()
                         .domain(angleDomain)
                         .range(angleRange);
@@ -137,7 +137,7 @@
         var formatNumber = d3.format(",d"),
             defaultInfo;
 
-        var svg = d3.select('#'+plotElem).append("div")
+        var svg = d3.select('#' + plotElem).append("div")
             .attr("width", plotWidth)
             .attr("height", plotHeight)
             .attr("id", plotElem + '-Panel')
@@ -155,18 +155,19 @@
             .attr("transform", function (d) { return "rotate(" + degrees(angle(d)) + ")"; })
             .attr("x1", radius.range()[0])
             .attr("x2", radius.range()[1]);
+
         for (var i = 0; i < angleDomain.length; i++) {
             svg.append("text")
                 .attr("id", angleDomain[i] + "label")
                 .attr("x", 0)
                 .attr("y", 0)
-                .text((i===0? "x" : ( i===1 ? "y" : "z")))//angleDomain[i])
+                .text((i === 0 ? "x" : (i === 1 ? "y" : "z")))//angleDomain[i])
                 .attr("text-anchor", "right")
                 .attr("class", "hiveplot-linklabel")
                 .attr("dx", (Math.sin(angleRange[i]) * outerRadius * 1.1))
-                .attr("dy", -(Math.cos(angleRange[i]) * outerRadius * 1.1))                
+                .attr("dy", -(Math.cos(angleRange[i]) * outerRadius * 1.1));
         }
-        
+
         // Draw the links.
         svg.append("g")
             .selectAll(".hiveplot-link")
@@ -185,9 +186,7 @@
                 if (linkMin === linkMax) {
                     return linksColors[0];
                 }
-                else {
-                    return linksColors[Math.round(d.value * (((linksColors.length - 1) - 0) / (linkMax - linkMin)) + ((0 * linkMax - (linksColors.length - 1) * linkMin) / (linkMax - linkMin)))];
-                }                
+                return linksColors[Math.round(d.value * (((linksColors.length - 1) - 0) / (linkMax - linkMin)) + ((0 * linkMax - (linksColors.length - 1) * linkMin) / (linkMax - linkMin)))];
             })
             //.attr("stroke-width", function (d) { return d.value })
             .on("mouseover", function (d) {
@@ -198,7 +197,7 @@
             })
             .on("click", function (d) {
                 if (typeof _config.onClickLink === 'undefined' || _config.onClickNode === null) {
-                    console.log("No function implemented")
+                    console.log("No function implemented");
                 }
                 else {
                     _config.onClickLink(d);
@@ -258,22 +257,22 @@
                 var s = node(source, this, d, i),
                     t = node(target, this, d, i),
                     x;
-                if (t.a < s.a) x = t, t = s, s = x;
-                if (t.a - s.a > Math.PI) s.a += 2 * Math.PI;
+                if (t.a < s.a) { x = t; t = s; s = x; }              //change back to: if (t.a < s.a) x = t, t = s, s = x;
+                if (t.a - s.a > Math.PI) {s.a += 2 * Math.PI; }
                 var a1 = s.a + (t.a - s.a) / 3,
                     a2 = t.a - (t.a - s.a) / 3;
 
                 // draw cubic bezier curves for nodes on different axes
-                if (s.a != t.a) {
+                if (s.a !== t.a) {
                     return s.r0 - s.r1 || t.r0 - t.r1 ? "M" + Math.cos(s.a) * s.r0 + "," + Math.sin(s.a) * s.r0 + "L" + Math.cos(s.a) * s.r1 + "," + Math.sin(s.a) * s.r1 + "C" + Math.cos(a1) * s.r1 + "," + Math.sin(a1) * s.r1 + " " + Math.cos(a2) * t.r1 + "," + Math.sin(a2) * t.r1 + " " + Math.cos(t.a) * t.r1 + "," + Math.sin(t.a) * t.r1 + "L" + Math.cos(t.a) * t.r0 + "," + Math.sin(t.a) * t.r0 + "C" + Math.cos(a2) * t.r0 + "," + Math.sin(a2) * t.r0 + " " + Math.cos(a1) * s.r0 + "," + Math.sin(a1) * s.r0 + " " + Math.cos(s.a) * s.r0 + "," + Math.sin(s.a) * s.r0 : "M" + Math.cos(s.a) * s.r0 + "," + Math.sin(s.a) * s.r0 + "C" + Math.cos(a1) * s.r1 + "," + Math.sin(a1) * s.r1 + " " + Math.cos(a2) * t.r1 + "," + Math.sin(a2) * t.r1 + " " + Math.cos(t.a) * t.r1 + "," + Math.sin(t.a) * t.r1;
                 }
                     // draw quadratic bezier curves for nodes on same axis
                 else {
-                    a = s.a
+                    a = s.a;
 
-                    var aCtrl = d.source.type === "pos" ? aCtrl = a + minorAngle * 2 : aCtrl = a - minorAngle * 2
-                    m = Math.abs(s.r1 - t.r1)
-                    rCtrl = s.r1 + m
+                    var aCtrl = d.source.type === "pos" ? aCtrl = a + minorAngle * 2 : aCtrl = a - minorAngle * 2;
+                    m = Math.abs(s.r1 - t.r1);
+                    rCtrl = s.r1 + m;
                     return "M" + Math.cos(s.a) * s.r0 + "," + Math.sin(s.a) * s.r0 + "Q" + Math.cos(aCtrl) * rCtrl + "," + Math.sin(aCtrl) * rCtrl + " " + Math.cos(t.a) * t.r1 + "," + Math.sin(t.a) * t.r1;
                 }
             }
@@ -291,37 +290,37 @@
             }
 
             link.source = function (_) {
-                if (!arguments.length) return source;
+                if (!arguments.length) { return source; }
                 source = _;
                 return link;
             };
 
             link.target = function (_) {
-                if (!arguments.length) return target;
+                if (!arguments.length) { return target; }
                 target = _;
                 return link;
             };
 
             link.angle = function (_) {
-                if (!arguments.length) return angle;
+                if (!arguments.length) { return angle; }
                 angle = _;
                 return link;
             };
 
             link.radius = function (_) {
-                if (!arguments.length) return startRadius;
+                if (!arguments.length) { return startRadius; }
                 startRadius = endRadius = _;
                 return link;
             };
 
             link.startRadius = function (_) {
-                if (!arguments.length) return startRadius;
+                if (!arguments.length) { return startRadius; }
                 startRadius = _;
                 return link;
             };
 
             link.endRadius = function (_) {
-                if (!arguments.length) return endRadius;
+                if (!arguments.length) { return endRadius; }
                 endRadius = _;
                 return link;
             };
@@ -385,6 +384,7 @@
                 The list with the nodes and the axis on which they are is filtered for duplicates. At the same time the values for each node are aggregated.
                 arrHelp[] is a supportive array to create the list of node objects
             */
+
             for (var i = 0; i < nodes.length; i++) {
                 /*
                     if the node is not in the arrHelp yet it is added (if case). If not (else case) the values of the node are summed up and the numberOfLinks is increase by 1.
@@ -396,10 +396,11 @@
                     arrHelp[nodes[i].axis + '-' + nodes[i].label].value = arrHelp[nodes[i].axis + '-' + nodes[i].label].value + nodes[i].value;     //Summing up the values
                     arrHelp[nodes[i].axis + '-' + nodes[i].label].numberOfLinks = arrHelp[nodes[i].axis + '-' + nodes[i].label].numberOfLinks + nodes[i].numberOfLinks; //increasing the numberOfLinks by 1
                 }
-            };
+            }
+
             for (var item in arrHelp) {
                 uniqueNodes[k++] = arrHelp[item];   //arrHelp is an array with a list of distinct nodes now. The nodes are stored in the new variable 'uniqueNodes' now. uniqueNodes contains a list of all nodes with the correct values for axis, label, value, and numberOfLinks. y and color still has default values.
-            };
+            }
             /*
                 Creating an object with several arrays. Each array includes the nodes for one axis.
                 By that we can sort the nodes of each axis individually, which will happen in the next loop.
@@ -429,15 +430,14 @@
             uniqueNodes.length = 0; //the array uniqueNodes is emptied (setting the length to 0) so the nodes can be assigned to the array again after they were sorted before.
             uniqueAxis.forEach(function (axis) {
                 /*
-                    Here we iterate through the arrays with the nodes per axis. Each axis is ordered by its criteria
+                    Here we iterate through the arrays with the nodes per axis. Each axis is ordered by its criteria. The order of the nodes here will be the order on the axes.
                 */
                 try {
-                    var axisConfig = _config.axisConfig.filter(function (object) { return object.axis === axis })[0];
-                    nodesPerAxis[axis] = sortBy(nodesPerAxis[axis], axisConfig.sort, !axisConfig.order);
-                }
-                catch (err) {
-                    nodesPerAxis[axis] = sortBy(nodesPerAxis[axis], 'label', false);
+                    var axisConfig = _config.axisConfig.filter(function (object) { return object.axis === axis; })[0];
 
+                    nodesPerAxis[axis].sort(dynamicSort(axisConfig.sort, !axisConfig.order));
+                } catch (error) {
+                    nodesPerAxis[axis].sort(dynamicSort('label', false));
                 }
                 hist[axis] = nodesPerAxis[axis].length;
                 histCurrent[axis] = 1;
@@ -450,7 +450,7 @@
                     histCurrent[node.axis]++;
                     node.color = colors[count++];   //assigning a color for the node
                     uniqueNodes.push(node); //pushing the node in the array uniqueNodes
-                })
+                });
             });
             if (!(typeof _config.nodes === 'undefined' || _config.nodes === null)) {
                 /*
@@ -458,7 +458,7 @@
                 */
                 uniqueAxis.forEach(function (axisName) {
                     hist[axisName] = 0;
-                    histCurrent[axisName] = 1
+                    histCurrent[axisName] = 1;
                 });
                 var count = 0;
                 colors = randomColor({ count: _config.nodes.length, hue: nodesColorSchema });   //getting an array with several different colors but with the same hue.
@@ -468,12 +468,11 @@
                         to the corresponding node in _config.nodes. If no matching node was found in uiqueNodes (catch case) the attributes 'value' and 'numberOfLinks' remain 0.
                         The nodes also get a color assigned.
                     */
-                    var nodeOld = uniqueNodes.filter(function (object) { return object.axis === node.axis && object.label === node.label })[0];
+                    var nodeOld = uniqueNodes.filter(function (object) { return object.axis === node.axis && object.label === node.label; })[0];
                     try {
                         node.value = nodeOld.value;
                         node.numberOfLinks = nodeOld.numberOfLinks;
-                    }
-                    catch (err) {
+                    } catch (error) {
                         node.value = 0;
                         node.numberOfLinks = 0;
                     }
@@ -506,15 +505,13 @@
                 uniqueAxis.forEach(function (axis) {
                     hist[axis] = nodesByAxis[axis].length; //counts how many nodes are on the axis
                     try {
-                        var axisConfig = _config.axisConfig.filter(function (object) { return object.axis === axis })[0];
-                        nodesByAxis[axis] = sortBy(nodesByAxis[axis], axisConfig.sort, !axisConfig.order);
-                    }
-                    catch (err) {
-                        nodesByAxis[axis] = sortBy(nodesByAxis[axis], 'label', false);
-
+                        var axisConfig = _config.axisConfig.filter(function (object) { return object.axis === axis; })[0];
+                        nodesByAxis[axis].sort(dynamicSort(axisConfig.sort, !axisConfig.order));
+                    } catch (err) {
+                        nodesByAxis[axis].sort(dynamicSort('label', false));
                     }
 
-                    nodesByAxis[axis].forEach(function (node) {
+					nodesByAxis[axis].forEach(function (node) {
                         node.y = (histCurrent[node.axis] / hist[node.axis]);    //assigning the y value
                         histCurrent[node.axis]++;
                         listOfNodes.push(node);     //pushing the node in the listOfNodes array
@@ -528,10 +525,10 @@
             */
             data.forEach(function (d) {
                 var obj = {
-                    source: uniqueNodes.filter(function (object) { return object.axis === d.axis1 && object.label === d.axis1NodeLabel })[0],
-                    target: uniqueNodes.filter(function (object) { return object.axis === d.axis2 && object.label === d.axis2NodeLabel })[0],
+                    source: uniqueNodes.filter(function (object) { return object.axis === d.axis1 && object.label === d.axis1NodeLabel; })[0],
+                    target: uniqueNodes.filter(function (object) { return object.axis === d.axis2 && object.label === d.axis2NodeLabel; })[0],
                     value: d.value
-                }
+                };
                 links.push(obj);
             });
             return { axis: uniqueAxis, nodes: uniqueNodes, links: links, linkMin: linkMin, linkMax: linkMax };
@@ -559,6 +556,11 @@
                 data.forEach(function (d) {
                     detailstext = detailstext + '' + (queryColorDot(d.source.color, 15) + ' ' + queryColorDot(d.target.color, 15) + ' ' + d.source.label + '-' + d.target.label + ' (' + d.value + ') <br/>');
                 });
+                try {
+                    //before displaying the tooltip, potentially still existing tooltips are removed
+                    document.getElementById("tooltip").remove();
+                } catch (error) { }
+
                 showTooltip(100, 0.9, detailstext, d3.event.pageX + 15, d3.event.pageY);
             }
             svg.selectAll(".hiveplot-link").classed("hiveplot-active", function (p) {
@@ -585,7 +587,7 @@
             if (tooltipSetting !== 'none') { //creating a tooltip if tooltipSetting is not 'none'
                 var detailstext = d.axis + '<h4 class=hiveplot-h4>' + d.label + ' (' + d.value + ')</h4>';
                 var data = links.filter(function (obj) {
-                    return (obj.source === d || obj.target === d)   //reducing the links to the ones which are connected with the node
+                    return (obj.source === d || obj.target === d);   //reducing the links to the ones which are connected with the node
                 });
 
                 var uniqueAxis = [];    //creating a list of the axes to which the node is connected nad on which the node itself lies
@@ -601,35 +603,39 @@
                 uniqueAxis.forEach(function (axis) {
                     //creating a list of the nodes to which the node is connected. The information is grouped in paragraphs. Each paragraph is for one axis
                     var details = [];
-                    var countData = 0;
+                    var countData = 0, object;
                     data.forEach(function (datapoint) {
                         if (datapoint.source.axis === axis) {
-                            var object = {
+                            object = {
                                 "axis": datapoint.source.axis,
                                 "color": datapoint.source.color,
                                 "label": datapoint.source.label,
                                 "data": datapoint.value
-                            }
+                            };
                             countData = countData + datapoint.value;    //counting the total value of links to nodes on the one axis
                             details.push(object);
                         }
                         else if (datapoint.target.axis === axis) {
-                            var object = {
+                            object = {
                                 "axis": datapoint.target.axis,
                                 "color": datapoint.target.color,
                                 "label": datapoint.target.label,
                                 "data": datapoint.value
-                            }
+                            };
                             countData = countData + datapoint.value;    //counting the total value of links to nodes on the one axis
                             details.push(object);
                         }
                     });
-                    details = sortBy(details, sortingTooltip, !sortingOrderTooltip);    //sorting the information in the tooltip. The information can be sorted by any of its attributes: axis, color, label, data
+                    details.sort(dynamicSort(sortingTooltip, !sortingOrderTooltip));    //sorting the information in the tooltip. The information can be sorted by any of its attributes: axis, color, label, data
                     detailstext = detailstext + '<h5 class=hiveplot-h5>' + axis + ' (' + countData + ')' + '</h5>';
                     details.forEach(function (d) {
-                        detailstext = detailstext + '' + (queryColorDot(d.color, 15) + ' '  + d.label  + ' (' + d.data + ')' + (tooltipOrientation==="horizontal" ? ', ' : '<br/>'));
-                    })
+                        detailstext = detailstext + '' + (queryColorDot(d.color, 15) + ' ' + d.label + ' (' + d.data + ')' + (tooltipOrientation === "horizontal" ? ', ' : '<br/>'));
+                    });
                 });
+                try {
+                    //before displaying the tooltip, potentially still existing tooltips are removed
+                    document.getElementById("tooltip").remove();
+                } catch (error) { }
 
                 showTooltip(100, 0.9, detailstext, d3.event.pageX + 15, d3.event.pageY);
             }
@@ -644,8 +650,7 @@
         function mouseout(d, svg) {
             try {
                 document.getElementById("tooltip").remove();
-            }
-            catch (err) { };
+            } catch (error) { }
             svg.selectAll(".hiveplot-link").classed("hiveplot-active", false);
             svg.selectAll(".hiveplot-link").classed("hiveplot-inactive", false);
         }
@@ -664,9 +669,10 @@
                 Format of the return value:
                     The function doesn't return a value but it displays a tooltip
             */
+			var tooltip;
             if (tooltipSetting === 'movable') {
                 //if the tooltip should be movable the <div> for the tooltip is created dynamically
-                var tooltip = d3.select("body").append("div")
+                tooltip = d3.select("body").append("div")
                     .attr("id", "tooltip")
                     .attr("class", "hiveplot-tooltip");
                 tooltip.transition()
@@ -678,7 +684,7 @@
             }
             else {
                 //if the tooltip should appear at a fixed position the div is created in a specific position which is defined in 'tooltipElem'
-                var tooltip = d3.select("#" + tooltipElem).append("div")
+                tooltip = d3.select("#" + tooltipElem).append("div")
                     .attr("id", "tooltip")
                     .attr("class", "hiveplot-tooltip-fix");
                 tooltip.transition()
@@ -706,17 +712,8 @@
                 'border-radius: 50%',
                 'width:' + diameter + 'px',
                 'height:' + diameter + 'px',
-                'background:' + color,
+                'background:' + color
             ].join(';') + '"></div>';
-        }
-        function sortBy(array, property, reverse) {
-            if (property === null || property === '') {
-                return array;
-            }
-            else {
-                array.sort(dynamicSort(property, reverse))
-                return array;
-            }
         }
         function dynamicSort(property, reverse) {
             /*
@@ -731,13 +728,13 @@
                 return function (a, b) {
                     var result = (a[property] < b[property]) ? -1 : (a[property] > b[property]) ? 1 : 0;
                     return result * sortOrder;
-                }
+                };
             }
             else {
                 return function (a, b) {
                     var result = (a[property] > b[property]) ? -1 : (a[property] < b[property]) ? 1 : 0;
                     return result * sortOrder;
-                }
+                };
             }
         }
 
@@ -764,13 +761,13 @@
             var redNuances =  Math.round((parseInt(endRedPart, 16) - parseInt(startRedPart, 16)) / numberOfNuances),
                 greenNuances = Math.round((parseInt(endGreenPart, 16) - parseInt(startGreenPart, 16)) / numberOfNuances),
                 blueNuances =  Math.round((parseInt(endBluePart, 16) - parseInt(startBluePart, 16)) / numberOfNuances);
-            var colorset = [];
-            for (var count = 0; count < numberOfNuances; count++) {
-                var redPart = (parseInt(startRedPart, 16) + count * redNuances).toString(16),
-                    greenPart = (parseInt(startGreenPart, 16) + count * greenNuances).toString(16),
-                    bluePart = (parseInt(startBluePart, 16) + count * blueNuances).toString(16),
+            var colorset = [], redPart, greenPart, bluePart, color;
 
-                    color = '#' + (redPart.length === 1 ? '0' + redPart : redPart) + ''
+            for (var count = 0; count < numberOfNuances; count++) {
+                redPart = (parseInt(startRedPart, 16) + count * redNuances).toString(16);
+                greenPart = (parseInt(startGreenPart, 16) + count * greenNuances).toString(16);
+                bluePart = (parseInt(startBluePart, 16) + count * blueNuances).toString(16);
+                color = '#' + (redPart.length === 1 ? '0' + redPart : redPart) + ''
                     + (greenPart.length === 1 ? '0' + greenPart : greenPart) + ''
                     + (bluePart.length === 1 ? '0' + bluePart : bluePart);
                 colorset.push(color);

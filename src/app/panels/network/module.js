@@ -40,7 +40,8 @@ define([
                 ],
                 editorTabs: [
                     {
-                        title: 'Queries', src: 'app/partials/querySelect.html'
+                        title: 'Queries',
+                        src: 'app/partials/querySelect.html'
                     }
                 ],
                 status: "Stable",
@@ -132,7 +133,7 @@ define([
 
             _.defaults($scope.panel, _d);
 
-            $scope.init = function () {                
+            $scope.init = function () {
                 $scope.hits = 0;    //This is just executed when the page is first started
                 $scope.$on('refresh', function () {
                     //this part of the code is executed if the refresh symbol in the header is clicked
@@ -150,7 +151,9 @@ define([
                 var request,
                     results,
                     boolQuery,
-                    queries;
+                    queries,
+                    request1,
+                    results1;
 
                 request = $scope.ejs.Request().indices(dashboard.indices);
 
@@ -168,15 +171,15 @@ define([
                 This is saved in the variable 'request'
                 */
 
-                var request1 = $scope.ejs.Request().indices(dashboard.indices);
+                request1 = $scope.ejs.Request().indices(dashboard.indices);
                 request1 = request1
                     .facet(
                         $scope.ejs.TermsFacet('terms')
-                        .field($scope.panel.sourceField)
-                        .size($scope.panel.size1)
-                        .order($scope.panel.order)
-                        .exclude($scope.panel.exclude)
-                        .facetFilter(
+                            .field($scope.panel.sourceField)
+                            .size($scope.panel.size1)
+                            .order($scope.panel.order)
+                            .exclude($scope.panel.exclude)
+                            .facetFilter(
                                 $scope.ejs.AndFilter(
                                     [
                                         $scope.ejs.QueryFilter(
@@ -188,9 +191,9 @@ define([
                                     ]
                                 )
                             )
-                        )
+                    )
                     .size(0);
-                var results1 = request1.doSearch().then(function (results1) {
+                results1 = request1.doSearch().then(function (results1) {
                     var singleNodes = [];
 
                     _.each(results1.facets.terms.terms, function (v) {
@@ -199,37 +202,13 @@ define([
                     if (singleNodes.length === 0) {
                         /*if no terms are in 'singleNodes' we have to make sure that the request is not empty, so we create an alibi request here*/
                         request = request
-                        .facet(
-                            $scope.ejs.TermsFacet('terms')
-                            .field($scope.panel.targetField)
-                            .size($scope.panel.size2)
-                            .order($scope.panel.order)
-                            .exclude($scope.panel.exclude)
-                            .facetFilter(
-                                    $scope.ejs.AndFilter(
-                                        [
-                                            $scope.ejs.QueryFilter(
-                                                $scope.ejs.FilteredQuery(
-                                                    boolQuery,
-                                                    filterSrv.getBoolFilter(filterSrv.ids())
-                                                )
-                                            )
-                                        ]
-                                    )
-                                )
-                            )
-                        .size(0);
-                    }
-                    else {
-                        singleNodes.forEach(function (sourceNode) {
-                            request = request
                             .facet(
-                                $scope.ejs.TermsFacet(sourceNode)
-                                .field($scope.panel.targetField)
-                                .size($scope.panel.size2)
-                                .order($scope.panel.order)
-                                .exclude($scope.panel.exclude)
-                                .facetFilter(
+                                $scope.ejs.TermsFacet('terms')
+                                    .field($scope.panel.targetField)
+                                    .size($scope.panel.size2)
+                                    .order($scope.panel.order)
+                                    .exclude($scope.panel.exclude)
+                                    .facetFilter(
                                         $scope.ejs.AndFilter(
                                             [
                                                 $scope.ejs.QueryFilter(
@@ -237,18 +216,42 @@ define([
                                                         boolQuery,
                                                         filterSrv.getBoolFilter(filterSrv.ids())
                                                     )
-                                                ),
-                                                $scope.ejs.QueryFilter(
-                                                    $scope.ejs.TermQuery(
-                                                        $scope.panel.sourceField,
-                                                        sourceNode
-                                                    )
                                                 )
                                             ]
                                         )
                                     )
-                                )
+                            )
                             .size(0);
+                    }
+                    else {
+                        singleNodes.forEach(function (sourceNode) {
+                            request = request
+                                .facet(
+                                    $scope.ejs.TermsFacet(sourceNode)
+                                        .field($scope.panel.targetField)
+                                        .size($scope.panel.size2)
+                                        .order($scope.panel.order)
+                                        .exclude($scope.panel.exclude)
+                                        .facetFilter(
+                                            $scope.ejs.AndFilter(
+                                                [
+                                                    $scope.ejs.QueryFilter(
+                                                        $scope.ejs.FilteredQuery(
+                                                            boolQuery,
+                                                            filterSrv.getBoolFilter(filterSrv.ids())
+                                                        )
+                                                    ),
+                                                    $scope.ejs.QueryFilter(
+                                                        $scope.ejs.TermQuery(
+                                                            $scope.panel.sourceField,
+                                                            sourceNode
+                                                        )
+                                                    )
+                                                ]
+                                            )
+                                        )
+                                )
+                                .size(0);
                         });
                     }
 
@@ -276,7 +279,8 @@ define([
                     queryterm = queryterm + ' OR ' + $scope.panel.sourceField + ':\"' + nodeName + '\"' + ' OR ' + $scope.panel.targetField + ':\"' + nodeName + '\"';
                 }
                 filterSrv.set({
-                    type: 'querystring', query: queryterm,
+                    type: 'querystring',
+                    query: queryterm,
                     mandate: 'must'
                 });
             };
@@ -352,7 +356,7 @@ define([
                     .attr("id", "networkpanel-" + elem[0].id);
 
                 var data = prepareData(dataset);
-                
+
                 new Networkdiagram.Chart({
                     //Mandatory
                     "elem": "networkpanel-" + elem[0].id,     //id of the just created div
@@ -377,18 +381,18 @@ define([
                 });
 
                 function prepareData(dataset) {
-                    var data = [];
+                    var newData = [];
 
                     dataset.forEach(function (link) {
                         var object = {
                             source: link.source,
                             target: link.target,
                             value: link.data
-                        }
-                        data.push(object);
+                        };
+                        newData.push(object);
                     });
 
-                    return data;
+                    return newData;
                 }
             }
         });

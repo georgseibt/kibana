@@ -58,7 +58,7 @@
                                     default: null
                                     possible values: any function
         */
-        
+
         var default_colorset = [
             "#8E388E", "#7171C6", "#7D9EC0", "#388E8E", "#71C671", "#8E8E38", "#C5C1AA", "#C67171",
             "#B0171F", "#9400D3", "#0000FF", "#CAE1FF", "#36648B", "#00F5FF", "#00C78C", "#FF8247",
@@ -73,7 +73,7 @@
             default_sortingTooltip = 'source',
             default_sortingOrderTooltip = true,
             default_tooltipSetting = true,
-            default_tooltipOrientation='vertical';
+            default_tooltipOrientation = 'vertical';
 
 
         /*
@@ -96,16 +96,16 @@
         var svg,
             force,
             arrowhead_length = 10;
-        
+
         var data = prepareData(_config.data),
             nodes = data.nodes,
-            links=data.links,
-			linkedByIndex = data.linkedByIndex,
-			maxValueOfLink = data.maxValueOfLink,
+            links = data.links,
+            linkedByIndex = data.linkedByIndex,
+            maxValueOfLink = data.maxValueOfLink,
             maxOutgoingTotalOfNode = data.maxOutgoingTotalOfNode,
             maxIncomingTotalOfNode = data.maxIncomingTotalOfNode,
             maxTotalOfNode = data.maxTotalOfNode;
-        
+
         //Define the required layout
         svg = d3.select('#' + plotElem)
             .append("svg")
@@ -125,21 +125,21 @@
             .append("marker")    // This section adds in the arrows
             .attr("id", String)
             .attr("viewBox", "0 -5 10 10")
-            .attr("refX", 10)	//defines how far the marker is away from the end of the path
+            .attr("refX", 10)   //defines how far the marker is away from the end of the path
             .attr("refY", 0)
             .attr("markerWidth", arrowhead_length)
             .attr("markerHeight", arrowhead_length)
-            .attr("markerUnits", "userSpaceOnUse")	//this line makes the marker size independent of the path stroke-width
+            .attr("markerUnits", "userSpaceOnUse")  //this line makes the marker size independent of the path stroke-width
             .attr("orient", "auto")
             .attr("class", "networkdiagram-marker")
             .append("svg:path")
             .attr("d", "M0,-5L10,0L0,5");
-        
+
         force.nodes(nodes)
             .links(links)
             .on("tick", tick)
             .start();
-                
+
         // add the links and the arrows
         var path = svg.append("g").selectAll("path")
             .data(force.links())
@@ -167,7 +167,7 @@
             .on("click", function (d) {
                 if (!d3.event.ctrlKey) { //node is only filtered if ctrl Key is NOT pressed
                     if (typeof _config.onClickLink === 'undefined' || _config.onClickLink === null) {
-                        console.log("No function implemented")
+                        console.log("No function implemented");
                     }
                     else {
                         _config.onClickLink(d);
@@ -188,12 +188,12 @@
             .on("click", function (d) {
                 if (!d3.event.ctrlKey) { //node is only filtered if ctrl Key is NOT pressed
                     if (typeof _config.onClickNode === 'undefined' || _config.onClickNode === null) {
-                        console.log("No function implemented")
+                        console.log("No function implemented");
                     }
                     else {
                         _config.onClickNode(nodes[d.index]);
                     }
-                }                
+                }
             })
             .call(force.drag);
 
@@ -202,12 +202,9 @@
             .attr("r", function (d) {
                 if (directed) {
                     if (nodeSize === 'outgoing') { return d.outgoingTotal / maxOutgoingTotalOfNode * 10 + 5; }
-                    else { return d.incomingTotal / maxIncomingTotalOfNode * 10 + 5; }
+                    return d.incomingTotal / maxIncomingTotalOfNode * 10 + 5;
                 }
-                else {
-                    return (d.total) / maxTotalOfNode * 10 + 5;
-                }
-
+                return (d.total) / maxTotalOfNode * 10 + 5;
             })
             .style("stroke", function (d) { if (colorcode === "black-white") { return "black"; } else { return d.color; } })
             .style("stroke-width", "2px");
@@ -219,14 +216,10 @@
             .style("font", function (d) {
                 if (directed) {
                     if (nodeSize === 'outgoing') { return (12 + (d.outgoingTotal / maxOutgoingTotalOfNode * 10) + "px Arial"); }
-                    else { return (12 + (d.incomingTotal / maxIncomingTotalOfNode * 10) + "px Arial"); }
+                    return (12 + (d.incomingTotal / maxIncomingTotalOfNode * 10) + "px Arial");
                 }
-                else {
-                    return (12 + (d.total / maxTotalOfNode * 10) + "px Arial");
-                }
-
-            }
-            )
+                return (12 + (d.total / maxTotalOfNode * 10) + "px Arial");
+            })
             .text(function (d) { return d.label; });
 
         // add the curvy lines
@@ -273,13 +266,14 @@
             data.forEach(function (d) {
                 listOfNodes.push(d.source);     //reading all the node names and storing them in the array "listOfNodes"
                 listOfNodes.push(d.target);     //reading all the node names and storing them in the array "listOfNodes"
-            })
+            });
             listOfNodes = (listOfNodes.filter(function onlyUnique(value, index, self) { return self.indexOf(value) === index; }));      //filtering the listOfNodes, so no duplicates remain
 
             if (colors.length < listOfNodes.length) {
                 /*
                     A number of colorcodes are given at the beginning. If more colors are needed, this loop creates additional ones.
                 */
+
                 for (var count = 0; count < listOfNodes.length; count++) {
                     colors.push(randomColor());
                 }
@@ -314,7 +308,7 @@
                     'incomingTotal': incomingTotal,
                     'total': total,
                     'numberOfLinks': numberOfLinks
-                }
+                };
                 uniqueNodes.push(object);
             });
 
@@ -331,7 +325,7 @@
                     source: uniqueNodes.map(function (e) { return e.label; }).indexOf(link.source),
                     target: uniqueNodes.map(function (e) { return e.label; }).indexOf(link.target),
                     value: link.value
-                }
+                };
                 directedLinks.push(object);
             });
             /*
@@ -349,8 +343,7 @@
             else {
                 //we summarize the links, so that two relations like A->B and B->A are summarized to A->B
                 undirectedLinks.forEach(function (d) {
-                    if (d.source < d.target) { }
-                    else {
+                    if (d.source < d.target) { } else {
                         var help = d.source;
                         d.source = d.target;
                         d.target = help;
@@ -375,7 +368,7 @@
                             "source": _.pluck(value, "source")[0],
                             "target": _.pluck(value, "target")[0],
                             "value": _.reduce(_.pluck(value, "value"), function (memo, num) { return memo + num; }, 0)
-                        }
+                        };
                     })
                     .value();
 
@@ -389,7 +382,7 @@
             links.forEach(function (link) {
                 maxValueOfLink = Math.max(maxValueOfLink, link.value);
                 linkedByIndex[link.source + "," + link.target] = 1;
-            })
+            });
             uniqueNodes.forEach(function (node) {
                 maxOutgoingTotalOfNode = Math.max(maxOutgoingTotalOfNode, node.outgoingTotal);
                 maxIncomingTotalOfNode = Math.max(maxIncomingTotalOfNode, node.incomingTotal);
@@ -404,7 +397,7 @@
                 maxOutgoingTotalOfNode: maxOutgoingTotalOfNode,
                 maxIncomingTotalOfNode: maxIncomingTotalOfNode,
                 maxTotalOfNode: maxTotalOfNode
-            }
+            };
 
         }
 
@@ -423,7 +416,7 @@
             */
 
             var nodeID = node.index;
-            if (tooltipSetting!=='none') {
+            if (tooltipSetting !== 'none') {
                 var details = getDetailsOnNode(nodeID),//'details' contains a list of objects. Each object is a connection between two nodes. Each object contains the attributes 'sourceColor', 'source', 'targetColor', 'target' and 'data'. The number of objects in the array is not limited.
                     detailstext = '<h4 class=networkdiagram-h4>' + nodes[nodeID].label + '</h4>';
 
@@ -437,10 +430,11 @@
                 try {
                     //before displaying the tooltip, potentially still existing tooltips are removed
                     document.getElementById("tooltip").remove();
-                }
-                catch (err) { };
+                } catch (error) { }
+
                 showTooltip(100, 0.9, detailstext, d3.event.pageX + 15, d3.event.pageY);
             }
+
             fade(node, 0.1);    //hiding links and nodes not connected to the node the mouse is on
         }
         function nodeMouseout(node) {
@@ -454,11 +448,11 @@
                 Format of the return value:
                     The function doesn't return a value but removes the tooltip and shows links again.
             */
-            var nodeID = node.index;
+
             try {
                 document.getElementById("tooltip").remove();    //removing the tooltip
-            }
-            catch (err) { };
+            } catch (error) { }
+
             fade(node, 1);      //showing all nodes and links again which are connected to the node the mouse is on
         }
         function getDetailsOnNode(nodeID) {
@@ -484,15 +478,15 @@
             _config.data.forEach(function (link) {
                 if (link.source === nodeName || link.target === nodeName) {
                     var object = {
-                        "sourceColor": nodes.filter(function (node) { return node.label === link.source })[0].color,
+                        "sourceColor": nodes.filter(function (node) { return node.label === link.source; })[0].color,
                         "source": link.source,
-                        "targetColor": nodes.filter(function (node) { return node.label === link.target })[0].color,
+                        "targetColor": nodes.filter(function (node) { return node.label === link.target; })[0].color,
                         "target": link.target,
                         "data": link.value
-                    }
+                    };
                     links.push(object);
                 }
-            })
+            });
 
             links.sort(dynamicSort(sortingTooltip, !sortingOrderTooltip));      //Here the links are sorted. The links can be sorted by any attribute of the object. It can also be reversed.
             return links;
@@ -516,7 +510,7 @@
             var sourceID = link.source.index,
                 targetID = link.target.index;
 
-            if (tooltipSetting!=='none') {
+            if (tooltipSetting !== 'none') {
                 var details = getDetailsOnChord(sourceID, targetID),   //'details' contains a list of objects. Each object is a connection between two nodes. Each object contains the attributes 'sourceColor', 'source', 'targetColor', 'target' and 'data'. The length of the array is maximum 2, because a connection between two nodes can just go from A to B or B two A.
                     detailstext = "",
                     sum = 0;
@@ -528,7 +522,7 @@
                     */
                     sum = sum + link.data;  //'sum' is the aggregation of all data (determines the value of a connection)
                     detailstext = detailstext + (queryColorDot(link.sourceColor, 15) + ' ' + queryColorDot(link.targetColor, 15) + ' ' + link.source + '-' + link.target + ' (' + link.data + ')<br/>');
-                })
+                });
 
                 if (!directed) {
                     // the 'sum' is just shown if the network diagram is undirected
@@ -538,8 +532,7 @@
                 try {
                     //before displaying the tooltip, potentially still existing tooltips are removed
                     document.getElementById("tooltip").remove();
-                }
-                catch (err) { };
+                } catch (error) { }
                 showTooltip(100, 0.9, detailstext, d3.event.pageX + 15, d3.event.pageY);
             }
         }
@@ -557,8 +550,7 @@
 
             try {
                 document.getElementById("tooltip").remove();
-            }
-            catch (err) { };
+            } catch (error) { }
         }
         function getDetailsOnChord(sourceID, targetID) {
             /*
@@ -585,12 +577,12 @@
                 _config.data.forEach(function (link) {
                     if ((link.source === sourceName && link.target === targetName)) {
                         var object = {
-                            "sourceColor": nodes.filter(function (node) { return node.label === link.source })[0].color,
+                            "sourceColor": nodes.filter(function (node) { return node.label === link.source; })[0].color,
                             "source": link.source,
-                            "targetColor": nodes.filter(function (node) { return node.label === link.target })[0].color,
+                            "targetColor": nodes.filter(function (node) { return node.label === link.target; })[0].color,
                             "target": link.target,
                             "data": link.value
-                        }
+                        };
                         links.push(object);
                     }
                 });
@@ -599,12 +591,12 @@
                 _config.data.forEach(function (link) {
                     if ((link.source === sourceName && link.target === targetName) || (link.source === targetName && link.target === sourceName)) {
                         var object = {
-                            "sourceColor": nodes.filter(function (node) { return node.label === link.source })[0].color,
+                            "sourceColor": nodes.filter(function (node) { return node.label === link.source; })[0].color,
                             "source": link.source,
-                            "targetColor": nodes.filter(function (node) { return node.label === link.target })[0].color,
+                            "targetColor": nodes.filter(function (node) { return node.label === link.target; })[0].color,
                             "target": link.target,
                             "data": link.value
-                        }
+                        };
                         links.push(object);
                     }
                 });
@@ -695,8 +687,8 @@
                 }
 
                 var dx = tx - sx,
-                dy = ty - sy,
-                dr = Math.sqrt(dx * dx + dy * dy);
+                    dy = ty - sy,
+                    dr = Math.sqrt(dx * dx + dy * dy);
                 return "M" + sx + "," + sy + "A" + dr + "," + dr + " 0 0,1 " + tx + "," + ty;
             }
             else {
@@ -722,9 +714,10 @@
                 Format of the return value:
                     The function doesn't return a value but it displays a tooltip
             */
+            var tooltip;
             if (tooltipSetting === 'movable') {
                 //if the tooltip should be movable the <div> for the tooltip is created dynamically
-                var tooltip = d3.select("body").append("div")
+                tooltip = d3.select("body").append("div")
                     .attr("id", "tooltip")
                     .attr("class", "networkdiagram-tooltip");
                 tooltip.transition()
@@ -736,7 +729,7 @@
             }
             else {
                 //if the tooltip should appear at a fixed position the div is created in a specific position which is defined in 'tooltipElem'
-                var tooltip = d3.select("#" + tooltipElem).append("div")
+                tooltip = d3.select("#" + tooltipElem).append("div")
                     .attr("id", "tooltip")
                     .attr("class", "networkdiagram-tooltip-fix");
                 tooltip.transition()
@@ -764,7 +757,7 @@
                 'border-radius: 50%',
                 'width:' + diameter + 'px',
                 'height:' + diameter + 'px',
-                'background:' + color,
+                'background:' + color
             ].join(';') + '"></div>';
         }
         function dynamicSort(property, reverse) {
@@ -780,13 +773,13 @@
                 return function (a, b) {
                     var result = (a[property] < b[property]) ? -1 : (a[property] > b[property]) ? 1 : 0;
                     return result * sortOrder;
-                }
+                };
             }
             else {
                 return function (a, b) {
                     var result = (a[property] > b[property]) ? -1 : (a[property] < b[property]) ? 1 : 0;
                     return result * sortOrder;
-                }
+                };
             }
         }
 
