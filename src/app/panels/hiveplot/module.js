@@ -177,6 +177,7 @@ define([
             };
 
             $scope.get_data = function () {
+                $scope.generalTimeField = dashboard.current.nav[0].timefield;      //storing the timefield which is assigned inthe general settings. The timefield is needed if the field should be displayed in the diagram, so the values can be transformed to a date string
                 // Make sure we have everything for the request to complete
                 if (dashboard.indices.length === 0) {
                     return;
@@ -1793,6 +1794,15 @@ define([
                         field: axisName
                     });
                 }
+                else if (axisName === $scope.generalTimeField) {
+                    date.push(nodeName);
+                    filterSrv.set({
+                        type: 'time',
+                        from: new Date(date[0]),
+                        to: new Date(date[0]),
+                        field: axisName
+                    });
+                }
                 else {
                     if (queryterm === "") {
                         queryterm = queryterm + '' + axisName + ':\"' + nodeName + '\"';
@@ -2004,10 +2014,15 @@ define([
                         //Optional
                         "tooltipElem": "tooltip-" + elem[0].id,
                         "colorcode": scope.panel.colorcode,                         //possible values: ['black-white', 'colored']
+                        "nodesColorSchema": "blue",
+                        "linksColorSchema": ['#FFD700', '#FF0000', 10],
                         "axisConfig": axisConfig,
+                        "nodes": null,
+                        "linkMin": null,
+                        "linkMax": null,
+                        "tooltipSetting": scope.panel.tooltipSetting,               //possible values: ['none', 'movable', 'static']
                         "sortingTooltip": scope.panel.sortingTooltip,               //possible values: ['source', 'target', 'data']
                         "sortingOrderTooltip": scope.panel.sortingOrderTooltip,     //possible values: [true, false] true means ascending, false means descending
-                        "tooltipSetting": scope.panel.tooltipSetting,               //possible values: ['none', 'movable', 'static']
                         "tooltipOrientation": scope.panel.tooltipOrientation,       //possible values: ['horizontal', 'vertical']
                         "onClickNode": function (node) {
                             /*
@@ -2015,7 +2030,7 @@ define([
                                 clicks on a node in the HivePlot.
                                 In our case this function should filter the data.
                             */
-                            scope.build_search(node.axis, node.axis === scope.panel.timeField ? new Date(node.label.replace(" ", "T")).getTime() : node.label);
+                            scope.build_search(node.axis, (node.axis === scope.panel.timeField || node.axis === scope.generalTimeField ) ? new Date(node.label.replace(" ", "T")).getTime() : node.label);
                         },
                         "onClickLink": function (link) {
                             /*
@@ -2065,12 +2080,12 @@ define([
                             dataset[element][0].forEach(function (d) {
                                 var object = {
                                     axis: d.axis1,
-                                    label: d.axis1 === scope.panel.timeField ? scope.getDateAsString(new Date(parseInt(d.source, 10))) : d.source.toString() //d.source
+                                    label: (d.axis1 === scope.panel.timeField || d.axis1 === scope.generalTimeField) ? scope.getDateAsString(new Date(parseInt(d.source, 10))) : d.source.toString() //d.source
                                 };
                                 listOfNodes[d.axis1 + '-' + d.source] = object;
                                 object = {
                                     axis: d.axis2,
-                                    label: d.axis2 === scope.panel.timeField ? scope.getDateAsString(new Date(parseInt(d.target, 10))) : d.target.toString() //d.target
+                                    label: (d.axis2 === scope.panel.timeField || d.axis2 === scope.generalTimeField) ? scope.getDateAsString(new Date(parseInt(d.target, 10))) : d.target.toString() //d.target
                                 };
                                 listOfNodes[d.axis2 + '-' + d.target] = object;
                             });
@@ -2110,14 +2125,16 @@ define([
                             "data": data,
                             //Optional
                             "tooltipElem": "tooltip-" + elem[0].id,
+                            "colorcode": scope.panel.colorcode,                         //possible values: ['black-white', 'colored']
+                            "nodesColorSchema": "blue",
+                            "linksColorSchema": ['#FFD700', '#FF0000', 10],
+                            "axisConfig": axisConfig,
+                            "nodes": nodes,
                             "linkMin": Math.min.apply(Math, linkValues),
                             "linkMax": Math.max.apply(Math, linkValues),
-                            "nodes": nodes,
-                            "colorcode": scope.panel.colorcode,                         //possible values: ['black-white', 'colored']
-                            "axisConfig": axisConfig,
+                            "tooltipSetting": scope.panel.tooltipSetting,               //possible values: ['none', 'movable', 'static']
                             "sortingTooltip": scope.panel.sortingTooltip,               //possible values: ['source', 'target', 'data']
                             "sortingOrderTooltip": scope.panel.sortingOrderTooltip,     //possible values: [true, false] true means ascending, false means descending
-                            "tooltipSetting": scope.panel.tooltipSetting,               //possible values: ['none', 'movable', 'static']
                             "tooltipOrientation": scope.panel.tooltipOrientation,       //possible values: ['horizontal', 'vertical']
                             "onClickNode": function (node) {
                                 /*
@@ -2125,7 +2142,7 @@ define([
                                     clicks on a node in the HivePlot.
                                     In our case this function should filter the data.
                                 */
-                                scope.build_search(node.axis, node.axis === scope.panel.timeField ? new Date(node.label.replace(" ", "T")).getTime() : node.label);
+                                scope.build_search(node.axis, (node.axis === scope.panel.timeField || node.axis === scope.generalTimeField ) ? new Date(node.label.replace(" ", "T")).getTime() : node.label);
                             },
                             "onClickLink": function (link) {
                                 /*
@@ -2172,9 +2189,9 @@ define([
                     uniqueData.forEach(function (link) {
                         var object = {
                             axis1: link.axis1,
-                            axis1NodeLabel: link.axis1 === scope.panel.timeField ? scope.getDateAsString(new Date(parseInt(link.source, 10))) : link.source.toString(),
+                            axis1NodeLabel: (link.axis1 === scope.panel.timeField || link.axis1 === scope.generalTimeField ) ? scope.getDateAsString(new Date(parseInt(link.source, 10))) : link.source.toString(),
                             axis2: link.axis2,
-                            axis2NodeLabel: link.axis2 === scope.panel.timeField ? scope.getDateAsString(new Date(parseInt(link.target, 10))) : link.target.toString(),
+                            axis2NodeLabel: (link.axis2 === scope.panel.timeField || link.axis2 === scope.generalTimeField) ? scope.getDateAsString(new Date(parseInt(link.target, 10))) : link.target.toString(),
                             value: link.data
                         };
                         newData.push(object);

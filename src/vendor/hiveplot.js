@@ -33,7 +33,7 @@
             linksColorSchema        is an array of information about the colors which should be used to draw the links.
                                     The intensity of the links should change depending on the strength of the link.
                                     The array has the format [startColor, endColor, numberOfNuances]
-                                    default: ['#FF0000', '#FFD700', 10]
+                                    default: ['#FFD700', '#FF0000', 10]
                                     possible values: any valid color and any valid number
             axisConfig              is an array of objects. Each object defines how the nodes on the axis should be sorted. Each object has the
                                     following structure:
@@ -51,6 +51,12 @@
                                     }
                                     default: null
                                     possible values: any list of object with the above described structure
+            linkMin                 the links are colored between a color spectrum (linkColorSchema). linkMin defines the lower boundary of this spectrum. It is usually calculated in the library with the given data, but if you wish to define the lower limit manually, you can do so here.
+                                    default: value is calculated in the library from the given data
+                                    possible values: any number
+            linkMin                 the links are colored between a color spectrum (linkColorSchema). linkMax defines the upper boundary of this spectrum. It is usually calculated in the library with the given data, but if you wish to define the upper limit manually, you can do so here.
+                                    default: value is calculated in the library from the given data
+                                    possible values: any number
             tooltipSetting          defines if tooltips should be shown in case of a mouseoverevent
                                     default: 'static'
                                     possible values: ['none', 'movable', 'static']

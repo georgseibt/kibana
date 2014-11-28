@@ -143,6 +143,7 @@ define([
             };
 
             $scope.get_data = function () {
+                $scope.generalTimeField = dashboard.current.nav[0].timefield;      //storing the timefield which is assigned inthe general settings. The timefield is needed if the field should be displayed in the diagram, so the values can be transformed to a date string
                 // Make sure we have everything for the request to complete
                 if (dashboard.indices.length === 0) {
                     return;
@@ -299,6 +300,33 @@ define([
                 $scope.refresh = false;
                 $scope.$emit('render');
             };
+            $scope.getDateAsString = function (date) {
+                /*
+                    Format of the passed variable:
+                        date: is a date in date format
+
+                    Task of the function:
+                        This function transforms a date to the format YYYY-MM-dd hh:mm:ss
+
+                    Format of the return value:
+                        The function returns a time as a string in the format YYYY-MM-dd hh:mm:ss
+                */
+                var year, month, day, hour, minute, second;
+
+                year = date.getFullYear();
+                month = '0' + (date.getMonth() + 1);
+                month = month.slice(-2, (month.length - 2) + 3);
+                day = '0' + date.getDate();
+                day = day.slice(-2, (day.length - 2) + 3);
+                hour = '0' + date.getHours();
+                hour = hour.slice(-2, (hour.length - 2) + 3);
+                minute = '0' + date.getMinutes();
+                minute = minute.slice(-2, (minute.length - 2) + 3);
+                second = '0' + date.getSeconds();
+                second = second.slice(-2, (second.length - 2) + 3);
+
+                return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second;
+            };
         });
 
         module.directive('networkChart', function (querySrv) {
@@ -335,8 +363,8 @@ define([
                             _.each(scope.results.facets[sourceNode].terms, function (v) {
                                 var slice;
                                 slice = {
-                                    source: sourceNode,
-                                    target: v.term,
+                                    source: (scope.panel.sourceField === scope.generalTimeField ? scope.getDateAsString(new Date(parseInt(sourceNode, 10))) : sourceNode),
+                                    target: (scope.panel.targetField === scope.generalTimeField ? scope.getDateAsString(new Date(parseInt(v.term, 10))) : v.term),
                                     data: v.count,
                                     color: querySrv.colors[k]
                                 };
