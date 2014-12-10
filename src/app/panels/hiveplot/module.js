@@ -1998,10 +1998,17 @@ define([
 
                 /*Creating one div where the panel will be drawn*/
                 d3.select(elem[0]).append('div')
-                    .style("width", function () { return 100 + "%"; })
+                    .style("float", function (d) { return scope.panel.tooltipSetting === "static" ? "left" : "right"; })
+                    .style("width", function (d) { return scope.panel.tooltipSetting === "static" ? "80%" : "100%"; })
                     .style("height", function () { return 100 + "%"; })
                     .attr("class", "hiveplot-innerpanels")
                     .attr("id", "hiveplotpanel-" + elem[0].id);
+
+                d3.select(elem[0]).append('div')
+                    .style("float", "left")
+                    .style("width", function (d) { return scope.panel.tooltipSetting === "static" ? "20%" : "0%"; })
+                    .style("height", function () { return 100 + "%"; })
+                    .attr("id", "tooltip-" + elem[0].id);
 
                 if (!scope.panel.multipanelSetting) {
 
@@ -2045,6 +2052,8 @@ define([
                 else if (scope.panel.multipanelSetting) {
                     var item;
                     for (item in scope.data) {
+                        /*To determine the maximum and minimum of all relations. The values of the relations (datapoint.data) are stored in the array linkValues. This array is used later to determine the 
+                        maximum and minimum*/
                         scope.data[item][0].forEach(function (datapoint) {
                             linkValues.push(datapoint.data);
                         });

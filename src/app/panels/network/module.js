@@ -380,8 +380,16 @@ define([
             function createNetworkDiagram(scope, dataset, elem) {
                 $(elem[0]).empty();  //removes all elements from the current element
                 d3.select(elem[0]).append('div')
-                    .attr("class", "network-panel")
+                    .style("float", "left")
+                    .style("width", function (d) { return scope.panel.tooltipSetting === "static" ? "80%" : "100%"; })
+                    .style("height", function () { return 100 + "%"; })
                     .attr("id", "networkpanel-" + elem[0].id);
+
+                d3.select(elem[0]).append('div')
+                    .style("float", "left")
+                    .style("width", function (d) { return scope.panel.tooltipSetting === "static" ? "20%" : "0%"; })
+                    .style("height", function () { return 100 + "%"; })
+                    .attr("id", "tooltip-" + elem[0].id);
 
                 var data = prepareData(dataset);
 

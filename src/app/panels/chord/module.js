@@ -346,10 +346,16 @@ define([
 
                 /*Creating one div where the panel will be drawn*/
                 d3.select(elem[0]).append('div')
-                    .style("width", function () { return 100 + "%"; })
+                    .style("float", "left")
+                    .style("width", function (d) { return scope.panel.tooltipSetting === "static" ? "80%" : "100%"; })
                     .style("height", function () { return 100 + "%"; })
-                    .attr("class", "chord-innerpanels")
                     .attr("id", "chordpanel-" + elem[0].id);
+
+                d3.select(elem[0]).append('div')
+                    .style("float", "left")
+                    .style("width", function (d) { return scope.panel.tooltipSetting === "static" ? "20%" : "0%"; })
+                    .style("height", function () { return 100 + "%"; })
+                    .attr("id", "tooltip-" + elem[0].id);
 
                 var data = prepareData(dataset);
 

@@ -560,7 +560,7 @@
                     return obj === d;
                 });
                 data.forEach(function (d) {
-                    detailstext = detailstext + '' + (queryColorDot(d.source.color, 15) + ' ' + queryColorDot(d.target.color, 15) + ' ' + d.source.label + '-' + d.target.label + ' (' + d.value + ') <br/>');
+                    detailstext = detailstext + '' + (queryColorDot(d.source.color, 15) + ' ' + queryColorDot(d.target.color, 15) + ' ' + d.source.label + ' - ' + d.target.label + ' (' + d.value + ') <br/>');
                 });
                 try {
                     //before displaying the tooltip, potentially still existing tooltips are removed
@@ -693,9 +693,6 @@
                 tooltip = d3.select("#" + tooltipElem).append("div")
                     .attr("id", "tooltip")
                     .attr("class", "hiveplot-tooltip-fix");
-                tooltip.transition()
-                    .duration(duration)
-                    .style("opacity", opacity);
                 tooltip.html(text);
             }
         }
