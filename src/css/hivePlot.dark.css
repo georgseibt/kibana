@@ -24,7 +24,6 @@ path.hiveplot-link {
 }
 
 .hiveplot-link.hiveplot-active {
-    stroke: *#DC143C;
     stroke-width: 4px;
     stroke-opacity: 1;
 }

@@ -81,7 +81,7 @@
             Initializing default values
         */
         var default_tooltipElem = null,
-            default_colorscale = generateColorGradient("#FFD700", "#FF0000", 10),
+            default_colorscale = generateColors({ "startColor": "#FFD700", "endColor": "#FF0000", "numberOfColors": 10 }),
             default_colorcode = 'black-white',
             default_nodesColorSchema = 'blue',
             default_sortingTooltip = 'source',
@@ -105,7 +105,7 @@
             colorcode = ((typeof _config.colorcode === 'undefined' || _config.colorcode === null) ? default_colorcode : _config.colorcode),
             nodesColorSchema = ((typeof _config.nodesColorSchema === 'undefined' || _config.nodesColorSchema === null) ? default_nodesColorSchema : _config.nodesColorSchema),
             colors = [],
-            linksColors = ((typeof _config.linksColorSchema === 'undefined' || _config.linksColorSchema === null) ? default_colorscale : generateColorGradient(_config.linksColorSchema[0], _config.linksColorSchema[1], _config.linksColorSchema[2])),
+            linksColors = ((typeof _config.linksColorSchema === 'undefined' || _config.linksColorSchema === null) ? default_colorscale : generateColors({"startColor": _config.linksColorSchema[0], "endColor": _config.linksColorSchema[1], "numberOfColors": _config.linksColorSchema[2]})),
             data = prepareData(_config.data),
             nodes = data.nodes,
             links = data.links,
@@ -431,7 +431,7 @@
                 After the nodes are ordered the 'y' value and the 'color' is assigned to the nodes. Therefore the numbe rof nodes on each axis is counted and the nodes are equally spread.
             */
             var count = 0;
-            colors = randomColor({ count: uniqueNodes.length, hue: nodesColorSchema });  //getting an array with several different colors but with the same hue.
+            colors = generateColors({ hue: nodesColorSchema, numberOfColors: uniqueNodes.length });  //getting an array with several different colors but with the same hue.
 
             uniqueNodes.length = 0; //the array uniqueNodes is emptied (setting the length to 0) so the nodes can be assigned to the array again after they were sorted before.
             uniqueAxis.forEach(function (axis) {
@@ -467,7 +467,7 @@
                     histCurrent[axisName] = 1;
                 });
                 var count = 0;
-                colors = randomColor({ count: _config.nodes.length, hue: nodesColorSchema });   //getting an array with several different colors but with the same hue.
+                colors = generateColors({ hue: nodesColorSchema, numberOfColors: uniqueNodes.length });   //getting an array with several different colors but with the same hue.
                 _config.nodes.forEach(function (node) {
                     /*
                         The array of nodes which was passed (_config.nodes) is always longer than unique nodes. This loop iterates through the _config.nodes and assignes the values from uniqueNodes
@@ -739,43 +739,6 @@
                     return result * sortOrder;
                 };
             }
-        }
-
-        function generateColorGradient(startColor, endColor, numberOfNuances) {
-            /*
-                Format of the passed variable:
-                    startColor: A color in hexcode where the colorgradient should start
-                    endColor: A color in hexcode where the colorgradient should end
-                    numberOfNuances: the number of different nuances
-
-                Task of the function:
-                    This function creates a colorgradient between the two colors startColor and endColor with several nuances
-
-                Format of the return value:
-                    The function returns an array of the length numberOfNuances with different colors.
-            */
-            var startRedPart = startColor.slice(1, 3),
-                startGreenPart = startColor.slice(3, 5),
-                startBluePart = startColor.slice(5, 7),
-                endRedPart = endColor.slice(1, 3),
-                endGreenPart = endColor.slice(3, 5),
-                endBluePart = endColor.slice(5, 7);
-
-            var redNuances =  Math.round((parseInt(endRedPart, 16) - parseInt(startRedPart, 16)) / numberOfNuances),
-                greenNuances = Math.round((parseInt(endGreenPart, 16) - parseInt(startGreenPart, 16)) / numberOfNuances),
-                blueNuances =  Math.round((parseInt(endBluePart, 16) - parseInt(startBluePart, 16)) / numberOfNuances);
-            var colorset = [], redPart, greenPart, bluePart, color;
-
-            for (var count = 0; count < numberOfNuances; count++) {
-                redPart = (parseInt(startRedPart, 16) + count * redNuances).toString(16);
-                greenPart = (parseInt(startGreenPart, 16) + count * greenNuances).toString(16);
-                bluePart = (parseInt(startBluePart, 16) + count * blueNuances).toString(16);
-                color = '#' + (redPart.length === 1 ? '0' + redPart : redPart) + ''
-                    + (greenPart.length === 1 ? '0' + greenPart : greenPart) + ''
-                    + (bluePart.length === 1 ? '0' + bluePart : bluePart);
-                colorset.push(color);
-            }
-            return colorset;
-        }
+        }        
     }
 }).call(this);
