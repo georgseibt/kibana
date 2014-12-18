@@ -467,7 +467,7 @@
                     histCurrent[axisName] = 1;
                 });
                 var count = 0;
-                colors = generateColors({ hue: nodesColorSchema, numberOfColors: uniqueNodes.length });   //getting an array with several different colors but with the same hue.
+                colors = generateColors({ hue: nodesColorSchema, numberOfColors: _config.nodes.length });   //getting an array with several different colors but with the same hue.
                 _config.nodes.forEach(function (node) {
                     /*
                         The array of nodes which was passed (_config.nodes) is always longer than unique nodes. This loop iterates through the _config.nodes and assignes the values from uniqueNodes
